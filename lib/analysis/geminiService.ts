@@ -11,6 +11,15 @@ export interface GeminiAnalysisOptions {
   modelName?: string;
 }
 
+// Ordered candidate models for high resilience across all API key tiers
+const DEFAULT_CANDIDATE_MODELS = [
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-2.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-2.5-pro',
+];
+
 export async function runGeminiForensicAnalysis(
   payload: AnalysisRequestPayload,
   options: GeminiAnalysisOptions = {}
@@ -39,30 +48,35 @@ export async function runGeminiForensicAnalysis(
 
   if (!apiKey) {
     const error: any = new Error(
-      'Missing Google Gemini API key. Please configure GEMINI_API_KEY in your server environment (.env.local).'
+      'Missing Google Gemini API key. Please configure GEMINI_API_KEY in your server environment (.env.local or Vercel Environment Variables).'
     );
     error.code = 'AUTH_KEY_MISSING';
     error.statusCode = 401;
     throw error;
   }
 
-  // Default to stable gemini-2.0-flash with gemini-1.5-flash fallback
-  const primaryModel = options.modelName || process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-  const fallbackModel = 'gemini-1.5-flash';
+  // 3. Build candidate model chain
+  const candidateModels: string[] = [];
+  if (options.modelName) candidateModels.push(options.modelName);
+  if (process.env.GEMINI_MODEL) candidateModels.push(process.env.GEMINI_MODEL);
+  for (const m of DEFAULT_CANDIDATE_MODELS) {
+    if (!candidateModels.includes(m)) candidateModels.push(m);
+  }
 
-  // 3. Instantiate official Google GenAI SDK
+  // 4. Instantiate official Google GenAI SDK
   const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = buildGeminiSystemPrompt(targetGoal);
   const userPrompt = buildGeminiUserPrompt(trimmedContent, targetGoal, userMetrics);
 
   let responseText = '';
+  let lastError: any = null;
 
-  try {
-    // Attempt with primary model
+  // 5. Model execution waterfall
+  for (const model of candidateModels) {
     try {
       const response = await ai.models.generateContent({
-        model: primaryModel,
+        model,
         contents: userPrompt,
         config: {
           systemInstruction,
@@ -70,42 +84,50 @@ export async function runGeminiForensicAnalysis(
           temperature: 0.2,
         },
       });
+
       responseText = response.text || '';
-    } catch (primaryErr: any) {
-      const primaryMsg = (primaryErr?.message || '').toLowerCase();
-      // If 404 model not found, attempt fallback
-      if (primaryErr?.status === 404 || primaryMsg.includes('404') || primaryMsg.includes('not found') || primaryMsg.includes('no longer available')) {
-        console.warn(`Primary model ${primaryModel} unavailable. Falling back to ${fallbackModel}...`);
-        const fallbackResponse = await ai.models.generateContent({
-          model: fallbackModel,
-          contents: userPrompt,
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            temperature: 0.2,
-          },
-        });
-        responseText = fallbackResponse.text || '';
-      } else {
-        throw primaryErr;
+      if (responseText) {
+        break; // Successfully generated analysis
       }
-    }
+    } catch (err: any) {
+      lastError = err;
+      const msg = (err?.message || '').toLowerCase();
+      const is404OrUnsupported =
+        err?.status === 404 ||
+        msg.includes('404') ||
+        msg.includes('not found') ||
+        msg.includes('no longer available') ||
+        msg.includes('not supported');
 
-    if (!responseText) {
-      throw new Error('Received an empty response from the Gemini AI diagnostic engine.');
-    }
+      if (is404OrUnsupported) {
+        console.warn(`Model "${model}" unavailable on this API key tier. Trying next candidate...`);
+        continue;
+      }
 
-    // 4. Parse JSON safely
+      // Fast-fail on authentication or rate limit errors
+      throw err;
+    }
+  }
+
+  if (!responseText && lastError) {
+    throw lastError;
+  }
+
+  if (!responseText) {
+    throw new Error('Received an empty response from the Gemini AI diagnostic engine.');
+  }
+
+  try {
+    // 6. Parse JSON safely
     const rawJson = extractJsonFromResponse(responseText);
 
-    // 5. Validate and normalize structure
+    // 7. Validate and normalize structure
     const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
 
     return validatedResult;
   } catch (err: any) {
     console.error('Gemini Forensic Analysis Error:', err);
 
-    // Handle known error signatures
     const msg = (err?.message || '').toLowerCase();
     const status = err?.status || err?.statusCode || 500;
 
