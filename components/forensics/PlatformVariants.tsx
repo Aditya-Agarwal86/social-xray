@@ -79,19 +79,23 @@ export const PlatformVariants: React.FC<PlatformVariantsProps> = ({ variants }) 
       </div>
 
       {/* Platform Selector Tabs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5" role="tablist" aria-label="Social Media Platforms">
         {platformTabs.map((tab) => {
           const isActive = activePlatform === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`platform-panel-${tab.id}`}
+              id={`platform-tab-${tab.id}`}
               type="button"
               onClick={() => {
                 setActivePlatform(tab.id);
                 setCopied(false);
               }}
               className={cn(
-                'flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-150',
+                'flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400',
                 isActive
                   ? 'bg-cyan-950/50 border-cyan-400 text-white shadow-[0_0_15px_rgba(0,240,255,0.15)] ring-1 ring-cyan-400/50'
                   : 'bg-carbon-900/80 border-carbon-750 text-carbon-300 hover:border-carbon-600 hover:bg-carbon-850'
@@ -110,7 +114,12 @@ export const PlatformVariants: React.FC<PlatformVariantsProps> = ({ variants }) 
       </div>
 
       {/* Active Platform Variant Card */}
-      <Card className="p-5 sm:p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
+      <Card
+        id={`platform-panel-${activePlatform}`}
+        role="tabpanel"
+        aria-labelledby={`platform-tab-${activePlatform}`}
+        className="p-5 sm:p-6 bg-carbon-900/90 border-carbon-750 space-y-4"
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-carbon-800 pb-3">
           <div className="space-y-0.5">
             <span className="text-xs font-mono font-bold text-white uppercase flex items-center gap-2">
@@ -128,6 +137,7 @@ export const PlatformVariants: React.FC<PlatformVariantsProps> = ({ variants }) 
             onClick={handleCopy}
             leftIcon={copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             className="text-xs font-mono w-full sm:w-auto text-cyan-300 border-cyan-700/60 hover:border-cyan-400"
+            aria-label={`Copy ${activeTabMeta?.label} formatted post copy`}
           >
             {copied ? 'Copied to Clipboard' : `Copy ${activeTabMeta?.label} Post`}
           </Button>

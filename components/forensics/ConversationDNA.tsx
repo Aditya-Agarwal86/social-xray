@@ -152,6 +152,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
                 onClick={handleCopyQuestion}
                 leftIcon={copiedQuestion ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 className="text-xs font-mono text-purple-300 border-purple-700/60 hover:border-purple-400"
+                aria-label="Copy high-conversion replacement question"
               >
                 {copiedQuestion ? 'Copied' : 'Copy Question'}
               </Button>
@@ -169,7 +170,8 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
                 <button
                   type="button"
                   onClick={handleCopyFollowUp}
-                  className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 shrink-0"
+                  className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 rounded px-1"
+                  aria-label="Copy thread sustainer probe question"
                 >
                   {copiedFollowUp ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                   {copiedFollowUp ? 'Copied' : 'Copy Probe'}

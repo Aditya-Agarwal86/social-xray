@@ -145,6 +145,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             onClick={handleExportJson}
             leftIcon={<Download className="w-3.5 h-3.5 text-cyan-400" />}
             className="text-xs font-mono text-carbon-200"
+            aria-label="Export complete analysis dossier as JSON"
           >
             {downloadSuccess ? 'Exported!' : 'Export JSON'}
           </Button>
@@ -155,6 +156,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             onClick={handlePrint}
             leftIcon={<Printer className="w-3.5 h-3.5 text-carbon-400" />}
             className="text-xs font-mono text-carbon-200 hidden sm:inline-flex"
+            aria-label="Print or save forensic dossier as PDF"
           >
             Print
           </Button>
@@ -165,6 +167,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             onClick={onReanalyze}
             leftIcon={<RefreshCw className="w-3.5 h-3.5 text-cyan-400" />}
             className="text-xs font-mono text-carbon-200"
+            aria-label="Re-run forensic AI analysis on this post"
           >
             Re-Analyze
           </Button>
@@ -175,6 +178,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             onClick={onReset}
             leftIcon={<RotateCcw className="w-3.5 h-3.5 text-carbon-950" />}
             className="text-xs font-mono"
+            aria-label="Clear current report and analyze another post"
           >
             Analyze Another
           </Button>

@@ -81,6 +81,7 @@ export const RepairDiff: React.FC<RepairDiffProps> = ({ repair }) => {
                 type="button"
                 onClick={handleCopyOriginal}
                 className="text-[11px] font-mono text-carbon-400 hover:text-carbon-200 flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-rose-400 rounded px-1.5 py-0.5"
+                aria-label="Copy original post text"
               >
                 {copiedOriginal ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                 {copiedOriginal ? 'Copied' : 'Copy'}
@@ -103,6 +104,7 @@ export const RepairDiff: React.FC<RepairDiffProps> = ({ repair }) => {
                 type="button"
                 onClick={handleCopyImproved}
                 className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 rounded px-1.5 py-0.5"
+                aria-label="Copy repaired post text"
               >
                 {copiedImproved ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                 {copiedImproved ? 'Copied' : 'Copy'}
