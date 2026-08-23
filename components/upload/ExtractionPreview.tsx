@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   RotateCcw,
   Zap,
+  Info,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -24,6 +25,8 @@ interface ExtractionPreviewProps {
   onReset: () => void;
   isAnalyzing: boolean;
   sourceType?: 'pdf' | 'image' | 'text' | 'demo';
+  warnings?: string[];
+  confidence?: number;
 }
 
 export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
@@ -33,6 +36,8 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
   onReset,
   isAnalyzing,
   sourceType = 'text',
+  warnings = [],
+  confidence,
 }) => {
   const { words, seconds } = calculateReadingTime(text);
   const characterCount = text.length;
@@ -55,6 +60,11 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
           ) : (
             <Badge variant="cyan" size="sm">
               EDITABLE PREVIEW
+            </Badge>
+          )}
+          {typeof confidence === 'number' && (
+            <Badge variant={confidence >= 70 ? 'emerald' : 'amber'} size="sm">
+              DETECTION: {confidence}%
             </Badge>
           )}
         </div>
@@ -80,6 +90,24 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Extraction Warnings & Guidance */}
+      {warnings && warnings.length > 0 && (
+        <div className="space-y-2">
+          {warnings.map((warning, idx) => (
+            <div
+              key={idx}
+              className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-200 text-xs font-mono"
+            >
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-bold text-amber-300 uppercase block">Review Recommended</span>
+                <span className="font-sans leading-relaxed text-amber-100">{warning}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Editable Laboratory Textarea */}
       <div className="relative group">

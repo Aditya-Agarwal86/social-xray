@@ -20,6 +20,28 @@ export interface OcrLineData {
   words?: OcrWordData[];
 }
 
+export interface TextRegion {
+  id: string;
+  text: string;
+  confidence: number;
+  bbox: BoundingBox;
+  type: 'header' | 'caption' | 'hashtags' | 'metadata' | 'ui_noise' | 'unclassified';
+  lines: OcrLineData[];
+  normalizedScore: number;
+}
+
+export interface SocialPostExtractionResult {
+  captionText: string;
+  hashtags: string[];
+  postContextText: string;
+  authorHandle?: string;
+  cleanedFullText: string;
+  hasUncertainClassifications: boolean;
+  filteredNoiseCount: number;
+  detectedRegions: TextRegion[];
+  classificationNote?: string;
+}
+
 export interface PageExtractionData {
   pageNumber: number;
   text: string;
@@ -47,11 +69,13 @@ export interface NormalizedOcrResult {
   fileSize: number;
   extractedText: string;
   confidence: number;
+  confidenceLabel: string;
   detectedLanguage: string;
   characterCount: number;
   wordCount: number;
   readingTimeSeconds: number;
   lines: OcrLineData[];
+  socialContent?: SocialPostExtractionResult;
   processingWarnings: string[];
   hasText: boolean;
 }

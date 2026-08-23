@@ -5,23 +5,32 @@ import {
   OcrLineData,
   OcrWordData,
 } from './types';
+import { preprocessImageForOcr } from './preprocessing';
+import { segmentTextRegions } from './regions';
+import { extractSocialPostContent } from './socialContent';
 
 export interface OcrExtractionOptions {
   language?: string; // Default: 'eng'
   fileName?: string;
+  enableSocialScreenshotMode?: boolean; // Default: true
 }
 
 /**
- * Executes in-browser Optical Character Recognition on image files using Tesseract.js.
+ * Executes in-browser Optical Character Recognition on image files using Tesseract.js
+ * with intelligent preprocessing, layout segmentation, and social post content classification.
  */
 export async function extractImageText(
   fileOrBlob: File | Blob,
   options: OcrExtractionOptions = {},
   onProgress?: ExtractionProgressCallback
 ): Promise<NormalizedOcrResult> {
-  const { language = 'eng', fileName = 'image.png' } = options;
+  const {
+    language = 'eng',
+    fileName = 'image.png',
+    enableSocialScreenshotMode = true,
+  } = options;
 
-  // 1. Validation check
+  // 1. Basic validation
   const fileSize = fileOrBlob.size || 0;
   if (fileSize === 0) {
     throw new ExtractionError(
@@ -31,7 +40,29 @@ export async function extractImageText(
     );
   }
 
-  onProgress?.(5, 'Preparing image and initializing neural vision pipeline...', 'init');
+  onProgress?.(5, 'Detecting image dimensions and optimizing contrast...', 'preprocess');
+
+  // 2. Preprocess image via HTML5 Canvas (scale & contrast enhancement)
+  let preprocessedBlob = fileOrBlob;
+  let dimensions = { width: 1000, height: 1000 };
+
+  try {
+    if (typeof window !== 'undefined' && fileOrBlob instanceof File) {
+      const preprocessed = await preprocessImageForOcr(fileOrBlob, {
+        enhanceContrast: true,
+        grayscale: true,
+      });
+      preprocessedBlob = preprocessed.blob;
+      dimensions = {
+        width: preprocessed.processedWidth,
+        height: preprocessed.processedHeight,
+      };
+    }
+  } catch (prepErr) {
+    console.warn('Canvas preprocessing skipped; falling back to raw buffer:', prepErr);
+  }
+
+  onProgress?.(15, 'Initializing OCR Web Worker neural core...', 'init');
 
   let tesseract: any;
   try {
@@ -44,10 +75,10 @@ export async function extractImageText(
     );
   }
 
-  const imageUrl = URL.createObjectURL(fileOrBlob);
+  const imageUrl = URL.createObjectURL(preprocessedBlob);
 
   try {
-    onProgress?.(15, 'Loading language dictionaries and neural models...', 'load');
+    onProgress?.(25, 'Loading typography character dictionaries...', 'load');
 
     const result = await tesseract.recognize(imageUrl, language, {
       logger: (m: { status: string; progress: number }) => {
@@ -55,13 +86,11 @@ export async function extractImageText(
         const rawProgress = typeof m.progress === 'number' ? m.progress : 0;
 
         if (rawStatus === 'loading tesseract core') {
-          onProgress?.(20, 'Loading OCR neural core...', 'core');
+          onProgress?.(30, 'Loading OCR neural core...', 'core');
         } else if (rawStatus === 'initializing tesseract') {
-          onProgress?.(28, 'Initializing language recognition model...', 'init_lang');
+          onProgress?.(38, 'Initializing language recognition model...', 'init_lang');
         } else if (rawStatus === 'loading language traineddata') {
-          onProgress?.(38, 'Loading typography character dictionaries...', 'dict');
-        } else if (rawStatus === 'initializing api') {
-          onProgress?.(50, 'Configuring visual matrix...', 'api');
+          onProgress?.(48, 'Loading character dictionaries...', 'dict');
         } else if (rawStatus === 'recognizing text') {
           // Map 0 -> 1 progress to 50% -> 85%
           const pct = 50 + Math.floor(rawProgress * 35);
@@ -74,41 +103,24 @@ export async function extractImageText(
       },
     });
 
-    onProgress?.(88, 'Detecting words and bounding coordinates...', 'structure');
+    onProgress?.(88, 'Segmenting text regions and spatial layout...', 'segmentation');
 
-    const rawText = result.data.text || '';
-    const overallConfidence = typeof result.data.confidence === 'number' ? Math.round(result.data.confidence) : 0;
+    const overallConfidence =
+      typeof result.data.confidence === 'number'
+        ? Math.round(result.data.confidence)
+        : 0;
 
-    // Clean text lines while preserving logical layout
-    const cleanedText = rawText
-      .replace(/\r\n/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-
-    const words = cleanedText.split(/\s+/).filter(Boolean).length;
-    const chars = cleanedText.length;
-    const readingTimeSeconds = Math.max(5, Math.ceil((words / 200) * 60));
-
-    // Handle images with zero readable text
-    if (!cleanedText || words === 0) {
-      throw new ExtractionError(
-        'Forensic OCR could not detect any readable text in this image.',
-        'OCR_NO_TEXT',
-        'Please ensure the screenshot or graphic contains clear, high-contrast typography rather than pure illustrations or blurry photos.'
-      );
-    }
-
-    onProgress?.(95, 'Building text structure and telemetry map...', 'finalize');
-
-    // Extract line and bounding-box information if available from Tesseract
+    // 3. Extract structured lines, words, and bounding boxes
     const parsedLines: OcrLineData[] = [];
     if (Array.isArray(result.data.lines)) {
       for (const line of result.data.lines) {
         const lineText = (line.text || '').trim();
         if (!lineText) continue;
 
-        const lineConfidence = typeof line.confidence === 'number' ? Math.round(line.confidence) : overallConfidence;
+        const lineConfidence =
+          typeof line.confidence === 'number'
+            ? Math.round(line.confidence)
+            : overallConfidence;
 
         let bbox = undefined;
         if (line.bbox) {
@@ -127,7 +139,10 @@ export async function extractImageText(
             if (wText) {
               lineWords.push({
                 text: wText,
-                confidence: typeof w.confidence === 'number' ? Math.round(w.confidence) : lineConfidence,
+                confidence:
+                  typeof w.confidence === 'number'
+                    ? Math.round(w.confidence)
+                    : lineConfidence,
                 bbox: w.bbox
                   ? { x0: w.bbox.x0, y0: w.bbox.y0, x1: w.bbox.x1, y1: w.bbox.y1 }
                   : undefined,
@@ -145,18 +160,53 @@ export async function extractImageText(
       }
     }
 
-    const processingWarnings: string[] = [];
-
-    // Check low OCR confidence
-    if (overallConfidence < 60) {
-      processingWarnings.push(
-        `Low recognition confidence (${overallConfidence}%). Check the extracted text preview below and correct any minor OCR character artifacts.`
+    if (parsedLines.length === 0) {
+      throw new ExtractionError(
+        'Forensic OCR could not detect any readable text in this image.',
+        'OCR_NO_TEXT',
+        'Please ensure the screenshot contains clear typography.'
       );
     }
 
-    if (words < 4) {
+    onProgress?.(94, 'Extracting social post caption & hashtags...', 'social_extraction');
+
+    // 4. Perform Layout Segmentation & Social Content Filtering
+    const regions = segmentTextRegions(parsedLines, dimensions);
+    const socialExtraction = extractSocialPostContent(regions, parsedLines);
+
+    const finalExtractedText = enableSocialScreenshotMode && socialExtraction.cleanedFullText
+      ? socialExtraction.cleanedFullText
+      : parsedLines.map((l) => l.text).join('\n');
+
+    const words = finalExtractedText.split(/\s+/).filter(Boolean).length;
+    const chars = finalExtractedText.length;
+    const readingTimeSeconds = Math.max(5, Math.ceil((words / 200) * 60));
+
+    // 5. Build defensible confidence label and actionable warnings
+    const confidenceLabel =
+      overallConfidence >= 80
+        ? `Text detection confidence: ${overallConfidence}% (Optimal)`
+        : overallConfidence >= 60
+        ? `Text detection confidence: ${overallConfidence}% (Moderate)`
+        : `Low-confidence extraction (${overallConfidence}%)`;
+
+    const processingWarnings: string[] = [];
+
+    if (overallConfidence < 70) {
       processingWarnings.push(
-        'Very short text detected. Provide complete post copy for optimal attention friction mapping.'
+        `Low detection confidence (${overallConfidence}%). Review recommended — this screenshot contains interface text or low-contrast typography.`
+      );
+    }
+
+    if (socialExtraction.hasUncertainClassifications) {
+      processingWarnings.push(
+        'Some text in this screenshot could not be confidently classified. Please review and refine the extracted draft below.'
+      );
+    }
+
+    if (socialExtraction.filteredNoiseCount > 0) {
+      processingWarnings.push(
+        `Filtered ${socialExtraction.filteredNoiseCount} peripheral UI items (profile, buttons, or navigation).`
       );
     }
 
@@ -166,13 +216,15 @@ export async function extractImageText(
       sourceType: 'image',
       fileName,
       fileSize,
-      extractedText: cleanedText,
+      extractedText: finalExtractedText,
       confidence: overallConfidence,
+      confidenceLabel,
       detectedLanguage: language,
       characterCount: chars,
       wordCount: words,
       readingTimeSeconds,
       lines: parsedLines,
+      socialContent: socialExtraction,
       processingWarnings,
       hasText: words > 0,
     };

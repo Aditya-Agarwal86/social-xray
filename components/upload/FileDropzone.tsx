@@ -131,6 +131,8 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         let words = 0;
         let chars = 0;
 
+        let warningsList: string[] = [];
+
         if (validation.fileType === 'pdf') {
           const result = await extractPdfText(file, file.name, (progress, message) => {
             setExtractionProgress({ stage: 'extracting', progress, message });
@@ -140,6 +142,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
           words = result.wordCount;
           chars = result.characterCount;
           if (result.extractionWarnings && result.extractionWarnings.length > 0) {
+            warningsList = result.extractionWarnings;
             setExtractionWarnings(result.extractionWarnings);
           }
         } else {
@@ -155,6 +158,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
           words = result.wordCount;
           chars = result.characterCount;
           if (result.processingWarnings && result.processingWarnings.length > 0) {
+            warningsList = result.processingWarnings;
             setExtractionWarnings(result.processingWarnings);
           }
         }
@@ -172,6 +176,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
           charCount: chars,
           pageCount,
           confidence,
+          warnings: warningsList,
         };
 
         // Transition to SUCCESS
@@ -478,7 +483,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
                   </Badge>
                   {typeof currentFile.confidence === 'number' && (
                     <Badge variant={currentFile.confidence >= 70 ? 'emerald' : 'amber'} size="sm">
-                      OCR: {currentFile.confidence}% ACCURACY
+                      CONFIDENCE: {currentFile.confidence}%
                     </Badge>
                   )}
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-2 py-0.5 rounded">

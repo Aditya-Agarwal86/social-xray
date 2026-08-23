@@ -306,6 +306,77 @@ test('constructs system and user prompts with non-predictive guardrails', () => 
   assert.ok(userPrompt.includes('SHARES'));
 });
 
+// 14. Layout Segmentation Test
+import { segmentTextRegions } from '../lib/extraction/regions.ts';
+import { extractSocialPostContent } from '../lib/extraction/socialContent.ts';
+
+test('segments lines into spatial text regions with layout hierarchy', () => {
+  const mockLines = [
+    { text: 'a._n._v._a._y', confidence: 85, bbox: { x0: 450, y0: 60, x1: 580, y1: 85 } },
+    { text: 'AI content', confidence: 75, bbox: { x0: 450, y0: 95, x1: 540, y1: 115 } },
+    { text: 'Kothrud, Pune', confidence: 80, bbox: { x0: 450, y0: 125, x1: 560, y1: 145 } },
+    { text: 'Did the sky turn into a golden sea...?', confidence: 92, bbox: { x0: 450, y0: 250, x1: 850, y1: 280 } },
+    { text: '#pixelstretch #sunsetphotography', confidence: 90, bbox: { x0: 450, y0: 480, x1: 780, y1: 510 } },
+    { text: 'Liked by aditya_xdddd and others', confidence: 85, bbox: { x0: 450, y0: 760, x1: 720, y1: 785 } },
+  ];
+
+  const regions = segmentTextRegions(mockLines, { width: 1000, height: 1000 });
+  assert.ok(regions.length >= 3);
+  assert.ok(regions.some((r) => r.type === 'header'));
+  assert.ok(regions.some((r) => r.type === 'caption'));
+  assert.ok(regions.some((r) => r.type === 'hashtags'));
+});
+
+// 15. REGRESSION TEST: Exact User Instagram Screenshot Extraction
+test('regression: extracts Instagram post caption & hashtags while filtering UI noise', () => {
+  const rawNoisyOcrLines = [
+    { text: 'wn anvay', confidence: 55, bbox: { x0: 450, y0: 50, x1: 550, y1: 75 } },
+    { text: 'Tw Alcontent oo', confidence: 60, bbox: { x0: 450, y0: 80, x1: 560, y1: 100 } },
+    { text: 'Ld Kothrud, Pune', confidence: 65, bbox: { x0: 450, y0: 105, x1: 580, y1: 125 } },
+    { text: 'wm a._n._v._a._y Did the sky turn into a golden sea...?', confidence: 90, bbox: { x0: 450, y0: 240, x1: 860, y1: 270 } },
+    { text: '{ #pixelstretch #sunsetphotography', confidence: 88, bbox: { x0: 450, y0: 480, x1: 780, y1: 505 } },
+    { text: '¥ 5 #mobilephotography #fyp #foryou', confidence: 85, bbox: { x0: 450, y0: 515, x1: 800, y1: 540 } },
+    { text: 'a. [Sunset, viral, pune skyline, pune sunset, pixel', confidence: 80, bbox: { x0: 450, y0: 550, x1: 880, y1: 575 } },
+    { text: 'FRR stretch]', confidence: 75, bbox: { x0: 450, y0: 580, x1: 560, y1: 605 } },
+    { text: 'Liked by aditya_xdddd and others', confidence: 82, bbox: { x0: 450, y0: 760, x1: 720, y1: 785 } },
+    { text: '— TI', confidence: 40, bbox: { x0: 450, y0: 880, x1: 500, y1: 900 } },
+  ];
+
+  const regions = segmentTextRegions(rawNoisyOcrLines, { width: 1000, height: 1000 });
+  const result = extractSocialPostContent(regions, rawNoisyOcrLines);
+
+  // Verifies caption extracted cleanly without UI noise
+  assert.ok(result.cleanedFullText.includes('Did the sky turn into a golden sea...?'));
+  assert.ok(result.cleanedFullText.includes('#pixelstretch'));
+  assert.ok(result.cleanedFullText.includes('#sunsetphotography'));
+  assert.ok(result.cleanedFullText.includes('#mobilephotography'));
+  assert.ok(result.cleanedFullText.includes('#fyp'));
+  assert.ok(result.cleanedFullText.includes('#foryou'));
+
+  // Verifies UI noise and glitches were filtered
+  assert.strictEqual(result.cleanedFullText.includes('Liked by aditya_xdddd'), false);
+  assert.strictEqual(result.cleanedFullText.includes('— TI'), false);
+  assert.ok(result.filteredNoiseCount >= 2);
+});
+
+// 16. Multi-format & Non-Social Image Handling
+test('extracts clean non-social text without over-filtering', () => {
+  const genericLines = [
+    { text: '5 Leadership Principles for Modern Engineering Teams', confidence: 95 },
+    { text: '1. Give context over control.', confidence: 92 },
+    { text: '2. Create psychological safety.', confidence: 90 },
+    { text: '3. Focus on outcomes over hours.', confidence: 91 },
+  ];
+
+  const regions = segmentTextRegions(genericLines);
+  const result = extractSocialPostContent(regions, genericLines);
+
+  assert.ok(result.cleanedFullText.includes('5 Leadership Principles'));
+  assert.ok(result.cleanedFullText.includes('context over control'));
+  assert.ok(result.cleanedFullText.includes('psychological safety'));
+  assert.strictEqual(result.filteredNoiseCount, 0);
+});
+
 console.log(`\n📊 RESULTS: ${passed}/${total} test specifications passed successfully.\n`);
 
 if (passed !== total) {

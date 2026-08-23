@@ -783,6 +783,8 @@ export default function Home() {
                   onReset={handleReset}
                   isAnalyzing={false}
                   sourceType={uploadedFile?.source || 'text'}
+                  warnings={uploadedFile?.warnings}
+                  confidence={uploadedFile?.confidence}
                 />
               </div>
             </div>

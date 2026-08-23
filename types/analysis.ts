@@ -151,4 +151,6 @@ export interface UploadedFileState {
   charCount?: number;
   pageCount?: number;
   confidence?: number;
+  confidenceLabel?: string;
+  warnings?: string[];
 }
