@@ -385,8 +385,8 @@ test('extracts clean non-social text without over-filtering', () => {
 });
 
 // 17. Stable Model Verification
-test('verifies standard production Gemini model is gemini-2.5-flash', () => {
-  assert.strictEqual(STABLE_GEMINI_MODEL, 'gemini-2.5-flash');
+test('verifies standard production Gemini model is gemini-3.5-flash', () => {
+  assert.strictEqual(STABLE_GEMINI_MODEL, 'gemini-3.5-flash');
 });
 
 // 18. HTTP 503 / High Demand Error Classification

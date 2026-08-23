@@ -4,7 +4,7 @@
 
 ### Architecture & Implementation
 1. **Client-Side Extraction**: Ingests PDFs and images locally using `pdfjs-dist` and in-browser `tesseract.js` Web Workers. This eliminates server storage costs, safeguards privacy, and allows users to review/edit extracted text before analysis.
-2. **Secure AI Engine**: Next.js App Router (`/api/analyze`) securely queries Google Gemini (`gemini-2.5-flash`) via the official `@google/genai` SDK using a strict JSON schema. API keys remain strictly server-side.
+2. **Secure AI Engine**: Next.js App Router (`/api/analyze`) securely queries Google Gemini (`gemini-3.5-flash`) via the official `@google/genai` SDK using a strict JSON schema. API keys remain strictly server-side.
 3. **Forensic UI Dashboard**: Built with Next.js 15, React 19, TypeScript, and Tailwind CSS. Features an interactive Engagement Friction Map, Post Autopsy, Conversation DNA, Before/After Repair Diff, and tailored variants for LinkedIn, Instagram, and TikTok.
 
 ### Design Principles

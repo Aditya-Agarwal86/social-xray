@@ -25,7 +25,7 @@ Next.js 15+ App Router is optimized for zero-configuration deployment on Vercel.
    - **Install Command**: `npm install`
 5. Expand the **Environment Variables** section and configure:
    - `GEMINI_API_KEY`: `your_gemini_api_key_here` (Required)
-   - `GEMINI_MODEL`: `gemini-2.5-flash` (Optional, defaults to `gemini-2.5-flash`)
+   - `GEMINI_MODEL`: `gemini-3.5-flash` (Optional, defaults to `gemini-3.5-flash`)
 6. Click **Deploy**.
 
 ---
@@ -35,7 +35,7 @@ Next.js 15+ App Router is optimized for zero-configuration deployment on Vercel.
 | Environment Variable | Required | Default | Scope | Description |
 | :--- | :---: | :---: | :---: | :--- |
 | `GEMINI_API_KEY` | **Yes** | *None* | Server-only | Secret API key for Google Gemini LLM analysis. Never exposed to browser bundles. |
-| `GEMINI_MODEL` | No | `gemini-2.5-flash` | Server-only | Google Gemini model identifier. |
+| `GEMINI_MODEL` | No | `gemini-3.5-flash` | Server-only | Google Gemini model identifier. |
 
 > [!IMPORTANT]
 > **Client-Side Key Override Support**: If `GEMINI_API_KEY` is omitted from server environment variables, the application displays a prominent configuration prompt in the UI allowing users to provide their own temporary client key stored in browser `localStorage`.
@@ -55,7 +55,7 @@ npm ci --production=false
 
 # Configure environment variables
 export GEMINI_API_KEY="your_gemini_api_key_here"
-export GEMINI_MODEL="gemini-2.5-flash"
+export GEMINI_MODEL="gemini-3.5-flash"
 export NODE_ENV="production"
 export PORT="3000"
 

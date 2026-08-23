@@ -104,7 +104,7 @@ cp .env.example .env.local
 Add your Google Gemini API key to `.env.local`:
 ```env
 GEMINI_API_KEY=your_actual_gemini_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.5-flash
 ```
 *(Note: You can also leave `.env.local` blank and enter a client API key directly in the web UI via "Configure API Key").*
 
@@ -121,7 +121,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | Variable | Required | Description |
 | :--- | :---: | :--- |
 | `GEMINI_API_KEY` | Yes* | Google Gemini API key for server-side AI execution. Obtain at [Google AI Studio](https://aistudio.google.com/app/apikey). |
-| `GEMINI_MODEL` | No | Optional model override (defaults to `gemini-2.5-flash`). |
+| `GEMINI_MODEL` | No | Optional model override (defaults to `gemini-3.5-flash`). |
 
 *\* Can also be provided dynamically in the client via UI settings (stored only in the user's browser `localStorage`).*
 

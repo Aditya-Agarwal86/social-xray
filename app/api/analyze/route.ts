@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const clientKey = req.headers.get('x-gemini-key')?.trim();
     const apiKey = clientKey || process.env.GEMINI_API_KEY;
 
-    // Execute Gemini forensic engine with gemini-2.5-flash
+    // Execute Gemini forensic engine with gemini-3.5-flash
     const analysisResult = await runGeminiForensicAnalysis(
       {
         content,

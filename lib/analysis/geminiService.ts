@@ -37,7 +37,7 @@ export class ForensicAnalysisError extends Error {
 }
 
 /**
- * Executes forensic analysis using Google Gemini gemini-2.5-flash
+ * Executes forensic analysis using Google Gemini gemini-3.5-flash
  * with exponential backoff retries for transient service errors.
  */
 export async function runGeminiForensicAnalysis(
@@ -98,7 +98,7 @@ export async function runGeminiForensicAnalysis(
     });
   }
 
-  // 3. Stable model: gemini-2.5-flash
+  // 3. Stable model: gemini-3.5-flash
   const model = options.modelName || process.env.GEMINI_MODEL || STABLE_GEMINI_MODEL;
   const maxRetries = typeof options.maxRetries === 'number' ? options.maxRetries : 3;
 

@@ -12,7 +12,7 @@ import type {
   ApiErrorCategory,
 } from './types';
 
-export const STABLE_GEMINI_MODEL = 'gemini-2.5-flash';
+export const STABLE_GEMINI_MODEL = 'gemini-3.5-flash';
 
 /**
  * Pure, deterministic classifier for Gemini API and network errors.

@@ -1,11 +1,11 @@
 /**
- * Standalone Diagnostic Test Script for Gemini Integration
+ * Standalone Diagnostic Test Script for Gemini 3.5 Flash Integration
  *
  * Tests:
- * TEST A: Minimal Gemini prompt construction & response handling
- * TEST B: Structured Social X-Ray analysis on synthetic sample post
- * TEST C: Structured analysis on real cleaned social post
- * TEST D: Complete schema compliance & type integrity
+ * 1. Model & Environment configuration audit
+ * 2. Minimal prompt construction ("Did the sky turn into a golden sea?")
+ * 3. Structured Social X-Ray analysis normalization on real Hindi-English post copy
+ * 4. Error classification matrix
  */
 
 import assert from 'node:assert';
@@ -21,153 +21,163 @@ import {
 } from '../lib/analysis/prompt.ts';
 import type { SocialXRayAnalysisResult } from '../lib/analysis/types.ts';
 
-console.log('🔬 RUNNING GEMINI INTEGRATION & STRUCTURED OUTPUT DIAGNOSTICS...\n');
+console.log('🔬 RUNNING GEMINI 3.5 FLASH INTEGRATION & STRUCTURED OUTPUT DIAGNOSTICS...\n');
 
 // 1. Environment & Model Check
 console.log('--- 1. CONFIGURATION AUDIT ---');
 console.log(`- Model configured: ${STABLE_GEMINI_MODEL}`);
+assert.strictEqual(STABLE_GEMINI_MODEL, 'gemini-3.5-flash');
 console.log(`- GEMINI_API_KEY present in env: ${process.env.GEMINI_API_KEY ? 'YES' : 'NO'}`);
 console.log(`- SDK Package: @google/genai (version 2.18.0)\n`);
 
-// 2. TEST A: Minimal Prompt Construction
-console.log('--- 2. TEST A: PROMPT GENERATION ---');
-const minimalContent = 'Test social media post.';
+// 2. TEST A: Minimal Request Prompt Construction
+console.log('--- 2. TEST A: MINIMAL REQUEST PROMPT GENERATION ---');
+const minimalContent = 'Did the sky turn into a golden sea?';
 const minimalSystem = buildGeminiSystemPrompt('conversation');
 const minimalUser = buildGeminiUserPrompt(minimalContent, 'conversation');
 
 assert.ok(minimalSystem.includes('SOCIAL X-RAY'));
 assert.ok(minimalUser.includes('overallScore'));
 assert.ok(minimalUser.includes(minimalContent));
-console.log('  ✓ System and User prompts construct valid prompt strings with non-predictive guardrails.');
+console.log('  ✓ System and User prompts construct valid prompt strings for gemini-3.5-flash.');
 
-// 3. TEST B: Structured Social X-Ray Schema Validation
-console.log('\n--- 3. TEST B: STRUCTURED JSON PARSING & SCHEMA VALIDATION ---');
-const samplePost = 'The sunset was beautiful. Would you share this photo with a friend?';
+// 3. TEST B: Real Cleaned Social Post Diagnostic
+console.log('\n--- 3. TEST B: REAL POST CONTENT STRUCTURED NORMALIZATION ---');
+const realPostContent = `Dekh tu bandi acchi hai.
+Bas choti choti baato par roya mat kar yaar.
 
-// Realistic structured response matching Gemini 2.5 Flash schema
-const simulatedGeminiJson = {
-  overallScore: 74,
+Like this post, if you are reading this.
+
+Do follow for more relatable memes.
+
+If you are from Explore, don't forget to leave a follow.`;
+
+const simulatedGemini35Response = {
+  overallScore: 58,
   hook: {
-    score: 65,
+    score: 62,
     severity: 'moderate',
-    problem: 'Generic aesthetic observation delays conversational momentum.',
-    explanation: 'Opening line describes the scene rather than introducing a polarizing or novel angle.',
+    problem: 'Opening line is conversational but generic relationship advice.',
+    explanation: 'Captures casual peer-to-peer empathy but lacks a unique narrative premise or tension.',
   },
   clarity: {
-    score: 88,
+    score: 85,
     severity: 'optimal',
-    problem: 'None identified.',
-    explanation: 'Language is simple, direct, and unambiguous.',
+    problem: 'None.',
+    explanation: 'Colloquial Hinglish phrasing is immediately understandable to the demographic.',
   },
   cognitiveLoad: {
-    score: 90,
+    score: 88,
     severity: 'optimal',
-    problem: 'Minimal.',
-    explanation: 'Two short lines create zero working memory fatigue.',
+    problem: 'None.',
+    explanation: 'Short stanza breaks ensure zero cognitive overload.',
   },
   emotion: {
-    score: 60,
+    score: 65,
     severity: 'moderate',
-    problem: 'Pleasant but low arousal.',
-    explanation: 'Evokes mild appreciation rather than intense curiosity or resonance.',
+    problem: 'Empathetic but transactional.',
+    explanation: 'The emotional connection in the first two lines is immediately severed by 3 back-to-back transactional CTAs.',
   },
   curiosity: {
-    score: 55,
+    score: 40,
     severity: 'critical',
-    problem: 'Zero information gap or mystery.',
-    explanation: 'Tells the reader everything immediately without tension.',
+    problem: 'Zero unresolved curiosity.',
+    explanation: 'No question or incomplete loop leaves the reader with nothing to ponder.',
   },
   conversation: {
-    score: 80,
-    severity: 'minor',
-    problem: 'Binary question invites yes/no rather than elaboration.',
-    explanation: 'Asking "would you share" closes down deep dialogue.',
+    score: 35,
+    severity: 'critical',
+    problem: 'Triple broadcast engagement demands choke organic discussion.',
+    explanation: 'Begging for likes and follows replaces an authentic prompt for user stories.',
   },
   shareability: {
-    score: 70,
-    severity: 'minor',
-    problem: 'Low personal identity badge value.',
-    explanation: 'Sharing a generic sunset provides minimal reputation signal.',
+    score: 55,
+    severity: 'moderate',
+    problem: 'Relatability is undermined by follower-begging.',
+    explanation: 'Users are reluctant to share posts with aggressive explore page follow prompts.',
   },
   cta: {
-    score: 75,
-    severity: 'minor',
-    problem: 'Shares require high social capital.',
-    explanation: 'Asking to share is higher friction than asking for a memory.',
+    score: 30,
+    severity: 'critical',
+    problem: 'Inert triple-CTA friction.',
+    explanation: 'Demands like + follow + explore follow simultaneously without offering immediate value.',
   },
   audienceValue: {
-    score: 68,
-    severity: 'moderate',
-    problem: 'Purely experiential without transferable insight.',
-    explanation: 'Reader enjoys the aesthetic but gains no practical takeaway.',
+    score: 50,
+    severity: 'critical',
+    problem: 'Transactional noise.',
+    explanation: '70% of the post length is self-promotional boilerplate.',
   },
   frictionPoints: [
     {
-      category: 'Hook Deceleration',
-      severity: 'moderate',
-      text: 'The sunset was beautiful.',
-      explanation: 'Passive observation that fails to stop fast thumbs in the feed.',
-      repair: 'Most people look right past the best part of golden hour.',
+      category: 'CTA Saturation',
+      severity: 'critical',
+      text: 'Like this post, if you are reading this. Do follow for more relatable memes. If you are from Explore, don\'t forget to leave a follow.',
+      explanation: 'Three consecutive transactional demands kill audience goodwill and destroy conversation velocity.',
+      repair: 'Tag someone who needs to hear this today, or tell me: what is one little thing that always ruins your mood?',
     },
     {
-      category: 'Inert Prompt',
-      severity: 'minor',
-      text: 'Would you share this photo with a friend?',
-      explanation: 'Binary yes/no question limits comment depth.',
-      repair: 'Where is the one place you have seen a sunset you will never forget?',
+      category: 'Hook Deceleration',
+      severity: 'moderate',
+      text: 'Dekh tu bandi acchi hai.',
+      explanation: 'Generic opening needs stronger specific emotional resonance.',
+      repair: 'Tum sab kuch sambhal leti ho, bas ek cheez par aakar toot jaati ho.',
     },
   ],
   postAutopsy: {
-    causeOfDeath: 'Aesthetic complacency—pleasing visual with zero curiosity tension.',
-    primaryFailure: 'Opening line lacks an open loop or controversial stance.',
-    secondaryFailure: 'Closing question is closed-ended rather than catalyst for stories.',
-    hiddenStrength: 'Crisp brevity and total absence of cognitive clutter.',
-    treatment: 'Replace generic praise with a counter-intuitive observation and prompt for personal stories.',
+    causeOfDeath: 'CTA Fatigue & Conversation Vacuum—genuine emotional premise suffocated by aggressive follow prompts.',
+    primaryFailure: 'Triple transactional call-to-action replaces any conversational question.',
+    secondaryFailure: 'Opening empathy lacks a specific relatable anecdote.',
+    hiddenStrength: 'Warm, conversational tone in lines 1-2.',
+    treatment: 'Delete all 3 follow prompts immediately. Replace with a single provocative question about emotional burnout.',
   },
   conversationDNA: {
-    likelyAudienceReaction: 'Silent nod and double-tap without commenting.',
-    engagementType: 'Passive Like',
-    conversationPotential: 'Moderate',
-    betterQuestion: 'What is the most surreal sky you have ever witnessed in person?',
-    followUpQuestion: 'Did anyone else experience it with you?',
+    likelyAudienceReaction: 'Mild relatable agreement, followed by immediate scroll-past due to follow begging.',
+    engagementType: 'Passive Scroll',
+    conversationPotential: 'Low (Severe CTA drag)',
+    betterQuestion: 'What is that one small thing that always triggers your overthinking?',
+    followUpQuestion: 'How do you pull yourself out of it when it happens?',
   },
   repair: {
-    original: samplePost,
-    improved: 'Most people scroll right past the best part of golden hour.\n\nWhere is the one spot on earth where you witnessed a sky you will never forget?',
-    explanation: 'Transforms passive caption into high-velocity open loop with experiential debate prompt.',
+    original: realPostContent,
+    improved: `Dekh tu sab kuch akele sambhal leti hai.
+Bas choti choti baato par dil par bojh mat liya kar.
+
+Tag someone who overthinks the smallest things—or tell me: what is that one thing that always ruins your day?`,
+    explanation: 'Stripped out all 3 follow-begging lines, deepened emotional relatability, and added a specific storytelling prompt.',
   },
   platformVariants: {
-    linkedin: 'We often overlook the simple moments that reset our perspective.\n\nWhat is your daily ritual for stepping away from the screen?',
-    instagram: 'Golden hour hits different when the whole city pauses.\n\nDrop the city where you took your best photo.',
-    tiktok: 'Show this to someone who needs 10 seconds of calm today. Where were you when you saw this?',
+    linkedin: 'Resilience is not about never feeling overwhelmed—it is about not letting micro-frustrations derail your day.\n\nHow do you reset when small roadblocks stack up?',
+    instagram: 'Save this for the days your head feels too heavy.\n\nTag your favorite overthinker in the comments 👇',
+    tiktok: 'Send this to someone who takes everything to heart today. You are doing fine.',
   },
   goalRecommendation: {
     selectedGoal: 'conversation',
-    reasoning: 'Post aims for interaction but currently uses a closed binary question.',
-    recommendedChange: 'Upgrade from a yes/no question to a specific memory-retrieval prompt.',
+    reasoning: 'The original post begged for likes instead of giving the audience a reason to reply.',
+    recommendedChange: 'Ask a specific emotional question that invites readers to vent their own experience.',
   },
 };
 
-// 4. Validate Normalization
-const parsed = extractJsonFromResponse(JSON.stringify(simulatedGeminiJson));
-const normalized: SocialXRayAnalysisResult = validateAndNormalizeAnalysis(parsed, samplePost, 'conversation');
+// 4. Validate Normalization against Gemini 3.5 schema
+const parsed = extractJsonFromResponse(JSON.stringify(simulatedGemini35Response));
+const normalized: SocialXRayAnalysisResult = validateAndNormalizeAnalysis(parsed, realPostContent, 'conversation');
 
 // Verify all schema requirements
 assert.strictEqual(typeof normalized.overallScore, 'number');
-assert.ok(normalized.overallScore >= 0 && normalized.overallScore <= 100);
+assert.strictEqual(normalized.overallScore, 58);
 assert.strictEqual(typeof normalized.hook.score, 'number');
 assert.strictEqual(typeof normalized.hook.problem, 'string');
 assert.strictEqual(typeof normalized.hook.explanation, 'string');
 assert.ok(Array.isArray(normalized.frictionPoints));
-assert.ok(normalized.frictionPoints.length > 0);
+assert.strictEqual(normalized.frictionPoints.length, 2);
 assert.strictEqual(typeof normalized.postAutopsy.causeOfDeath, 'string');
 assert.strictEqual(typeof normalized.conversationDNA.betterQuestion, 'string');
 assert.strictEqual(typeof normalized.repair.improved, 'string');
 assert.strictEqual(typeof normalized.platformVariants.linkedin, 'string');
 assert.strictEqual(normalized.goalRecommendation.selectedGoal, 'conversation');
 
-console.log('  ✓ Verified full SocialXRayAnalysisResult schema conformity.');
-console.log('  ✓ Numeric scores, severity enums, friction arrays, autopsy, and repairs fully verified.');
+console.log('  ✓ Verified full SocialXRayAnalysisResult schema conformity for Gemini 3.5 Flash.');
+console.log('  ✓ Real social content normalized with high-precision friction mapping and repair diffs.');
 
 // 5. TEST C: Error Classification Accuracy
 console.log('\n--- 4. TEST C: ERROR NORMALIZATION MATRIX ---');
@@ -186,4 +196,4 @@ for (const ec of errorCases) {
   console.log(`  ✓ HTTP ${ec.status} correctly mapped to ${result.category} (retryable: ${result.retryable}, action: ${result.requiresKeyConfig ? 'Configure Key' : 'Retry'})`);
 }
 
-console.log('\n🎉 ALL GEMINI INTEGRATION & SCHEMA DIAGNOSTICS PASSED!\n');
+console.log('\n🎉 ALL GEMINI 3.5 FLASH INTEGRATION & SCHEMA DIAGNOSTICS PASSED!\n');
