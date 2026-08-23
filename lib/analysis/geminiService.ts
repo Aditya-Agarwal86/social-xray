@@ -51,8 +51,8 @@ export async function runGeminiForensicAnalysis(
     throw new ForensicAnalysisError({
       category: 'INVALID_REQUEST',
       status: 400,
-      title: 'Empty Content',
-      message: 'Cannot run AI forensic diagnosis on empty content. Please provide or extract valid text.',
+      title: 'Invalid request',
+      message: 'The AI analysis request was rejected. Content cannot be empty.',
       retryable: false,
       requiresKeyConfig: false,
     });
@@ -64,8 +64,8 @@ export async function runGeminiForensicAnalysis(
     throw new ForensicAnalysisError({
       category: 'INVALID_REQUEST',
       status: 400,
-      title: 'Content Too Large',
-      message: `Post content length (${trimmedContent.length} characters) exceeds the maximum allowed limit of ${MAX_CONTENT_LENGTH} characters.`,
+      title: 'Invalid request',
+      message: `The AI analysis request was rejected. Post content length (${trimmedContent.length} chars) exceeds the maximum allowed limit of ${MAX_CONTENT_LENGTH} characters.`,
       retryable: false,
       requiresKeyConfig: false,
     });
@@ -76,8 +76,8 @@ export async function runGeminiForensicAnalysis(
     throw new ForensicAnalysisError({
       category: 'INVALID_REQUEST',
       status: 400,
-      title: 'Content Too Brief',
-      message: 'Post is too brief for forensic attention mapping. Please provide at least 1-2 complete sentences.',
+      title: 'Invalid request',
+      message: 'The AI analysis request was rejected. Please provide at least 1-2 complete sentences for forensic mapping.',
       retryable: false,
       requiresKeyConfig: false,
     });
@@ -92,7 +92,7 @@ export async function runGeminiForensicAnalysis(
       category: 'AUTHENTICATION_ERROR',
       status: 401,
       title: 'API configuration required',
-      message: 'Missing Google Gemini API key. Please configure GEMINI_API_KEY in your server environment (.env.local or Vercel Settings).',
+      message: 'Gemini API authentication failed. Check your API configuration.',
       retryable: false,
       requiresKeyConfig: true,
     });
@@ -173,21 +173,33 @@ export async function runGeminiForensicAnalysis(
     });
   }
 
+  // 6. Parse JSON safely
+  let rawJson: any;
   try {
-    // 6. Parse JSON safely
-    const rawJson = extractJsonFromResponse(responseText);
-
-    // 7. Validate and normalize structure according to analysis schema
-    const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
-
-    return validatedResult;
+    rawJson = extractJsonFromResponse(responseText);
   } catch (parseErr: any) {
-    console.error('[Social X-Ray] Response JSON parsing/normalization failure:', parseErr?.message);
+    console.error('[Social X-Ray] Response JSON extraction failure:', parseErr?.message);
     throw new ForensicAnalysisError({
       category: 'MALFORMED_OUTPUT',
       status: 502,
-      title: 'AI service error',
-      message: 'The AI diagnostic engine returned an unparseable response structure. Please retry.',
+      title: 'Analysis format error',
+      message: 'Gemini returned an unexpected analysis format. The request reached the AI service, but the response could not be processed.',
+      retryable: true,
+      requiresKeyConfig: false,
+    });
+  }
+
+  // 7. Validate and normalize structure according to analysis schema
+  try {
+    const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
+    return validatedResult;
+  } catch (valErr: any) {
+    console.error('[Social X-Ray] Response schema normalization failure:', valErr?.message);
+    throw new ForensicAnalysisError({
+      category: 'MALFORMED_OUTPUT',
+      status: 502,
+      title: 'Validation error',
+      message: 'The AI response was received but failed validation.',
       retryable: true,
       requiresKeyConfig: false,
     });

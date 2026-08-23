@@ -42,8 +42,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
       category: 'SERVICE_UNAVAILABLE',
       status: 503,
       title: 'Gemini is temporarily busy',
-      message:
-        'The AI service is experiencing high demand. Your uploaded post and extracted content are still safe. Please try again in a moment.',
+      message: 'Gemini is temporarily unavailable. Please try again shortly.',
       retryable: true,
       requiresKeyConfig: false,
     };
@@ -61,7 +60,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
       category: 'RATE_LIMITED',
       status: 429,
       title: 'Request limit reached',
-      message: 'The AI service has temporarily limited requests. Please wait before trying again.',
+      message: 'Gemini request limit reached. Please wait and try again.',
       retryable: true,
       requiresKeyConfig: false,
     };
@@ -82,7 +81,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
       category: 'AUTHENTICATION_ERROR',
       status: 401,
       title: 'API configuration required',
-      message: 'Invalid or missing Google Gemini API key. Please check your key configuration.',
+      message: 'Gemini API authentication failed. Check your API configuration.',
       retryable: false,
       requiresKeyConfig: true,
     };
@@ -97,7 +96,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
       category: 'MODEL_NOT_FOUND',
       status: 404,
       title: 'AI model unavailable',
-      message: 'The configured Gemini model could not be found. Check the model configuration.',
+      message: 'The configured Gemini model could not be found.',
       retryable: false,
       requiresKeyConfig: true,
     };
@@ -115,7 +114,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
       category: 'TIMEOUT',
       status: 408,
       title: 'Request timed out',
-      message: 'The AI diagnostic analysis timed out. Please try again.',
+      message: 'The AI analysis request timed out.',
       retryable: true,
       requiresKeyConfig: false,
     };
@@ -132,7 +131,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
       category: 'NETWORK_ERROR',
       status: 503,
       title: 'Network connection issue',
-      message: 'Unable to reach the AI diagnostic engine. Please check your internet connection.',
+      message: 'Unable to reach the AI analysis service.',
       retryable: true,
       requiresKeyConfig: false,
     };
@@ -149,7 +148,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
       category: 'INVALID_REQUEST',
       status: 400,
       title: 'Invalid request',
-      message: err?.message || 'The post text is empty or invalid.',
+      message: 'The AI analysis request was rejected. Check the request configuration.',
       retryable: false,
       requiresKeyConfig: false,
     };
@@ -160,7 +159,7 @@ export function classifyGeminiError(err: any): NormalizedApiError {
     category: 'SERVER_ERROR',
     status: 500,
     title: 'AI service error',
-    message: 'The AI service encountered an unexpected error. Please try again.',
+    message: 'The AI analysis service encountered an unexpected error.',
     retryable: true,
     requiresKeyConfig: false,
   };
