@@ -46,7 +46,9 @@ export async function runGeminiForensicAnalysis(
     throw error;
   }
 
-  const modelName = options.modelName || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  // Default to stable gemini-2.0-flash with gemini-1.5-flash fallback
+  const primaryModel = options.modelName || process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+  const fallbackModel = 'gemini-1.5-flash';
 
   // 3. Instantiate official Google GenAI SDK
   const ai = new GoogleGenAI({ apiKey });
@@ -54,18 +56,40 @@ export async function runGeminiForensicAnalysis(
   const systemInstruction = buildGeminiSystemPrompt(targetGoal);
   const userPrompt = buildGeminiUserPrompt(trimmedContent, targetGoal, userMetrics);
 
-  try {
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: userPrompt,
-      config: {
-        systemInstruction,
-        responseMimeType: 'application/json',
-        temperature: 0.2, // Low temperature for high analytical accuracy and consistency
-      },
-    });
+  let responseText = '';
 
-    const responseText = response.text;
+  try {
+    // Attempt with primary model
+    try {
+      const response = await ai.models.generateContent({
+        model: primaryModel,
+        contents: userPrompt,
+        config: {
+          systemInstruction,
+          responseMimeType: 'application/json',
+          temperature: 0.2,
+        },
+      });
+      responseText = response.text || '';
+    } catch (primaryErr: any) {
+      const primaryMsg = (primaryErr?.message || '').toLowerCase();
+      // If 404 model not found, attempt fallback
+      if (primaryErr?.status === 404 || primaryMsg.includes('404') || primaryMsg.includes('not found') || primaryMsg.includes('no longer available')) {
+        console.warn(`Primary model ${primaryModel} unavailable. Falling back to ${fallbackModel}...`);
+        const fallbackResponse = await ai.models.generateContent({
+          model: fallbackModel,
+          contents: userPrompt,
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            temperature: 0.2,
+          },
+        });
+        responseText = fallbackResponse.text || '';
+      } else {
+        throw primaryErr;
+      }
+    }
 
     if (!responseText) {
       throw new Error('Received an empty response from the Gemini AI diagnostic engine.');
