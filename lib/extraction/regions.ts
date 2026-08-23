@@ -1,11 +1,11 @@
 /**
- * Layout Analysis & Text Region Segmentation Engine
+ * Layout Analysis & Multi-Region Classification Engine
  *
- * Groups OCR lines into cohesive spatial clusters and evaluates
- * layout hierarchy for social media screenshot structures.
+ * Segments raw OCR lines into structured spatial clusters and classifies them into
+ * CONTENT, POSSIBLE_CONTENT, UI, and NOISE without hardcoded brittle strings.
  */
 
-import type { OcrLineData, BoundingBox, TextRegion } from './types';
+import type { OcrLineData, BoundingBox, TextRegion, RegionClassification } from './types';
 
 export interface LayoutDimensions {
   width: number;
@@ -13,7 +13,7 @@ export interface LayoutDimensions {
 }
 
 /**
- * Segments an array of OCR lines into layout-aware Text Regions.
+ * Segments an array of OCR lines into classified Text Regions.
  */
 export function segmentTextRegions(
   lines: OcrLineData[],
@@ -24,11 +24,11 @@ export function segmentTextRegions(
   const width = dimensions?.width || 1000;
   const height = dimensions?.height || 1000;
 
-  // Filter out pure whitespace / empty lines
+  // 1. Filter out completely empty lines
   const validLines = lines.filter((l) => l.text && l.text.trim().length > 0);
   if (validLines.length === 0) return [];
 
-  // Group vertically and horizontally close lines into spatial clusters
+  // 2. Spatial Clustering
   const clusters: OcrLineData[][] = [];
   let currentCluster: OcrLineData[] = [];
 
@@ -54,53 +54,92 @@ export function segmentTextRegions(
     clusters.push(currentCluster);
   }
 
-  // Convert clusters into normalized TextRegions
+  // 3. Classify each region into CONTENT, POSSIBLE_CONTENT, UI, or NOISE
   return clusters.map((clusterLines, index) => {
     const regionText = clusterLines.map((l) => l.text).join('\n');
     const totalConf = clusterLines.reduce((acc, l) => acc + (l.confidence || 0), 0);
     const avgConf = Math.round(totalConf / clusterLines.length);
 
-    // Compute bounding box encompassing all lines in cluster
     const bbox = computeClusterBoundingBox(clusterLines, width, height);
-
-    // Relative vertical position (0.0 = top, 1.0 = bottom)
     const relY = bbox.y0 / height;
-    const isTopHeader = relY < 0.25;
 
-    // Detect structural nature of text
     const trimmed = regionText.trim();
-    const isHashtagDense = (trimmed.match(/#/g) || []).length >= 2;
-    const isShortGlitch = trimmed.length < 3 && avgConf < 45;
-
-    let type: TextRegion['type'] = 'unclassified';
-
-    if (isShortGlitch) {
-      type = 'ui_noise';
-    } else if (isHashtagDense) {
-      type = 'hashtags';
-    } else if (containsFooterOrActionCues(trimmed)) {
-      type = 'metadata';
-    } else if (isTopHeader && containsProfileOrLocationCues(trimmed)) {
-      type = 'header';
-    } else {
-      type = 'caption';
-    }
+    const classification = classifyRegion(trimmed, avgConf, relY, clusterLines.length);
 
     return {
       id: `region-${index + 1}`,
       text: regionText,
       confidence: avgConf,
       bbox,
-      type,
+      classification,
       lines: clusterLines,
-      normalizedScore: computeContentSignificance(trimmed, avgConf, clusterLines.length),
+      normalizedScore: computeContentSignificance(trimmed, avgConf, clusterLines.length, classification),
     };
   });
 }
 
 /**
- * Determines whether two OCR lines are part of the same text paragraph/block.
+ * Classifies a text cluster into CONTENT, POSSIBLE_CONTENT, UI, or NOISE.
  */
+function classifyRegion(
+  text: string,
+  confidence: number,
+  relY: number,
+  lineCount: number
+): RegionClassification {
+  const trimmed = text.trim();
+  const lower = trimmed.toLowerCase();
+
+  // 1. NOISE Checks
+  // Spacer dots e.g. ". . . ." or single glyph noise
+  if (/^[.·•\s\-_~=+|/\\]+$/.test(trimmed)) {
+    return 'NOISE';
+  }
+  // Short low-confidence gibberish (e.g. "— TI" or "FRR" with confidence < 50)
+  if (trimmed.length <= 4 && confidence < 50) {
+    return 'NOISE';
+  }
+  // Single-character or double-character non-alphanumeric noise
+  if (trimmed.length <= 2 && !/[a-zA-Z0-9]/.test(trimmed)) {
+    return 'NOISE';
+  }
+
+  // 2. UI Checks (Profile headers, action bars, metadata, comment boxes)
+  const isTopZone = relY < 0.22;
+  const isBottomZone = relY > 0.72;
+
+  if (containsUiOrInteractionCues(lower)) {
+    return 'UI';
+  }
+
+  // Short handles / location tags at the very top of the image
+  if (isTopZone && lineCount <= 2 && isShortProfileHeader(trimmed)) {
+    return 'UI';
+  }
+
+  // Bottom action bar items or standalone timestamps
+  if (isBottomZone && isBottomChromeMetadata(trimmed)) {
+    return 'UI';
+  }
+
+  // 3. POSSIBLE_CONTENT Checks (Hashtags, bracketed descriptions/alt text)
+  const isHashtagDense = (trimmed.match(/#/g) || []).length >= 1;
+  const isBracketedAltText = (/^\[.*\]$/s.test(trimmed) || (trimmed.startsWith('[') && trimmed.endsWith(']')));
+
+  if (isHashtagDense || isBracketedAltText) {
+    return 'POSSIBLE_CONTENT';
+  }
+
+  // 4. CONTENT Checks (Multi-word sentences, questions, narrative paragraphs)
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length >= 4 || /[?.!]/.test(trimmed) || lineCount >= 2) {
+    return 'CONTENT';
+  }
+
+  // Fallback for short ambiguous lines
+  return confidence >= 70 ? 'POSSIBLE_CONTENT' : 'NOISE';
+}
+
 function shouldGroupLines(
   lineA: OcrLineData,
   lineB: OcrLineData,
@@ -117,10 +156,8 @@ function shouldGroupLines(
     14
   );
 
-  // If vertical gap between lines is within paragraph spacing threshold
   const isVerticallyAdjacent = verticalDistance >= -5 && verticalDistance < avgLineHeight * 2.5;
 
-  // Horizontal overlap check
   const horizontalOverlap =
     Math.min(lineA.bbox.x1, lineB.bbox.x1) - Math.max(lineA.bbox.x0, lineB.bbox.x0);
   const isHorizontallyAligned = horizontalOverlap > -50;
@@ -128,9 +165,6 @@ function shouldGroupLines(
   return isVerticallyAdjacent && isHorizontallyAligned;
 }
 
-/**
- * Computes the union bounding box of lines in a cluster.
- */
 function computeClusterBoundingBox(
   lines: OcrLineData[],
   defaultW: number,
@@ -159,46 +193,56 @@ function computeClusterBoundingBox(
   return { x0: minX, y0: minY, x1: maxX, y1: maxY };
 }
 
-/**
- * Heuristics for detecting header profile/location metadata.
- */
-function containsProfileOrLocationCues(text: string): boolean {
-  const lower = text.toLowerCase();
-  if (/^@?[a-z0-9._]{3,30}$/i.test(text.trim())) return true;
-  if (lower.includes('content') || lower.includes('location') || lower.includes('following')) return true;
-  return false;
+function containsUiOrInteractionCues(lower: string): boolean {
+  const uiCues = [
+    'liked by',
+    'and others',
+    'add a comment',
+    'view all comments',
+    'view comments',
+    'see translation',
+    'original audio',
+    'follow',
+    'following',
+    'ai content',
+  ];
+
+  return uiCues.some((cue) => lower.includes(cue));
 }
 
-/**
- * Heuristics for detecting footer/action metadata.
- */
-function containsFooterOrActionCues(text: string): boolean {
-  const lower = text.toLowerCase();
-  if (
-    lower.includes('liked by') ||
-    lower.includes('others') ||
-    lower.includes('add a comment') ||
-    lower.includes('view all') ||
-    lower.includes('hours ago') ||
-    lower.includes('days ago') ||
-    lower.includes('see translation')
-  ) {
+function isShortProfileHeader(text: string): boolean {
+  const words = text.split(/\s+/).filter(Boolean);
+  // Matches e.g. "a._n._v._a._y" or "Kothrud, Pune"
+  if (words.length <= 3 && !/[?.!]/.test(text) && !text.includes('#')) {
     return true;
   }
   return false;
 }
 
-/**
- * Scores the semantic value of a region (higher = more likely actual post copy).
- */
-function computeContentSignificance(text: string, conf: number, lineCount: number): number {
-  let score = conf * 0.4;
+function isBottomChromeMetadata(text: string): boolean {
+  // Matches dates (e.g. "24 June", "2 hours ago"), single action words
+  if (/^\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(text)) return true;
+  if (/^\d+\s*(?:h|m|s|d|w|mo|y|hours?|days?|minutes?)\s*ago/i.test(text)) return true;
+  if (/^(?:post|share|reply|send|comment)$/i.test(text.trim())) return true;
+  return false;
+}
 
+function computeContentSignificance(
+  text: string,
+  conf: number,
+  lineCount: number,
+  classification: RegionClassification
+): number {
+  if (classification === 'NOISE') return 5;
+  if (classification === 'UI') return 10;
+
+  let score = conf * 0.4;
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   if (wordCount >= 5) score += 30;
   if (lineCount >= 2) score += 20;
   if (/[?.!]$/.test(text.trim())) score += 15;
   if (text.includes('#')) score += 10;
+  if (classification === 'CONTENT') score += 20;
 
   return Math.min(100, Math.round(score));
 }

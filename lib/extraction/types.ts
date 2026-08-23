@@ -20,14 +20,27 @@ export interface OcrLineData {
   words?: OcrWordData[];
 }
 
+export type RegionClassification = 'CONTENT' | 'POSSIBLE_CONTENT' | 'UI' | 'NOISE';
+export type ExtractionQuality = 'HIGH' | 'MEDIUM' | 'LOW';
+
 export interface TextRegion {
   id: string;
   text: string;
   confidence: number;
   bbox: BoundingBox;
-  type: 'header' | 'caption' | 'hashtags' | 'metadata' | 'ui_noise' | 'unclassified';
+  classification: RegionClassification;
   lines: OcrLineData[];
   normalizedScore: number;
+}
+
+export interface ExtractionTelemetry {
+  totalDetectedRegions: number;
+  likelyPostCount: number;
+  possibleUiCount: number;
+  lowConfidenceCount: number;
+  quality: ExtractionQuality;
+  confidence: number;
+  confidenceLabel: string;
 }
 
 export interface SocialPostExtractionResult {
@@ -38,7 +51,10 @@ export interface SocialPostExtractionResult {
   cleanedFullText: string;
   hasUncertainClassifications: boolean;
   filteredNoiseCount: number;
-  detectedRegions: TextRegion[];
+  contentRegions: TextRegion[];
+  uncertainRegions: TextRegion[];
+  filteredRegions: TextRegion[];
+  telemetry: ExtractionTelemetry;
   classificationNote?: string;
 }
 

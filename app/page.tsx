@@ -40,10 +40,12 @@ import { GoalSelector } from '@/components/upload/GoalSelector';
 import { FileDropzone } from '@/components/upload/FileDropzone';
 import { ExtractionPreview } from '@/components/upload/ExtractionPreview';
 import { ApiKeyModal } from '@/components/upload/ApiKeyModal';
+import { ImageCropModal } from '@/components/upload/ImageCropModal';
 import { ScanningHUD } from '@/components/forensics/ScanningHUD';
 import { DiagnosticReport } from '@/components/forensics/DiagnosticReport';
 import { GoalType, UploadedFileState } from '@/types/analysis';
 import { SocialXRayAnalysisResult } from '@/lib/analysis/types';
+import { extractImageText } from '@/lib/extraction/ocr';
 
 // Built-in realistic weak post for 1-click instant demo
 const DEMO_POST = {
@@ -145,6 +147,8 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [extractionNotification, setExtractionNotification] = useState<string | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [isCroppingOcr, setIsCroppingOcr] = useState(false);
   const [clientApiKey, setClientApiKey] = useState('');
 
   const workbenchRef = useRef<HTMLDivElement>(null);
@@ -172,6 +176,63 @@ export default function Home() {
     setExtractionNotification(
       `Extracted ${fileState.source.toUpperCase()} content (${text.split(/\s+/).filter(Boolean).length} words). You can review and refine the text below.`
     );
+  };
+
+  const handleCropAndExtract = async (croppedBlob: Blob, croppedFileName: string) => {
+    setIsCroppingOcr(true);
+    setErrorMessage(null);
+    try {
+      const result = await extractImageText(croppedBlob, { fileName: croppedFileName });
+      setExtractedText(result.extractedText);
+      setExtractionNotification(
+        `Extracted cropped area (${result.wordCount} words, detection confidence: ${result.confidence}%). Review copy below.`
+      );
+
+      if (uploadedFile) {
+        setUploadedFile({
+          ...uploadedFile,
+          extractedText: result.extractedText,
+          wordCount: result.wordCount,
+          charCount: result.characterCount,
+          confidence: result.confidence,
+          confidenceLabel: result.confidenceLabel,
+          warnings: result.processingWarnings,
+          telemetry: result.socialContent?.telemetry,
+        });
+      }
+    } catch (err: any) {
+      setErrorMessage(`Crop OCR failed: ${err?.message || 'Unknown recognition error'}`);
+    } finally {
+      setIsCroppingOcr(false);
+    }
+  };
+
+  const handleRerunOcr = async () => {
+    if (!uploadedFile?.file) return;
+    setIsCroppingOcr(true);
+    setErrorMessage(null);
+    try {
+      const result = await extractImageText(uploadedFile.file, { fileName: uploadedFile.name });
+      setExtractedText(result.extractedText);
+      setExtractionNotification(
+        `Re-ran OCR extraction (${result.wordCount} words, detection confidence: ${result.confidence}%).`
+      );
+
+      setUploadedFile({
+        ...uploadedFile,
+        extractedText: result.extractedText,
+        wordCount: result.wordCount,
+        charCount: result.characterCount,
+        confidence: result.confidence,
+        confidenceLabel: result.confidenceLabel,
+        warnings: result.processingWarnings,
+        telemetry: result.socialContent?.telemetry,
+      });
+    } catch (err: any) {
+      setErrorMessage(`Re-run OCR failed: ${err?.message || 'Unknown recognition error'}`);
+    } finally {
+      setIsCroppingOcr(false);
+    }
   };
 
   const handleReset = () => {
@@ -308,6 +369,15 @@ export default function Home() {
             key ? 'Client Google Gemini API key configured.' : 'Client API key cleared.'
           );
         }}
+      />
+
+      {/* Image Region Crop Modal */}
+      <ImageCropModal
+        isOpen={isCropModalOpen}
+        file={uploadedFile?.file || null}
+        onClose={() => setIsCropModalOpen(false)}
+        onCropAndExtract={handleCropAndExtract}
+        isProcessing={isCroppingOcr}
       />
 
       <main className="flex-1 space-y-24 pb-20">
@@ -781,8 +851,11 @@ export default function Home() {
                   }}
                   onStartAnalysis={executeAnalysis}
                   onReset={handleReset}
+                  onOpenCrop={() => setIsCropModalOpen(true)}
+                  onRerunOcr={handleRerunOcr}
                   isAnalyzing={false}
                   sourceType={uploadedFile?.source || 'text'}
+                  telemetry={uploadedFile?.telemetry}
                   warnings={uploadedFile?.warnings}
                   confidence={uploadedFile?.confidence}
                 />

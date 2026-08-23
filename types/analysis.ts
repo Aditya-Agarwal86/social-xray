@@ -153,4 +153,5 @@ export interface UploadedFileState {
   confidence?: number;
   confidenceLabel?: string;
   warnings?: string[];
+  telemetry?: any;
 }

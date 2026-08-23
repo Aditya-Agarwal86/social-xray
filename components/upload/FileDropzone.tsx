@@ -132,6 +132,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         let chars = 0;
 
         let warningsList: string[] = [];
+        let completedFileStateTelemetry: any = undefined;
 
         if (validation.fileType === 'pdf') {
           const result = await extractPdfText(file, file.name, (progress, message) => {
@@ -161,6 +162,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
             warningsList = result.processingWarnings;
             setExtractionWarnings(result.processingWarnings);
           }
+          if (result.socialContent?.telemetry) {
+            completedFileStateTelemetry = result.socialContent.telemetry;
+          }
         }
 
         setExtractionProgress({
@@ -177,6 +181,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
           pageCount,
           confidence,
           warnings: warningsList,
+          telemetry: completedFileStateTelemetry,
         };
 
         // Transition to SUCCESS

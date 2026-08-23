@@ -322,9 +322,9 @@ test('segments lines into spatial text regions with layout hierarchy', () => {
 
   const regions = segmentTextRegions(mockLines, { width: 1000, height: 1000 });
   assert.ok(regions.length >= 3);
-  assert.ok(regions.some((r) => r.type === 'header'));
-  assert.ok(regions.some((r) => r.type === 'caption'));
-  assert.ok(regions.some((r) => r.type === 'hashtags'));
+  assert.ok(regions.some((r) => r.classification === 'UI'));
+  assert.ok(regions.some((r) => r.classification === 'CONTENT'));
+  assert.ok(regions.some((r) => r.classification === 'POSSIBLE_CONTENT'));
 });
 
 // 15. REGRESSION TEST: Exact User Instagram Screenshot Extraction
@@ -357,6 +357,11 @@ test('regression: extracts Instagram post caption & hashtags while filtering UI 
   assert.strictEqual(result.cleanedFullText.includes('Liked by aditya_xdddd'), false);
   assert.strictEqual(result.cleanedFullText.includes('— TI'), false);
   assert.ok(result.filteredNoiseCount >= 2);
+
+  // Verifies telemetry structure
+  assert.ok(result.telemetry.totalDetectedRegions >= 3);
+  assert.ok(result.telemetry.likelyPostCount >= 1);
+  assert.ok(['HIGH', 'MEDIUM', 'LOW'].includes(result.telemetry.quality));
 });
 
 // 16. Multi-format & Non-Social Image Handling

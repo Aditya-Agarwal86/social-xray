@@ -1,14 +1,20 @@
 /**
  * Social Post Content Extraction Layer
  *
- * Distinguishes genuine post copy, captions, hashtags, and descriptive text
- * from peripheral platform UI chrome without brittle hardcoded word deletion.
+ * Reconstructs clean post copy from structured text regions and generates
+ * honest transparency telemetry ("What We Found") for the user review screen.
  */
 
-import type { TextRegion, SocialPostExtractionResult, OcrLineData } from './types';
+import type {
+  TextRegion,
+  SocialPostExtractionResult,
+  OcrLineData,
+  ExtractionTelemetry,
+  ExtractionQuality,
+} from './types';
 
 /**
- * Extracts and reconstructs social post content from layout regions.
+ * Extracts clean social post content and categorizes detected regions.
  */
 export function extractSocialPostContent(
   regions: TextRegion[],
@@ -22,68 +28,66 @@ export function extractSocialPostContent(
       cleanedFullText: '',
       hasUncertainClassifications: false,
       filteredNoiseCount: 0,
-      detectedRegions: [],
+      contentRegions: [],
+      uncertainRegions: [],
+      filteredRegions: [],
+      telemetry: {
+        totalDetectedRegions: 0,
+        likelyPostCount: 0,
+        possibleUiCount: 0,
+        lowConfidenceCount: 0,
+        quality: 'LOW',
+        confidence: 0,
+        confidenceLabel: 'No readable text detected',
+      },
     };
   }
 
-  // 1. Identify primary author handle if present in top regions
+  // 1. Detect author handle if present in UI header
   let authorHandle: string | undefined;
-  const headerRegion = regions.find((r) => r.type === 'header');
-  if (headerRegion) {
-    const handleMatch = headerRegion.text.match(/(?:^|\s)@?([a-z0-9._]{3,30})(?:\s|$)/i);
+  const headerUiRegion = regions.find((r) => r.classification === 'UI' && r.bbox.y0 < 300);
+  if (headerUiRegion) {
+    const handleMatch = headerUiRegion.text.match(/(?:^|\s)@?([a-z0-9._]{3,30})(?:\s|$)/i);
     if (handleMatch) {
       authorHandle = handleMatch[1].replace(/^[._]+|[._]+$/g, '');
     }
   }
 
+  const contentRegions: TextRegion[] = [];
+  const uncertainRegions: TextRegion[] = [];
+  const filteredRegions: TextRegion[] = [];
+
   const captionSegments: string[] = [];
   const hashtagsFound: string[] = [];
   const supplementalSegments: string[] = [];
-  let filteredNoiseCount = 0;
-  let hasLowConfidence = false;
 
-  // 2. Process each region
+  let lowConfidenceCount = 0;
+  let totalConfidenceSum = 0;
+
+  // 2. Classify regions and collect content lines
   for (const region of regions) {
-    if (region.confidence < 50) {
-      hasLowConfidence = true;
+    totalConfidenceSum += region.confidence;
+    if (region.confidence < 60) {
+      lowConfidenceCount++;
     }
 
-    // Skip pure UI noise
-    if (region.type === 'ui_noise') {
-      filteredNoiseCount++;
+    if (region.classification === 'UI' || region.classification === 'NOISE') {
+      filteredRegions.push(region);
       continue;
     }
 
-    // Skip isolated header regions if purely profile/location
-    if (region.type === 'header') {
-      const lines = region.lines.map((l) => l.text.trim());
-      const hasCaptionLikeSentence = lines.some((l) => l.split(/\s+/).length > 5 || /[?.!]/.test(l));
-      if (!hasCaptionLikeSentence) {
-        filteredNoiseCount++;
-        continue;
-      }
+    if (region.classification === 'CONTENT') {
+      contentRegions.push(region);
+    } else {
+      uncertainRegions.push(region);
     }
 
-    // Skip bottom interaction metadata (likes, timestamp, comment bar)
-    if (region.type === 'metadata') {
-      filteredNoiseCount++;
-      continue;
-    }
-
-    // Extract lines and clean them
-    const regionLines = region.lines.map((l) => l.text);
-
-    for (const rawLine of regionLines) {
-      const line = cleanOcrLineArtifacts(rawLine);
+    // Process lines inside valid content regions
+    for (const rawLine of region.lines) {
+      const line = cleanOcrLineArtifacts(rawLine.text);
       if (!line) continue;
 
-      // Filter footer cues that might have slipped into a cluster
-      if (isFooterMetadataLine(line)) {
-        filteredNoiseCount++;
-        continue;
-      }
-
-      // Check for standalone hashtag lines
+      // Hashtag lines
       if (line.startsWith('#') || (line.match(/#/g) || []).length >= 2) {
         const tags = line.match(/#[a-zA-Z0-9_]+/g) || [];
         tags.forEach((t) => {
@@ -92,64 +96,88 @@ export function extractSocialPostContent(
         continue;
       }
 
-      // Check for bracketed descriptors / alt text e.g. [Sunset, viral, pune skyline...]
-      if (/^\[.*\]$/.test(line) || (/\[/.test(line) && /\]/.test(line))) {
+      // Bracketed alt/descriptor text
+      if (/^\[.*\]$/.test(line) || (line.startsWith('[') && line.endsWith(']'))) {
         supplementalSegments.push(line);
         continue;
       }
 
-      // Check for author prefix at the start of caption line: "author_handle Did the sky turn..."
-      let cleanedCaptionLine = line;
+      // Strip author prefix if attached to start of line
+      let cleanedLine = line;
       if (authorHandle) {
         const escaped = authorHandle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const handlePrefixRegex = new RegExp(`^@?${escaped}\\s*[:\\-]?\\s*`, 'i');
-        cleanedCaptionLine = cleanedCaptionLine.replace(handlePrefixRegex, '').trim();
+        const handleRegex = new RegExp(`^@?${escaped}\\s*[:\\-]?\\s*`, 'i');
+        cleanedLine = cleanedLine.replace(handleRegex, '').trim();
       }
 
-      // Strip leading username token when followed by capitalized start of sentence (e.g. "a._n._v._a._y Did the sky...")
-      cleanedCaptionLine = cleanedCaptionLine
-        .replace(/^@?[a-z0-9._]{3,30}\s+(?=[A-Z0-9"'])/, '')
-        .trim();
+      // Strip username prefix when followed by sentence start (e.g. "a._n._v._a._y Did the sky...")
+      cleanedLine = cleanedLine.replace(/^@?[a-z0-9._]{3,30}\s+(?=[A-Z0-9"'])/, '').trim();
 
-      // Filter out isolated spacer dots common in social captions (e.g. "." or "·")
-      if (/^[.·•\s-]+$/.test(cleanedCaptionLine)) {
+      // Skip spacer dots
+      if (/^[.·•\s-]+$/.test(cleanedLine)) continue;
+
+      // Skip single micro artifacts
+      if (isMicroArtifact(cleanedLine)) {
         continue;
       }
 
-      // Skip obvious micro UI artifacts (e.g. single symbols like "— TI" or "¥ 5" or "Ld Kothrud")
-      if (isMicroUiArtifact(cleanedCaptionLine)) {
-        filteredNoiseCount++;
-        continue;
-      }
-
-      if (cleanedCaptionLine.length > 0) {
-        captionSegments.push(cleanedCaptionLine);
+      if (cleanedLine.length > 0) {
+        captionSegments.push(cleanedLine);
       }
     }
   }
 
-  // 3. Reconstruct the clean, coherent social post draft
+  // 3. Assemble clean extracted post text
   const primaryCaption = captionSegments.join('\n').trim();
   const hashtagBlock = hashtagsFound.join(' ');
   const supplementalText = supplementalSegments.join('\n').trim();
 
-  const fullDraftParts: string[] = [];
-  if (primaryCaption) fullDraftParts.push(primaryCaption);
-  if (hashtagBlock) fullDraftParts.push(hashtagBlock);
-  if (supplementalText) fullDraftParts.push(supplementalText);
+  const fullParts: string[] = [];
+  if (primaryCaption) fullParts.push(primaryCaption);
+  if (hashtagBlock) fullParts.push(hashtagBlock);
+  if (supplementalText) fullParts.push(supplementalText);
 
-  let cleanedFullText = fullDraftParts.join('\n\n').trim();
+  let cleanedFullText = fullParts.join('\n\n').trim();
 
-  // Fallback: If filtering was too aggressive and produced empty text, fallback to sanitized raw lines
+  // Safe fallback if filtering emptied the text
   if (!cleanedFullText && rawLines.length > 0) {
     cleanedFullText = rawLines
       .map((l) => l.text.trim())
       .filter((t) => t.length > 2 && !/^[.·•\s-]+$/.test(t))
       .join('\n');
-    hasLowConfidence = true;
   }
 
-  const hasUncertain = hasLowConfidence || (filteredNoiseCount > 0 && captionSegments.length <= 1);
+  // 4. Calculate extraction quality metrics
+  const avgConfidence = Math.round(totalConfidenceSum / Math.max(regions.length, 1));
+  const quality: ExtractionQuality =
+    avgConfidence >= 80 && filteredRegions.length <= 2
+      ? 'HIGH'
+      : avgConfidence >= 60
+      ? 'MEDIUM'
+      : 'LOW';
+
+  const confidenceLabel =
+    quality === 'HIGH'
+      ? `Detection confidence: ${avgConfidence}% (High quality)`
+      : quality === 'MEDIUM'
+      ? `Detection confidence: ${avgConfidence}% (Review recommended)`
+      : `Low-confidence text detection (${avgConfidence}%)`;
+
+  const telemetry: ExtractionTelemetry = {
+    totalDetectedRegions: regions.length,
+    likelyPostCount: contentRegions.length + (hashtagsFound.length > 0 ? 1 : 0),
+    possibleUiCount: filteredRegions.length,
+    lowConfidenceCount,
+    quality,
+    confidence: avgConfidence,
+    confidenceLabel,
+  };
+
+  const hasUncertain =
+    quality === 'LOW' ||
+    filteredRegions.length > 0 ||
+    captionSegments.length <= 1 ||
+    uncertainRegions.length > 0;
 
   return {
     captionText: primaryCaption,
@@ -158,51 +186,35 @@ export function extractSocialPostContent(
     authorHandle,
     cleanedFullText,
     hasUncertainClassifications: hasUncertain,
-    filteredNoiseCount,
-    detectedRegions: regions,
+    filteredNoiseCount: filteredRegions.length,
+    contentRegions,
+    uncertainRegions,
+    filteredRegions,
+    telemetry,
     classificationNote: hasUncertain
-      ? 'Some peripheral interface text was filtered. Review the editable draft below.'
+      ? 'Some text in this screenshot could not be confidently classified. Please review and refine the extracted draft below.'
       : undefined,
   };
 }
 
-/**
- * Strips common OCR glyph glitches without destroying genuine text.
- */
 function cleanOcrLineArtifacts(line: string): string {
   return line
-    .replace(/^[^a-zA-Z0-9#@[(\s]{1,2}\s*/, '') // Strip leading noise like "wm " or "{ " or "¥ "
+    .replace(/^(?:wm|wn|tw|ld|w=|a\s*I=)\s+/i, '')
+    .replace(/^[^a-zA-Z0-9#@[(\s]{1,2}\s*/, '')
     .replace(/\r\n|\r/g, '\n')
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
 }
 
-/**
- * Identifies isolated micro UI noise (e.g. single icon glyphs, isolated location pills).
- */
-function isMicroUiArtifact(line: string): boolean {
+function isMicroArtifact(line: string): boolean {
   const trimmed = line.trim();
-  if (/^(?:wn|wm|tw|ld|frr|oo)\b/i.test(trimmed) && trimmed.split(/\s+/).length <= 2) {
-    return true;
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length <= 2) {
+    if (/^(?:wn|wm|tw|ld|frr|oo|ler\s*\d|ger\s*stretch|y\s*wage)\b/i.test(trimmed)) {
+      return true;
+    }
   }
   if (/^[-—_~=+|/\\]{1,4}$/.test(trimmed)) {
-    return true;
-  }
-  return false;
-}
-
-/**
- * Identifies common footer action lines that should not be in the caption body.
- */
-function isFooterMetadataLine(line: string): boolean {
-  const lower = line.toLowerCase();
-  if (
-    lower.startsWith('liked by') ||
-    lower.includes('and others') ||
-    lower.includes('add a comment') ||
-    lower.includes('view all comments') ||
-    lower.includes('see translation')
-  ) {
     return true;
   }
   return false;
