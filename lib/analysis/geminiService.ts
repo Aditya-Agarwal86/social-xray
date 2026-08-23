@@ -11,14 +11,8 @@ export interface GeminiAnalysisOptions {
   modelName?: string;
 }
 
-// Ordered candidate models for high resilience across all API key tiers
-const DEFAULT_CANDIDATE_MODELS = [
-  'gemini-3.7-flash',
-  'gemini-3.6-flash',
-  'gemini-2.5-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-2.5-pro',
-];
+// Current stable production model for Social X-Ray AI forensics
+const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 export async function runGeminiForensicAnalysis(
   payload: AnalysisRequestPayload,
@@ -28,18 +22,27 @@ export async function runGeminiForensicAnalysis(
 
   // 1. Content validation
   if (!content || typeof content !== 'string' || !content.trim()) {
-    throw new Error('Content is empty. Please provide or extract readable text before running forensic analysis.');
+    const error: any = new Error('Content is empty. Please provide or extract readable text before running forensic analysis.');
+    error.statusCode = 400;
+    error.code = 'EMPTY_CONTENT';
+    throw error;
   }
 
   const trimmedContent = content.trim();
 
   if (trimmedContent.length > MAX_CONTENT_LENGTH) {
-    throw new Error(`Content length (${trimmedContent.length} chars) exceeds the maximum allowed prompt size of ${MAX_CONTENT_LENGTH} characters.`);
+    const error: any = new Error(`Content length (${trimmedContent.length} chars) exceeds the maximum allowed prompt size of ${MAX_CONTENT_LENGTH} characters.`);
+    error.statusCode = 400;
+    error.code = 'CONTENT_TOO_LARGE';
+    throw error;
   }
 
   const wordCount = trimmedContent.split(/\s+/).filter(Boolean).length;
   if (wordCount < MIN_CONTENT_WORDS) {
-    throw new Error('Content is too brief for forensic attention mapping. Please provide at least 1-2 complete sentences.');
+    const error: any = new Error('Content is too brief for forensic attention mapping. Please provide at least 1-2 complete sentences.');
+    error.statusCode = 400;
+    error.code = 'CONTENT_TOO_SHORT';
+    throw error;
   }
 
   // 2. API Key Resolution (Server Env > Option override)
@@ -55,13 +58,8 @@ export async function runGeminiForensicAnalysis(
     throw error;
   }
 
-  // 3. Build candidate model chain
-  const candidateModels: string[] = [];
-  if (options.modelName) candidateModels.push(options.modelName);
-  if (process.env.GEMINI_MODEL) candidateModels.push(process.env.GEMINI_MODEL);
-  for (const m of DEFAULT_CANDIDATE_MODELS) {
-    if (!candidateModels.includes(m)) candidateModels.push(m);
-  }
+  // 3. Model selection (gemini-2.5-flash)
+  const selectedModel = options.modelName || process.env.GEMINI_MODEL || DEFAULT_MODEL;
 
   // 4. Instantiate official Google GenAI SDK
   const ai = new GoogleGenAI({ apiKey });
@@ -70,88 +68,74 @@ export async function runGeminiForensicAnalysis(
   const userPrompt = buildGeminiUserPrompt(trimmedContent, targetGoal, userMetrics);
 
   let responseText = '';
-  let lastError: any = null;
-
-  // 5. Model execution waterfall
-  for (const model of candidateModels) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents: userPrompt,
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          temperature: 0.2,
-        },
-      });
-
-      responseText = response.text || '';
-      if (responseText) {
-        break; // Successfully generated analysis
-      }
-    } catch (err: any) {
-      lastError = err;
-      const msg = (err?.message || '').toLowerCase();
-      const is404OrUnsupported =
-        err?.status === 404 ||
-        msg.includes('404') ||
-        msg.includes('not found') ||
-        msg.includes('no longer available') ||
-        msg.includes('not supported');
-
-      if (is404OrUnsupported) {
-        console.warn(`Model "${model}" unavailable on this API key tier. Trying next candidate...`);
-        continue;
-      }
-
-      // Fast-fail on authentication or rate limit errors
-      throw err;
-    }
-  }
-
-  if (!responseText && lastError) {
-    throw lastError;
-  }
-
-  if (!responseText) {
-    throw new Error('Received an empty response from the Gemini AI diagnostic engine.');
-  }
 
   try {
-    // 6. Parse JSON safely
-    const rawJson = extractJsonFromResponse(responseText);
+    const response = await ai.models.generateContent({
+      model: selectedModel,
+      contents: userPrompt,
+      config: {
+        systemInstruction,
+        responseMimeType: 'application/json',
+        temperature: 0.2, // Low temperature for consistent forensic accuracy
+      },
+    });
 
-    // 7. Validate and normalize structure
-    const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
+    responseText = response.text || '';
+  } catch (apiErr: any) {
+    // Server-side logging for developer diagnosis without leaking secrets
+    console.error(`[Social X-Ray] Gemini API invocation error on model "${selectedModel}":`, apiErr?.message || apiErr);
 
-    return validatedResult;
-  } catch (err: any) {
-    console.error('Gemini Forensic Analysis Error:', err);
+    const rawMsg = (apiErr?.message || '').toLowerCase();
+    const status = apiErr?.status || apiErr?.statusCode || 500;
 
-    const msg = (err?.message || '').toLowerCase();
-    const status = err?.status || err?.statusCode || 500;
-
-    if (msg.includes('429') || msg.includes('quota') || msg.includes('rate limit') || msg.includes('resource_exhausted')) {
+    // Graceful error mapping (never dump raw JSON to client)
+    if (rawMsg.includes('429') || rawMsg.includes('quota') || rawMsg.includes('rate limit') || rawMsg.includes('resource_exhausted')) {
       const error: any = new Error('Google Gemini API rate limit reached. Please wait a moment and try again.');
       error.statusCode = 429;
       error.code = 'RATE_LIMIT_EXCEEDED';
       throw error;
     }
 
-    if (msg.includes('api key') || msg.includes('unauthenticated') || msg.includes('401') || msg.includes('403')) {
-      const error: any = new Error('Invalid or unauthorized Google Gemini API key.');
+    if (rawMsg.includes('api key') || rawMsg.includes('unauthenticated') || rawMsg.includes('401') || rawMsg.includes('403') || rawMsg.includes('permission_denied')) {
+      const error: any = new Error('Invalid or unauthorized Google Gemini API key. Please verify your API key configuration.');
       error.statusCode = 401;
       error.code = 'INVALID_API_KEY';
       throw error;
     }
 
-    if (err?.code === 'AUTH_KEY_MISSING') {
-      throw err;
+    if (rawMsg.includes('404') || rawMsg.includes('not found') || rawMsg.includes('no longer available') || rawMsg.includes('not supported')) {
+      const error: any = new Error(`AI model "${selectedModel}" is currently unavailable. Please verify your Gemini API access or try again.`);
+      error.statusCode = 503;
+      error.code = 'MODEL_UNAVAILABLE';
+      throw error;
     }
 
-    const customError: any = new Error(err?.message || 'An unexpected error occurred during AI forensic analysis.');
+    const customError: any = new Error('AI analysis is temporarily unavailable. Please check your API configuration and try again.');
     customError.statusCode = status;
-    customError.code = err?.code || 'ANALYSIS_FAILED';
+    customError.code = apiErr?.code || 'ANALYSIS_FAILED';
     throw customError;
+  }
+
+  if (!responseText || !responseText.trim()) {
+    const error: any = new Error('Received an empty response from the Gemini AI diagnostic engine. Please try again.');
+    error.statusCode = 502;
+    error.code = 'EMPTY_RESPONSE';
+    throw error;
+  }
+
+  try {
+    // 5. Parse JSON safely
+    const rawJson = extractJsonFromResponse(responseText);
+
+    // 6. Validate and normalize structure according to analysis schema
+    const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
+
+    return validatedResult;
+  } catch (parseErr: any) {
+    console.error('[Social X-Ray] Response normalization error:', parseErr);
+    const error: any = new Error('Failed to parse diagnostic output from the AI engine. Please retry.');
+    error.statusCode = 502;
+    error.code = 'MALFORMED_OUTPUT';
+    throw error;
   }
 }

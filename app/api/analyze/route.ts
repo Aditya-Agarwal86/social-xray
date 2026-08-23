@@ -70,7 +70,16 @@ export async function POST(req: NextRequest) {
 
     const statusCode = error?.statusCode || error?.status || 500;
     const errorCode = error?.code || 'ANALYSIS_ERROR';
-    const message = error?.message || 'An error occurred during forensic analysis.';
+    let message = error?.message || 'An error occurred during forensic analysis.';
+
+    if (typeof message === 'string' && message.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(message);
+        message = parsed?.error?.message || 'AI analysis is temporarily unavailable. Please check your API configuration and try again.';
+      } catch {
+        message = 'AI analysis is temporarily unavailable. Please check your API configuration and try again.';
+      }
+    }
 
     return NextResponse.json(
       {
