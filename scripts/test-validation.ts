@@ -18,6 +18,8 @@ import type {
 import {
   extractJsonFromResponse,
   validateAndNormalizeAnalysis,
+  classifyGeminiError,
+  STABLE_GEMINI_MODEL,
 } from '../lib/analysis/validator.ts';
 import {
   buildGeminiSystemPrompt,
@@ -382,8 +384,97 @@ test('extracts clean non-social text without over-filtering', () => {
   assert.strictEqual(result.filteredNoiseCount, 0);
 });
 
+// 17. Stable Model Verification
+test('verifies standard production Gemini model is gemini-2.5-flash', () => {
+  assert.strictEqual(STABLE_GEMINI_MODEL, 'gemini-2.5-flash');
+});
+
+// 18. HTTP 503 / High Demand Error Classification
+test('correctly normalizes 503 high-demand into SERVICE_UNAVAILABLE with retryable status', () => {
+  const err503 = {
+    status: 503,
+    statusText: 'Service Unavailable',
+    message: 'This model is currently experiencing high demand. Spikes in demand are usually temporary.',
+  };
+  const classified = classifyGeminiError(err503);
+  assert.strictEqual(classified.category, 'SERVICE_UNAVAILABLE');
+  assert.strictEqual(classified.status, 503);
+  assert.strictEqual(classified.title, 'Gemini is temporarily busy');
+  assert.strictEqual(classified.retryable, true);
+  assert.strictEqual(classified.requiresKeyConfig, false);
+});
+
+// 19. HTTP 404 / Model Not Found Error Classification
+test('correctly normalizes 404 into MODEL_NOT_FOUND', () => {
+  const err404 = {
+    status: 404,
+    message: 'models/unknown-model is not found for API version v1beta',
+  };
+  const classified = classifyGeminiError(err404);
+  assert.strictEqual(classified.category, 'MODEL_NOT_FOUND');
+  assert.strictEqual(classified.status, 404);
+  assert.strictEqual(classified.title, 'AI model unavailable');
+  assert.strictEqual(classified.retryable, false);
+  assert.strictEqual(classified.requiresKeyConfig, true);
+});
+
+// 20. HTTP 429 / Rate Limit Error Classification
+test('correctly normalizes 429 into RATE_LIMITED', () => {
+  const err429 = {
+    status: 429,
+    message: 'Resource exhausted: quota exceeded',
+  };
+  const classified = classifyGeminiError(err429);
+  assert.strictEqual(classified.category, 'RATE_LIMITED');
+  assert.strictEqual(classified.status, 429);
+  assert.strictEqual(classified.title, 'Request limit reached');
+  assert.strictEqual(classified.retryable, true);
+  assert.strictEqual(classified.requiresKeyConfig, false);
+});
+
+// 21. HTTP 401 / 403 Authentication Error Classification
+test('correctly normalizes 401/403 into AUTHENTICATION_ERROR', () => {
+  const err401 = {
+    status: 401,
+    message: 'API_KEY_INVALID: The provided API key is expired or invalid',
+  };
+  const classified = classifyGeminiError(err401);
+  assert.strictEqual(classified.category, 'AUTHENTICATION_ERROR');
+  assert.strictEqual(classified.status, 401);
+  assert.strictEqual(classified.title, 'API configuration required');
+  assert.strictEqual(classified.retryable, false);
+  assert.strictEqual(classified.requiresKeyConfig, true);
+});
+
+// 22. HTTP 500 Server Error Classification
+test('correctly normalizes 500 into SERVER_ERROR', () => {
+  const err500 = {
+    status: 500,
+    message: 'Internal server error encountered',
+  };
+  const classified = classifyGeminiError(err500);
+  assert.strictEqual(classified.category, 'SERVER_ERROR');
+  assert.strictEqual(classified.status, 500);
+  assert.strictEqual(classified.title, 'AI service error');
+  assert.strictEqual(classified.retryable, true);
+});
+
+// 23. Timeout & Abort Error Classification
+test('correctly normalizes timeout/abort into TIMEOUT', () => {
+  const errTimeout = {
+    name: 'AbortError',
+    message: 'The operation was aborted due to timeout',
+  };
+  const classified = classifyGeminiError(errTimeout);
+  assert.strictEqual(classified.category, 'TIMEOUT');
+  assert.strictEqual(classified.status, 408);
+  assert.strictEqual(classified.title, 'Request timed out');
+  assert.strictEqual(classified.retryable, true);
+});
+
 console.log(`\n📊 RESULTS: ${passed}/${total} test specifications passed successfully.\n`);
 
 if (passed !== total) {
   process.exit(1);
 }
+

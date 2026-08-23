@@ -1,7 +1,18 @@
 import { GoogleGenAI } from '@google/genai';
-import type { AnalysisRequestPayload, SocialXRayAnalysisResult } from './types';
+import type {
+  AnalysisRequestPayload,
+  SocialXRayAnalysisResult,
+  NormalizedApiError,
+} from './types';
 import { buildGeminiSystemPrompt, buildGeminiUserPrompt } from './prompt';
-import { extractJsonFromResponse, validateAndNormalizeAnalysis } from './validator';
+import {
+  extractJsonFromResponse,
+  validateAndNormalizeAnalysis,
+  classifyGeminiError,
+  STABLE_GEMINI_MODEL,
+} from './validator';
+
+export { classifyGeminiError, STABLE_GEMINI_MODEL };
 
 export const MAX_CONTENT_LENGTH = 50000; // 50k characters safe request size cap
 export const MIN_CONTENT_WORDS = 3;
@@ -9,11 +20,26 @@ export const MIN_CONTENT_WORDS = 3;
 export interface GeminiAnalysisOptions {
   apiKey?: string;
   modelName?: string;
+  maxRetries?: number;
 }
 
-// Current stable production model for Social X-Ray AI forensics
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+/**
+ * Custom Error subclass carrying the NormalizedApiError payload.
+ */
+export class ForensicAnalysisError extends Error {
+  normalized: NormalizedApiError;
 
+  constructor(normalized: NormalizedApiError) {
+    super(normalized.message);
+    this.name = 'ForensicAnalysisError';
+    this.normalized = normalized;
+  }
+}
+
+/**
+ * Executes forensic analysis using Google Gemini gemini-2.5-flash
+ * with exponential backoff retries for transient service errors.
+ */
 export async function runGeminiForensicAnalysis(
   payload: AnalysisRequestPayload,
   options: GeminiAnalysisOptions = {}
@@ -22,27 +48,39 @@ export async function runGeminiForensicAnalysis(
 
   // 1. Content validation
   if (!content || typeof content !== 'string' || !content.trim()) {
-    const error: any = new Error('Content is empty. Please provide or extract readable text before running forensic analysis.');
-    error.statusCode = 400;
-    error.code = 'EMPTY_CONTENT';
-    throw error;
+    throw new ForensicAnalysisError({
+      category: 'INVALID_REQUEST',
+      status: 400,
+      title: 'Empty Content',
+      message: 'Cannot run AI forensic diagnosis on empty content. Please provide or extract valid text.',
+      retryable: false,
+      requiresKeyConfig: false,
+    });
   }
 
   const trimmedContent = content.trim();
 
   if (trimmedContent.length > MAX_CONTENT_LENGTH) {
-    const error: any = new Error(`Content length (${trimmedContent.length} chars) exceeds the maximum allowed prompt size of ${MAX_CONTENT_LENGTH} characters.`);
-    error.statusCode = 400;
-    error.code = 'CONTENT_TOO_LARGE';
-    throw error;
+    throw new ForensicAnalysisError({
+      category: 'INVALID_REQUEST',
+      status: 400,
+      title: 'Content Too Large',
+      message: `Post content length (${trimmedContent.length} characters) exceeds the maximum allowed limit of ${MAX_CONTENT_LENGTH} characters.`,
+      retryable: false,
+      requiresKeyConfig: false,
+    });
   }
 
   const wordCount = trimmedContent.split(/\s+/).filter(Boolean).length;
   if (wordCount < MIN_CONTENT_WORDS) {
-    const error: any = new Error('Content is too brief for forensic attention mapping. Please provide at least 1-2 complete sentences.');
-    error.statusCode = 400;
-    error.code = 'CONTENT_TOO_SHORT';
-    throw error;
+    throw new ForensicAnalysisError({
+      category: 'INVALID_REQUEST',
+      status: 400,
+      title: 'Content Too Brief',
+      message: 'Post is too brief for forensic attention mapping. Please provide at least 1-2 complete sentences.',
+      retryable: false,
+      requiresKeyConfig: false,
+    });
   }
 
   // 2. API Key Resolution (Server Env > Option override)
@@ -50,16 +88,19 @@ export async function runGeminiForensicAnalysis(
   const apiKey = options.apiKey || process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    const error: any = new Error(
-      'Missing Google Gemini API key. Please configure GEMINI_API_KEY in your server environment (.env.local or Vercel Environment Variables).'
-    );
-    error.code = 'AUTH_KEY_MISSING';
-    error.statusCode = 401;
-    throw error;
+    throw new ForensicAnalysisError({
+      category: 'AUTHENTICATION_ERROR',
+      status: 401,
+      title: 'API configuration required',
+      message: 'Missing Google Gemini API key. Please configure GEMINI_API_KEY in your server environment (.env.local or Vercel Settings).',
+      retryable: false,
+      requiresKeyConfig: true,
+    });
   }
 
-  // 3. Model selection (gemini-2.5-flash)
-  const selectedModel = options.modelName || process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  // 3. Stable model: gemini-2.5-flash
+  const model = options.modelName || process.env.GEMINI_MODEL || STABLE_GEMINI_MODEL;
+  const maxRetries = typeof options.maxRetries === 'number' ? options.maxRetries : 3;
 
   // 4. Instantiate official Google GenAI SDK
   const ai = new GoogleGenAI({ apiKey });
@@ -68,74 +109,87 @@ export async function runGeminiForensicAnalysis(
   const userPrompt = buildGeminiUserPrompt(trimmedContent, targetGoal, userMetrics);
 
   let responseText = '';
+  let lastClassifiedError: NormalizedApiError | null = null;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: userPrompt,
-      config: {
-        systemInstruction,
-        responseMimeType: 'application/json',
-        temperature: 0.2, // Low temperature for consistent forensic accuracy
-      },
+  // 5. Execution with Exponential Backoff Retry Waterfall
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const startTime = Date.now();
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: userPrompt,
+        config: {
+          systemInstruction,
+          responseMimeType: 'application/json',
+          temperature: 0.2, // Low temperature for high precision & reproducibility
+        },
+      });
+
+      const durationMs = Date.now() - startTime;
+      console.log(`[Social X-Ray] Gemini API request succeeded with model "${model}" in ${durationMs}ms (attempt ${attempt}/${maxRetries})`);
+
+      responseText = response.text || '';
+      if (responseText) {
+        break; // Successfully received response
+      }
+    } catch (err: any) {
+      const durationMs = Date.now() - startTime;
+      const classified = classifyGeminiError(err);
+      lastClassifiedError = classified;
+
+      // Safe server logging without leaking secrets or payload
+      console.error(
+        `[Social X-Ray] Gemini API failure (attempt ${attempt}/${maxRetries}): status=${classified.status}, category=${classified.category}, duration=${durationMs}ms`
+      );
+
+      // If error is transient & retryable (503, 500, 408) and attempts remain:
+      if (classified.retryable && attempt < maxRetries) {
+        // Exponential backoff: ~1s on 1st, ~2s on 2nd, ~4s on 3rd with random jitter
+        const baseDelay = Math.pow(2, attempt - 1) * 1000;
+        const jitter = Math.random() * 400;
+        const totalDelay = Math.round(baseDelay + jitter);
+
+        console.warn(`[Social X-Ray] Transient ${classified.category} encountered. Retrying in ${totalDelay}ms...`);
+        await new Promise((res) => setTimeout(res, totalDelay));
+        continue;
+      }
+
+      // Non-retryable errors (401, 403, 404, 400) or final attempt exhausted
+      throw new ForensicAnalysisError(classified);
+    }
+  }
+
+  if (!responseText) {
+    if (lastClassifiedError) {
+      throw new ForensicAnalysisError(lastClassifiedError);
+    }
+    throw new ForensicAnalysisError({
+      category: 'MALFORMED_OUTPUT',
+      status: 502,
+      title: 'AI service error',
+      message: 'Received an empty response from the Gemini AI diagnostic engine. Please try again.',
+      retryable: true,
+      requiresKeyConfig: false,
     });
-
-    responseText = response.text || '';
-  } catch (apiErr: any) {
-    // Server-side logging for developer diagnosis without leaking secrets
-    console.error(`[Social X-Ray] Gemini API invocation error on model "${selectedModel}":`, apiErr?.message || apiErr);
-
-    const rawMsg = (apiErr?.message || '').toLowerCase();
-    const status = apiErr?.status || apiErr?.statusCode || 500;
-
-    // Graceful error mapping (never dump raw JSON to client)
-    if (rawMsg.includes('429') || rawMsg.includes('quota') || rawMsg.includes('rate limit') || rawMsg.includes('resource_exhausted')) {
-      const error: any = new Error('Google Gemini API rate limit reached. Please wait a moment and try again.');
-      error.statusCode = 429;
-      error.code = 'RATE_LIMIT_EXCEEDED';
-      throw error;
-    }
-
-    if (rawMsg.includes('api key') || rawMsg.includes('unauthenticated') || rawMsg.includes('401') || rawMsg.includes('403') || rawMsg.includes('permission_denied')) {
-      const error: any = new Error('Invalid or unauthorized Google Gemini API key. Please verify your API key configuration.');
-      error.statusCode = 401;
-      error.code = 'INVALID_API_KEY';
-      throw error;
-    }
-
-    if (rawMsg.includes('404') || rawMsg.includes('not found') || rawMsg.includes('no longer available') || rawMsg.includes('not supported')) {
-      const error: any = new Error(`AI model "${selectedModel}" is currently unavailable. Please verify your Gemini API access or try again.`);
-      error.statusCode = 503;
-      error.code = 'MODEL_UNAVAILABLE';
-      throw error;
-    }
-
-    const customError: any = new Error('AI analysis is temporarily unavailable. Please check your API configuration and try again.');
-    customError.statusCode = status;
-    customError.code = apiErr?.code || 'ANALYSIS_FAILED';
-    throw customError;
-  }
-
-  if (!responseText || !responseText.trim()) {
-    const error: any = new Error('Received an empty response from the Gemini AI diagnostic engine. Please try again.');
-    error.statusCode = 502;
-    error.code = 'EMPTY_RESPONSE';
-    throw error;
   }
 
   try {
-    // 5. Parse JSON safely
+    // 6. Parse JSON safely
     const rawJson = extractJsonFromResponse(responseText);
 
-    // 6. Validate and normalize structure according to analysis schema
+    // 7. Validate and normalize structure according to analysis schema
     const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
 
     return validatedResult;
   } catch (parseErr: any) {
-    console.error('[Social X-Ray] Response normalization error:', parseErr);
-    const error: any = new Error('Failed to parse diagnostic output from the AI engine. Please retry.');
-    error.statusCode = 502;
-    error.code = 'MALFORMED_OUTPUT';
-    throw error;
+    console.error('[Social X-Ray] Response JSON parsing/normalization failure:', parseErr?.message);
+    throw new ForensicAnalysisError({
+      category: 'MALFORMED_OUTPUT',
+      status: 502,
+      title: 'AI service error',
+      message: 'The AI diagnostic engine returned an unparseable response structure. Please retry.',
+      retryable: true,
+      requiresKeyConfig: false,
+    });
   }
 }

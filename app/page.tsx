@@ -44,7 +44,7 @@ import { ImageCropModal } from '@/components/upload/ImageCropModal';
 import { ScanningHUD } from '@/components/forensics/ScanningHUD';
 import { DiagnosticReport } from '@/components/forensics/DiagnosticReport';
 import { GoalType, UploadedFileState } from '@/types/analysis';
-import { SocialXRayAnalysisResult } from '@/lib/analysis/types';
+import { SocialXRayAnalysisResult, NormalizedApiError } from '@/lib/analysis/types';
 import { extractImageText } from '@/lib/extraction/ocr';
 
 // Built-in realistic weak post for 1-click instant demo
@@ -144,6 +144,7 @@ export default function Home() {
   const [extractedText, setExtractedText] = useState<string>('');
   const [workflowState, setWorkflowState] = useState<'idle' | 'scanning' | 'results' | 'error'>('idle');
   const [analysisResult, setAnalysisResult] = useState<SocialXRayAnalysisResult | null>(null);
+  const [errorDetails, setErrorDetails] = useState<NormalizedApiError | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [extractionNotification, setExtractionNotification] = useState<string | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
@@ -173,6 +174,7 @@ export default function Home() {
     setUploadedFile(fileState);
     setExtractedText(text);
     setErrorMessage(null);
+    setErrorDetails(null);
     setExtractionNotification(
       `Extracted ${fileState.source.toUpperCase()} content (${text.split(/\s+/).filter(Boolean).length} words). You can review and refine the text below.`
     );
@@ -181,6 +183,7 @@ export default function Home() {
   const handleCropAndExtract = async (croppedBlob: Blob, croppedFileName: string) => {
     setIsCroppingOcr(true);
     setErrorMessage(null);
+    setErrorDetails(null);
     try {
       const result = await extractImageText(croppedBlob, { fileName: croppedFileName });
       setExtractedText(result.extractedText);
@@ -211,6 +214,7 @@ export default function Home() {
     if (!uploadedFile?.file) return;
     setIsCroppingOcr(true);
     setErrorMessage(null);
+    setErrorDetails(null);
     try {
       const result = await extractImageText(uploadedFile.file, { fileName: uploadedFile.name });
       setExtractedText(result.extractedText);
@@ -241,6 +245,7 @@ export default function Home() {
     setAnalysisResult(null);
     setWorkflowState('idle');
     setErrorMessage(null);
+    setErrorDetails(null);
     setExtractionNotification(null);
     scrollToSection('upload-section');
   };
@@ -261,6 +266,7 @@ export default function Home() {
     });
     setAnalysisResult(null);
     setErrorMessage(null);
+    setErrorDetails(null);
     setExtractionNotification(
       'Loaded Demo Post: "AI Product Launch Announcement". Demonstrating company-first language, weak hook, and inert CTA.'
     );
@@ -281,6 +287,7 @@ export default function Home() {
     setAnalysisResult(null);
     setWorkflowState('idle');
     setErrorMessage(null);
+    setErrorDetails(null);
     setExtractionNotification(
       `Loaded benchmark draft for ${sample.goal.toUpperCase()} objective. Review and edit copy below.`
     );
@@ -295,6 +302,7 @@ export default function Home() {
 
     setWorkflowState('scanning');
     setErrorMessage(null);
+    setErrorDetails(null);
 
     workbenchRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -324,12 +332,14 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.code === 'AUTH_KEY_MISSING' || response.status === 401) {
-          throw new Error(
-            'Google Gemini API key is missing or invalid. Please configure GEMINI_API_KEY in your server environment (.env.local) or click "Configure API Key" above.'
-          );
+        if (data?.error && typeof data.error === 'object') {
+          setErrorDetails(data.error);
+          setErrorMessage(data.error.message || 'Failed to analyze post content.');
+        } else {
+          setErrorMessage(data.message || 'An error occurred during AI forensic analysis.');
         }
-        throw new Error(data.message || 'Failed to analyze post content.');
+        setWorkflowState('error');
+        return;
       }
 
       setAnalysisResult(data);
@@ -343,9 +353,17 @@ export default function Home() {
       console.error('Forensic Analysis Execution Error:', err);
       setWorkflowState('error');
       if (err.name === 'AbortError') {
-        setErrorMessage('The AI diagnostic analysis timed out after 45 seconds. Please verify your connection or try again.');
+        setErrorDetails({
+          category: 'TIMEOUT',
+          status: 408,
+          title: 'Request timed out',
+          message: 'The AI diagnostic analysis timed out after 45 seconds. Please verify your connection and try again.',
+          retryable: true,
+          requiresKeyConfig: false,
+        });
+        setErrorMessage('The AI diagnostic analysis timed out after 45 seconds.');
       } else {
-        setErrorMessage(err.message || 'An unexpected error occurred during AI analysis.');
+        setErrorMessage(err.message || 'An unexpected network error occurred.');
       }
     }
   };
@@ -682,38 +700,42 @@ export default function Home() {
           </div>
 
           {/* Global Error Notification */}
-          {errorMessage && (
+          {(errorMessage || errorDetails) && (
             <div className="p-5 rounded-2xl bg-rose-950/40 border border-rose-800/80 space-y-3 text-rose-100 animate-fade-in">
               <div className="flex items-start gap-3">
                 <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
                 <div className="space-y-1 flex-1">
                   <h4 className="font-mono text-sm font-bold text-rose-300 uppercase">
-                    Forensic Pipeline Notice
+                    {errorDetails?.title || 'Forensic Pipeline Notice'}
                   </h4>
                   <p className="text-xs sm:text-sm font-sans leading-relaxed text-rose-200">
-                    {errorMessage}
+                    {errorDetails?.message || errorMessage}
                   </p>
                 </div>
               </div>
               <div className="flex items-center justify-end gap-2.5 pt-1 border-t border-rose-900/40">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsApiKeyModalOpen(true)}
-                  leftIcon={<KeyRound className="w-3.5 h-3.5 text-cyan-400" />}
-                  className="text-xs font-mono"
-                >
-                  Configure API Key
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={executeAnalysis}
-                  leftIcon={<RotateCcw className="w-3.5 h-3.5 text-carbon-950" />}
-                  className="text-xs font-mono"
-                >
-                  Retry Analysis
-                </Button>
+                {errorDetails?.requiresKeyConfig && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setIsApiKeyModalOpen(true)}
+                    leftIcon={<KeyRound className="w-3.5 h-3.5 text-cyan-400" />}
+                    className="text-xs font-mono"
+                  >
+                    Configure API Key
+                  </Button>
+                )}
+                {errorDetails?.retryable !== false && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={executeAnalysis}
+                    leftIcon={<RotateCcw className="w-3.5 h-3.5 text-carbon-950" />}
+                    className="text-xs font-mono"
+                  >
+                    Retry Analysis
+                  </Button>
+                )}
               </div>
             </div>
           )}

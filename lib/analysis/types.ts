@@ -77,3 +77,24 @@ export interface AnalysisRequestPayload {
     contentType?: string;
   };
 }
+
+export type ApiErrorCategory =
+  | 'SERVICE_UNAVAILABLE'
+  | 'RATE_LIMITED'
+  | 'AUTHENTICATION_ERROR'
+  | 'MODEL_NOT_FOUND'
+  | 'SERVER_ERROR'
+  | 'TIMEOUT'
+  | 'NETWORK_ERROR'
+  | 'INVALID_REQUEST'
+  | 'MALFORMED_OUTPUT';
+
+export interface NormalizedApiError {
+  category: ApiErrorCategory;
+  status: number;
+  title: string;
+  message: string;
+  retryable: boolean;
+  requiresKeyConfig: boolean;
+}
+

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { runGeminiForensicAnalysis, MAX_CONTENT_LENGTH } from '@/lib/analysis';
+import {
+  runGeminiForensicAnalysis,
+  MAX_CONTENT_LENGTH,
+  classifyGeminiError,
+  ForensicAnalysisError,
+} from '@/lib/analysis';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,9 +17,15 @@ export async function POST(req: NextRequest) {
     } catch {
       return NextResponse.json(
         {
-          error: 'Invalid Request',
-          message: 'Malformed JSON payload in request body.',
-          code: 'INVALID_JSON',
+          success: false,
+          error: {
+            category: 'INVALID_REQUEST',
+            status: 400,
+            title: 'Malformed Request',
+            message: 'Malformed JSON payload in request body.',
+            retryable: false,
+            requiresKeyConfig: false,
+          },
         },
         { status: 400 }
       );
@@ -22,40 +33,13 @@ export async function POST(req: NextRequest) {
 
     const { content, targetGoal = 'conversation', userMetrics } = body || {};
 
-    // 1. Content validation
-    if (!content || typeof content !== 'string' || !content.trim()) {
-      return NextResponse.json(
-        {
-          error: 'Empty Content',
-          message: 'Cannot run AI forensic diagnosis on empty content. Please provide or extract valid text.',
-          code: 'EMPTY_CONTENT',
-        },
-        { status: 400 }
-      );
-    }
-
-    const trimmedContent = content.trim();
-
-    if (trimmedContent.length > MAX_CONTENT_LENGTH) {
-      return NextResponse.json(
-        {
-          error: 'Content Too Large',
-          message: `Post content length (${trimmedContent.length} characters) exceeds the maximum allowed limit of ${MAX_CONTENT_LENGTH} characters.`,
-          code: 'CONTENT_TOO_LARGE',
-        },
-        { status: 400 }
-      );
-    }
-
-    // 2. Client header override or Server Env resolution
-    // Note: NEVER send the server API key to the client!
     const clientKey = req.headers.get('x-gemini-key')?.trim();
     const apiKey = clientKey || process.env.GEMINI_API_KEY;
 
-    // 3. Execute Gemini forensic engine
+    // Execute Gemini forensic engine with gemini-2.5-flash
     const analysisResult = await runGeminiForensicAnalysis(
       {
-        content: trimmedContent,
+        content,
         targetGoal,
         userMetrics,
       },
@@ -66,28 +50,17 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(analysisResult, { status: 200 });
   } catch (error: any) {
-    console.error('Forensic Route Error:', error);
-
-    const statusCode = error?.statusCode || error?.status || 500;
-    const errorCode = error?.code || 'ANALYSIS_ERROR';
-    let message = error?.message || 'An error occurred during forensic analysis.';
-
-    if (typeof message === 'string' && message.trim().startsWith('{')) {
-      try {
-        const parsed = JSON.parse(message);
-        message = parsed?.error?.message || 'AI analysis is temporarily unavailable. Please check your API configuration and try again.';
-      } catch {
-        message = 'AI analysis is temporarily unavailable. Please check your API configuration and try again.';
-      }
-    }
+    const normalized =
+      error instanceof ForensicAnalysisError
+        ? error.normalized
+        : error?.normalized || classifyGeminiError(error);
 
     return NextResponse.json(
       {
-        error: 'Analysis Error',
-        message,
-        code: errorCode,
+        success: false,
+        error: normalized,
       },
-      { status: statusCode }
+      { status: normalized.status }
     );
   }
 }
