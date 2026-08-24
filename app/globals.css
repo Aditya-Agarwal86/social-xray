@@ -3,164 +3,132 @@
 @tailwind utilities;
 
 :root {
-  --background: #07080c;
-  --foreground: #f8fafc;
+  /* LIGHT THEME — Refined editorial SaaS aesthetic */
+  --bg-app: #fcfcfd;
+  --bg-subtle: #f4f5f8;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-muted: #f1f3f7;
+  --bg-surface-hover: #e9ebf0;
+
+  --border-app: #e2e5eb;
+  --border-subtle: #edf0f5;
+  --border-muted: #d4d8e2;
+  --border-accent: rgba(2, 132, 199, 0.35);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  --accent-primary: #0284c7; /* Refined oceanic slate cyan */
+  --accent-surface: #e0f2fe;
+  --accent-hover: #0369a1;
+  --accent-contrast: #ffffff;
+
+  --success-text: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+
+  --warning-text: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+
+  --danger-text: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+
+  --info-text: #4f46e5;
+  --info-bg: #eef2ff;
+  --info-border: #c7d2fe;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+}
+
+.dark {
+  /* DARK THEME — Sophisticated charcoal / graphite / slate */
+  --bg-app: #0d1117;
+  --bg-subtle: #131722;
+  --bg-surface: #161b26;
+  --bg-surface-elevated: #1c2230;
+  --bg-surface-muted: #1e2536;
+  --bg-surface-hover: #242c3f;
+
+  --border-app: #283144;
+  --border-subtle: #1e2637;
+  --border-muted: #36435c;
+  --border-accent: rgba(56, 189, 248, 0.35);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8896ab;
+  --text-subtle: #5a6880;
+
+  --accent-primary: #38bdf8; /* Refined cyan accent */
+  --accent-surface: rgba(56, 189, 248, 0.12);
+  --accent-hover: #7dd3fc;
+  --accent-contrast: #07090e;
+
+  --success-text: #34d399;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.25);
+
+  --warning-text: #fbbf24;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.25);
+
+  --danger-text: #f87171;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.25);
+
+  --info-text: #818cf8;
+  --info-bg: rgba(99, 102, 241, 0.12);
+  --info-border: rgba(99, 102, 241, 0.25);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.5);
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Minimalist Laboratory Scrollbar */
+/* Minimalist Editorial Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090b10;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e2638;
-  border-radius: 2px;
+  background: var(--border-app);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00f0ff;
+  background: var(--text-subtle);
 }
 
-/* 1. Subtle X-Ray Beam Sweep Animation */
-@keyframes xraySweep {
-  0% {
-    top: -10%;
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.7;
-  }
-  80% {
-    opacity: 0.7;
-  }
-  100% {
-    top: 110%;
-    opacity: 0;
-  }
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
 }
 
-.animate-xray-sweep {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.8), transparent);
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-  animation: xraySweep 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  pointer-events: none;
-}
-
-/* 2. Scanning Line */
-@keyframes scanLine {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.8;
-  }
-  70% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(1000%);
-    opacity: 0;
-  }
-}
-
-.animate-scan-line {
-  animation: scanLine 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-/* 3. Content Highlight Shimmer / Pulse */
-@keyframes highlightShimmer {
-  0%, 100% {
-    border-color: rgba(239, 68, 68, 0.4);
-    background-color: rgba(239, 68, 68, 0.08);
-  }
-  50% {
-    border-color: rgba(239, 68, 68, 0.8);
-    background-color: rgba(239, 68, 68, 0.16);
-  }
-}
-
-.animate-highlight-pulse {
-  animation: highlightShimmer 2.5s ease-in-out infinite;
-}
-
-/* 4. Section Fade & Entrance */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* 5. Precision Reticle Pulse */
-@keyframes pulseSubtle {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(0.98);
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulseSubtle 3s ease-in-out infinite;
-}
-
-/* 6. Accessibility: Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .animate-scan-line,
-  .animate-xray-sweep,
-  .animate-highlight-pulse,
-  .animate-pulse-slow,
-  .animate-fade-in {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-
-/* Print optimizations */
-@media print {
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-  }
-  .print\:hidden {
-    display: none !important;
-  }
+/* Selection */
+::selection {
+  background-color: var(--accent-surface);
+  color: var(--text-primary);
 }

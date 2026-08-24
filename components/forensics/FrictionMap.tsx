@@ -3,21 +3,15 @@
 import React, { useState } from 'react';
 import {
   AlertOctagon,
-  ChevronDown,
-  ChevronUp,
-  MapPin,
   Wrench,
   Brain,
   Quote,
-  Sparkles,
-  Search,
   Crosshair,
   CheckCircle2,
 } from 'lucide-react';
 import { FrictionPointItem, DiagnosticSeverity } from '@/lib/analysis/types';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { XRayScanOverlay } from '../ui/XRayScanOverlay';
 import { cn } from '@/lib/utils/cn';
 
 interface FrictionMapProps {
@@ -33,11 +27,11 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
 
   if (!frictionPoints || frictionPoints.length === 0) {
     return (
-      <Card className="p-6 text-center space-y-2 bg-carbon-900 border-carbon-750">
-        <div className="text-emerald-400 font-mono text-sm font-bold flex items-center justify-center gap-2">
-          <CheckCircle2 className="w-4 h-4" /> NO CRITICAL ATTENTION CLIFFS DETECTED
+      <Card className="p-6 text-center space-y-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm flex items-center justify-center gap-2">
+          <CheckCircle2 className="w-4 h-4" /> No Critical Attention Cliffs Detected
         </div>
-        <p className="text-xs text-carbon-400 font-sans">
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">
           The post maintains acceptable reading flow and attention retention.
         </p>
       </Card>
@@ -50,58 +44,52 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
     switch (severity) {
       case 'critical':
         return {
-          label: 'HIGH FRICTION',
-          bg: 'bg-rose-950/50',
-          border: 'border-rose-500/50',
-          text: 'text-rose-400',
+          label: 'High Friction',
+          bg: 'bg-rose-50/70 dark:bg-rose-950/30',
+          border: 'border-rose-300 dark:border-rose-800/80',
+          text: 'text-rose-700 dark:text-rose-300',
           badgeVariant: 'red' as const,
-          pill: 'bg-rose-500/20 text-rose-300 border-rose-500/50 hover:bg-rose-500/30',
-          indicator: 'bg-rose-500 shadow-[0_0_8px_#EF4444]',
         };
       case 'moderate':
         return {
-          label: 'MEDIUM FRICTION',
-          bg: 'bg-amber-950/50',
-          border: 'border-amber-500/50',
-          text: 'text-amber-400',
+          label: 'Medium Friction',
+          bg: 'bg-amber-50/70 dark:bg-amber-950/30',
+          border: 'border-amber-300 dark:border-amber-800/80',
+          text: 'text-amber-700 dark:text-amber-300',
           badgeVariant: 'amber' as const,
-          pill: 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30',
-          indicator: 'bg-amber-400 shadow-[0_0_8px_#F59E0B]',
         };
       default:
         return {
-          label: 'LOW FRICTION',
-          bg: 'bg-cyan-950/50',
-          border: 'border-cyan-500/50',
-          text: 'text-cyan-400',
+          label: 'Low Friction',
+          bg: 'bg-sky-50/70 dark:bg-sky-950/30',
+          border: 'border-sky-300 dark:border-sky-800/80',
+          text: 'text-sky-700 dark:text-sky-300',
           badgeVariant: 'cyan' as const,
-          pill: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 hover:bg-cyan-500/30',
-          indicator: 'bg-cyan-400 shadow-[0_0_8px_#00F0FF]',
         };
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 font-sans text-slate-900 dark:text-slate-100">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <AlertOctagon className="w-5 h-5 text-rose-400" />
-          <h3 className="text-base font-mono font-bold uppercase tracking-wider text-white">
-            05 — PRIMARY FRICTION MAP
+          <AlertOctagon className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+            05 — Primary Friction Map
           </h3>
           <Badge variant="red" size="sm">
-            EVIDENCE-BACKED FRICTION
+            Evidence-Backed
           </Badge>
         </div>
-        <span className="text-xs font-mono text-carbon-400">
-          Click any dropoff point below to inspect cause &amp; repair
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          Select any dropoff point below to inspect cause &amp; repair
         </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left Side: Friction Point Selector List */}
-        <div className="lg:col-span-5 space-y-2.5">
+        <div className="lg:col-span-5 space-y-2">
           {frictionPoints.map((point, index) => {
             const isSelected = selectedIndex === index;
             const style = getSeverityStyles(point.severity);
@@ -118,27 +106,27 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
                 type="button"
                 onClick={() => setSelectedIndex(index)}
                 className={cn(
-                  'w-full p-4 rounded-xl border text-left transition-all duration-150 relative overflow-hidden flex items-start gap-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400',
+                  'w-full p-3.5 rounded-xl border text-left transition-all duration-150 relative flex items-start gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 cursor-pointer',
                   isSelected
-                    ? `${style.bg} ${style.border} shadow-[0_0_20px_rgba(0,0,0,0.5)] ring-1 ring-offset-0 ring-white/10`
-                    : 'bg-carbon-900/80 border-carbon-750 hover:border-carbon-600 hover:bg-carbon-850'
+                    ? `${style.bg} ${style.border} shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10`
+                    : 'bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-850 shadow-2xs'
                 )}
               >
-                {/* Visual Indicator Pill */}
+                {/* Number Badge */}
                 <div
                   className={cn(
-                    'w-6 h-6 rounded-lg font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 border',
+                    'w-6 h-6 rounded-lg text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5 border',
                     isSelected
-                      ? 'bg-carbon-950 text-white border-white/20'
-                      : 'bg-carbon-800 text-carbon-400 border-carbon-700'
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                   )}
                 >
                   {index + 1}
                 </div>
 
-                <div className="min-w-0 space-y-1 flex-1">
+                <div className="min-w-0 space-y-0.5 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-white truncate">
+                    <span className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                       {point.category}
                     </span>
                     <Badge variant={style.badgeVariant} size="sm">
@@ -146,7 +134,7 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
                     </Badge>
                   </div>
 
-                  <p className="text-xs text-carbon-300 font-mono truncate italic">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate italic">
                     {isMissingElement ? 'Detected State: No caption detected' : `“${point.text}”`}
                   </p>
                 </div>
@@ -167,26 +155,20 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
 
             return (
               <Card
-                variant="accent"
-                className={cn(
-                  'p-6 space-y-5 bg-carbon-900/95 border-2 transition-all duration-200 shadow-xl relative overflow-hidden',
-                  getSeverityStyles(selectedPoint.severity).border
-                )}
+                className="p-5 sm:p-6 space-y-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden"
               >
-                <XRayScanOverlay active={true} showCorners={true} />
-
                 {/* Point Dossier Header */}
-                <div className="flex items-center justify-between border-b border-carbon-800 pb-3 relative z-10">
-                  <div className="flex items-center gap-2 font-mono">
-                    <span className="p-1.5 rounded-lg bg-carbon-800 border border-carbon-700 text-cyan-400">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 text-sky-600 dark:text-sky-400">
                       <Crosshair className="w-4 h-4" />
                     </span>
                     <div>
-                      <span className="text-xs font-bold text-white uppercase block">
+                      <span className="text-xs font-semibold text-slate-900 dark:text-white uppercase block">
                         {selectedPoint.category}
                       </span>
-                      <span className="text-[11px] text-carbon-400">
-                        FRICTION POINT #{selectedIndex + 1} OF {frictionPoints.length}
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Friction Point #{selectedIndex + 1} of {frictionPoints.length}
                       </span>
                     </div>
                   </div>
@@ -197,12 +179,12 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
                 </div>
 
                 {/* 1. Analyzed Statement OR Missing Engagement Element */}
-                <div className="space-y-1.5 relative z-10">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-rose-400 font-semibold flex items-center gap-1.5">
+                <div className="space-y-1">
+                  <span className="text-[11px] uppercase tracking-wider text-rose-700 dark:text-rose-400 font-semibold flex items-center gap-1.5">
                     <Quote className="w-3.5 h-3.5" />
-                    {isMissingElement ? 'MISSING ENGAGEMENT ELEMENT' : 'ANALYZED TEXT / STATEMENT'}
+                    {isMissingElement ? 'Missing Engagement Element' : 'Analyzed Text Fragment'}
                   </span>
-                  <div className="p-3.5 rounded-xl border text-rose-200 font-mono text-xs leading-relaxed italic animate-highlight-pulse">
+                  <div className="p-3 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 text-rose-900 dark:text-rose-200 text-xs leading-relaxed italic">
                     {isMissingElement
                       ? 'Detected state: "No caption or conversation prompt detected."'
                       : `“${selectedPoint.text}”`}
@@ -210,23 +192,23 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
                 </div>
 
                 {/* 2. Psychological Friction Explanation */}
-                <div className="p-4 rounded-xl bg-carbon-950 border border-carbon-800 space-y-1.5 relative z-10">
-                  <div className="flex items-center gap-1.5 text-amber-300 font-mono font-semibold text-xs uppercase tracking-wider">
-                    <Brain className="w-3.5 h-3.5 text-amber-400" />
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+                  <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-semibold text-xs uppercase tracking-wider">
+                    <Brain className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     Evidence-Backed Friction Rationale:
                   </div>
-                  <p className="text-carbon-200 text-xs font-sans leading-relaxed">
+                  <p className="text-slate-700 dark:text-slate-300 text-xs leading-relaxed">
                     {selectedPoint.explanation}
                   </p>
                 </div>
 
                 {/* 3. Recommended Surgical Repair */}
-                <div className="p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/40 space-y-1.5 relative z-10">
-                  <div className="flex items-center gap-1.5 text-cyan-300 font-mono font-semibold text-xs uppercase tracking-wider">
-                    <Wrench className="w-3.5 h-3.5 text-cyan-400" />
+                <div className="p-3.5 rounded-xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/40 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-sky-900 dark:text-sky-300 font-semibold text-xs uppercase tracking-wider">
+                    <Wrench className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     Recommended Engagement Repair:
                   </div>
-                  <div className="p-3 rounded-lg bg-carbon-950/80 border border-cyan-800/40 text-cyan-100 font-mono text-xs leading-relaxed">
+                  <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-sky-100 dark:border-sky-900/60 text-slate-800 dark:text-slate-100 text-xs leading-relaxed">
                     {selectedPoint.repair}
                   </div>
                 </div>

@@ -293,7 +293,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
   return (
     <section
       aria-label="Social Post File Ingestion Zone"
-      className="space-y-4 font-sans text-carbon-100"
+      className="space-y-3 font-sans text-slate-900 dark:text-slate-100"
     >
       <input
         ref={fileInputRef}
@@ -319,46 +319,36 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
           onClick={() => !disabled && fileInputRef.current?.click()}
           aria-label="Upload social post document or image. Drag and drop file or press Enter to browse."
           className={cn(
-            'group relative flex flex-col items-center justify-center p-8 sm:p-12 rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 select-none min-h-[220px]',
+            'group relative flex flex-col items-center justify-center p-7 sm:p-10 rounded-2xl border-2 border-dashed transition-all duration-150 cursor-pointer select-none min-h-[190px]',
             uploadState === 'DRAGGING'
-              ? 'border-cyan-400 bg-cyan-950/40 shadow-[0_0_35px_rgba(0,240,255,0.25)] scale-[1.01]'
-              : 'border-carbon-700 hover:border-cyan-500/60 bg-carbon-900/70 hover:bg-carbon-850/80',
+              ? 'border-sky-500 bg-sky-50/70 dark:bg-sky-950/40 shadow-sm scale-[1.005]'
+              : 'border-slate-300 dark:border-slate-700/80 hover:border-sky-500/80 dark:hover:border-sky-500/80 bg-slate-50/50 hover:bg-slate-100/60 dark:bg-slate-900/60 dark:hover:bg-slate-850/80',
             disabled && 'opacity-50 cursor-not-allowed pointer-events-none'
           )}
         >
-          {/* Subtle Grid Reticle Background */}
-          <div className="absolute inset-0 bg-[radial-gradient(#1E2638_1px,transparent_1px)] [background-size:18px_18px] opacity-40 pointer-events-none" />
-
-          {/* Active Drag Laser Line */}
-          {uploadState === 'DRAGGING' && (
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_#00f0ff] animate-scan-line" />
-            </div>
-          )}
-
-          <div className="relative z-10 flex flex-col items-center text-center space-y-4 max-w-lg">
-            {/* Upload Icon Reticle */}
+          <div className="relative z-10 flex flex-col items-center text-center space-y-3 max-w-lg">
+            {/* Upload Icon */}
             <div
               className={cn(
-                'w-16 h-16 rounded-2xl flex items-center justify-center border transition-all duration-200 group-hover:scale-105',
+                'w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-150',
                 uploadState === 'DRAGGING'
-                  ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_20px_rgba(0,240,255,0.4)]'
-                  : 'bg-carbon-800/90 border-carbon-700 text-carbon-300 group-hover:text-cyan-400 group-hover:border-cyan-500/50'
+                  ? 'bg-sky-100 dark:bg-sky-950 border-sky-400 text-sky-600 dark:text-sky-300'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 group-hover:border-sky-300 dark:group-hover:border-sky-700 shadow-sm'
               )}
             >
-              <UploadCloud className="w-8 h-8" />
+              <UploadCloud className="w-6 h-6" />
             </div>
 
-            <div className="space-y-1.5">
-              <h3 className="font-mono text-base sm:text-lg font-bold text-white tracking-wide">
-                {uploadState === 'DRAGGING' ? 'DROP POST ASSET TO COMMENCE SCAN' : 'Drop your social post here'}
+            <div className="space-y-1">
+              <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+                {uploadState === 'DRAGGING' ? 'Drop post asset to start scan' : 'Drop your social post here'}
               </h3>
               <p
                 id="file-upload-instructions"
-                className="text-xs sm:text-sm text-carbon-400 leading-relaxed font-sans"
+                className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-sans"
               >
                 Drag & drop a screenshot or PDF document, or{' '}
-                <span className="text-cyan-400 underline underline-offset-4 hover:text-cyan-300 font-semibold">
+                <span className="text-sky-600 dark:text-sky-400 font-medium underline underline-offset-4 hover:text-sky-700 dark:hover:text-sky-300">
                   browse files
                 </span>{' '}
                 from your device.
@@ -366,20 +356,20 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
             </div>
 
             {/* Supported File Specs */}
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-1 font-mono text-[11px] text-carbon-400">
-              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono shadow-2xs">
                 PDF
               </span>
-              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+              <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono shadow-2xs">
                 PNG
               </span>
-              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+              <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono shadow-2xs">
                 JPG
               </span>
-              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+              <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-mono shadow-2xs">
                 WEBP
               </span>
-              <span className="text-carbon-500 font-mono text-xs font-semibold ml-1">
+              <span className="text-slate-400 dark:text-slate-500 text-xs ml-1">
                 • Max 10MB
               </span>
             </div>
@@ -392,17 +382,17 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         <div
           role="status"
           aria-live="polite"
-          className="p-8 rounded-2xl border border-cyan-500/40 bg-carbon-900/90 flex flex-col items-center justify-center text-center space-y-3 min-h-[200px]"
+          className="p-8 rounded-2xl border border-sky-200 dark:border-sky-900 bg-white dark:bg-slate-900 flex flex-col items-center justify-center text-center space-y-3 min-h-[190px] shadow-sm"
         >
-          <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-cyan-950 border border-cyan-500/50 text-cyan-400">
-            <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950 border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400">
+            <Loader2 className="w-5 h-5 animate-spin text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="space-y-1 font-mono">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">
-              VALIDATING POST ASSET
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Validating post asset
             </h4>
-            <p className="text-xs text-carbon-400 font-sans">
-              Verifying file integrity, MIME structure, and 10MB boundary limits...
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Verifying file integrity, MIME structure, and 10MB limits...
             </p>
           </div>
         </div>
@@ -413,40 +403,40 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         <div
           role="status"
           aria-live="polite"
-          className="p-6 sm:p-8 rounded-2xl border border-cyan-500/50 bg-carbon-900/95 space-y-5 shadow-[0_0_30px_rgba(0,240,255,0.1)]"
+          className="p-6 sm:p-7 rounded-2xl border border-sky-200 dark:border-sky-800/80 bg-white dark:bg-slate-900 space-y-4 shadow-sm"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-carbon-800 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-cyan-950 border border-cyan-500/40 text-cyan-400">
-                <Scan className="w-5 h-5 animate-spin" />
+              <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950 border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400">
+                <Scan className="w-4 h-4 animate-spin" />
               </div>
               <div>
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white block">
-                  LOCAL IN-BROWSER EXTRACTION
+                <span className="text-xs font-semibold text-slate-900 dark:text-white block">
+                  In-Browser Document Extraction
                 </span>
-                <span className="text-[11px] font-sans text-carbon-400">
-                  Zero cloud storage. Neural vision and document layout processed locally.
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Zero cloud storage. Vision and document layout processed locally in your browser.
                 </span>
               </div>
             </div>
 
-            <Badge variant="cyan" size="sm" className="self-start sm:self-auto font-bold">
+            <Badge variant="cyan" size="sm" className="self-start sm:self-auto font-semibold">
               {extractionProgress.progress}%
             </Badge>
           </div>
 
           {/* Granular Progress Bar */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-carbon-300">
-              <span className="flex items-center gap-2 text-cyan-300">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <div className="flex items-center justify-between text-xs font-mono text-slate-600 dark:text-slate-300">
+              <span className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
                 {extractionProgress.message}
               </span>
             </div>
 
-            <div className="w-full bg-carbon-800 rounded-full h-2.5 overflow-hidden border border-carbon-700/80 p-0.5">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-200 dark:border-slate-700">
               <div
-                className="bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-300 h-full rounded-full transition-all duration-300 ease-out shadow-[0_0_15px_rgba(0,240,255,0.9)]"
+                className="bg-sky-500 h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${extractionProgress.progress}%` }}
               />
             </div>
@@ -459,13 +449,13 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         <div
           role="region"
           aria-label="Uploaded post file dossier"
-          className="p-5 sm:p-6 rounded-2xl border border-carbon-750 bg-carbon-900/95 space-y-4 shadow-xl"
+          className="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3 shadow-sm"
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             {/* File Info Preview */}
-            <div className="flex items-center gap-4 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               {/* Thumbnail or Badge */}
-              <div className="w-14 h-14 rounded-xl bg-carbon-800 border border-carbon-700 flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner">
+              <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 overflow-hidden relative shadow-2xs">
                 {currentFile.previewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -474,16 +464,16 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
                     className="w-full h-full object-cover"
                   />
                 ) : currentFile.source === 'pdf' ? (
-                  <FileText className="w-7 h-7 text-rose-400" />
+                  <FileText className="w-6 h-6 text-rose-500" />
                 ) : (
-                  <ImageIcon className="w-7 h-7 text-cyan-400" />
+                  <ImageIcon className="w-6 h-6 text-sky-500" />
                 )}
               </div>
 
               {/* Metadata */}
               <div className="min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="text-sm sm:text-base font-mono font-bold text-white truncate max-w-[200px] sm:max-w-xs md:max-w-md">
+                  <h4 className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-xs md:max-w-md">
                     {currentFile.name}
                   </h4>
                   <Badge variant={currentFile.source === 'pdf' ? 'red' : 'cyan'} size="sm">
@@ -494,19 +484,19 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
                       CONFIDENCE: {currentFile.confidence}%
                     </Badge>
                   )}
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-2 py-0.5 rounded">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-400" /> PARSED
+                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-2 py-0.5 rounded-md font-medium">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Parsed
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-carbon-400">
-                  <span>Size: <strong className="text-carbon-200">{formatFileSize(currentFile.size)}</strong></span>
+                <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+                  <span>Size: <strong className="text-slate-700 dark:text-slate-200">{formatFileSize(currentFile.size)}</strong></span>
                   <span>•</span>
-                  <span>Words: <strong className="text-carbon-200">{currentFile.wordCount || currentFile.extractedText.split(/\s+/).filter(Boolean).length}</strong></span>
+                  <span>Words: <strong className="text-slate-700 dark:text-slate-200">{currentFile.wordCount || currentFile.extractedText.split(/\s+/).filter(Boolean).length}</strong></span>
                   {typeof currentFile.pageCount === 'number' && (
                     <>
                       <span>•</span>
-                      <span>Pages: <strong className="text-cyan-300">{currentFile.pageCount}</strong></span>
+                      <span>Pages: <strong className="text-slate-700 dark:text-slate-200">{currentFile.pageCount}</strong></span>
                     </>
                   )}
                 </div>
@@ -514,13 +504,13 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-carbon-800">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 leftIcon={<FileUp className="w-3.5 h-3.5" />}
-                className="text-xs font-mono flex-1 sm:flex-none"
+                className="text-xs flex-1 sm:flex-none"
               >
                 Replace File
               </Button>
@@ -528,8 +518,8 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={handleReset}
-                leftIcon={<X className="w-3.5 h-3.5 text-carbon-400 hover:text-rose-400" />}
-                className="text-xs text-carbon-400 hover:text-rose-300 font-mono hover:bg-rose-950/30"
+                leftIcon={<X className="w-3.5 h-3.5 text-slate-400 hover:text-rose-500" />}
+                className="text-xs text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                 aria-label="Remove uploaded file"
               >
                 Remove
@@ -539,11 +529,11 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
 
           {/* Extraction Warnings if any */}
           {extractionWarnings.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/50 text-amber-200 text-xs font-sans space-y-1">
-              <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase text-amber-400">
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300">
                 <AlertTriangle className="w-3.5 h-3.5" /> Extraction Notice:
               </div>
-              <ul className="list-disc list-inside space-y-0.5 text-amber-300/90 text-[11px]">
+              <ul className="list-disc list-inside space-y-0.5 text-amber-800/90 dark:text-amber-300/90 text-[11px]">
                 {extractionWarnings.map((warn, i) => (
                   <li key={i}>{warn}</li>
                 ))}
@@ -557,37 +547,37 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
       {uploadState === 'ERROR' && errorMessage && (
         <div
           role="alert"
-          className="p-5 sm:p-6 rounded-2xl border border-rose-800/80 bg-rose-950/40 space-y-4 animate-fade-in text-rose-100"
+          className="p-4 sm:p-5 rounded-2xl border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/30 space-y-3 animate-fade-in text-rose-900 dark:text-rose-100"
         >
-          <div className="flex items-start gap-3.5">
-            <div className="p-2 rounded-xl bg-rose-900/60 border border-rose-700 text-rose-300 shrink-0">
-              <ShieldAlert className="w-6 h-6 text-rose-400" />
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-rose-100 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 shrink-0">
+              <ShieldAlert className="w-5 h-5" />
             </div>
 
             <div className="space-y-1 flex-1 min-w-0">
-              <div className="flex items-center gap-2 font-mono text-sm font-bold text-rose-300 uppercase">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-rose-900 dark:text-rose-300">
                 <span>{errorMessage.title}</span>
                 <Badge variant="red" size="sm">
                   ERROR
                 </Badge>
               </div>
-              <p className="text-xs sm:text-sm text-rose-200 font-sans leading-relaxed">
+              <p className="text-xs sm:text-sm text-rose-800 dark:text-rose-200 leading-relaxed">
                 {errorMessage.message}
               </p>
               {errorMessage.details && (
-                <p className="text-xs text-rose-300/80 font-sans italic pt-0.5">
+                <p className="text-xs text-rose-700/80 dark:text-rose-300/80 italic pt-0.5">
                   💡 {errorMessage.details}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-1 border-t border-rose-900/50">
+          <div className="flex items-center justify-end gap-2 pt-1 border-t border-rose-200/60 dark:border-rose-900/40">
             <Button
               variant="secondary"
               size="sm"
               onClick={handleReset}
-              className="text-xs font-mono text-rose-200 border-rose-800/80 hover:bg-rose-900/40"
+              className="text-xs text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-800/80"
             >
               Dismiss
             </Button>
@@ -595,8 +585,8 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
               variant="primary"
               size="sm"
               onClick={handleRetry}
-              leftIcon={<RotateCcw className="w-3.5 h-3.5 text-carbon-950" />}
-              className="text-xs font-mono bg-rose-500 hover:bg-rose-400 text-carbon-950 border-rose-400"
+              leftIcon={<RotateCcw className="w-3.5 h-3.5 text-white dark:text-slate-950" />}
+              className="text-xs"
             >
               Try Another File
             </Button>

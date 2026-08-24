@@ -10,16 +10,13 @@ import {
   BrainCircuit,
   Wrench,
   Layers,
-  CheckCircle2,
   AlertTriangle,
   HelpCircle,
   Zap,
-  ShieldCheck,
   MousePointerClick,
   Eye,
   Share2,
   MessageSquare,
-  Bookmark,
   Award,
   AlertOctagon,
   FileCode,
@@ -28,7 +25,6 @@ import {
   RotateCcw,
   KeyRound,
   ShieldAlert,
-  PlayCircle,
   FlaskConical,
 } from 'lucide-react';
 import { Header } from '@/components/ui/Header';
@@ -100,52 +96,52 @@ Save this post if you found it helpful and share it with someone who needs motiv
 
 const FORENSIC_DIMENSIONS = [
   {
-    icon: <Zap className="w-5 h-5 text-cyan-400" />,
+    icon: <Zap className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
     name: 'Hook Velocity',
-    desc: 'Diagnoses whether the first 3 lines break algorithmic feed inertia or cause immediate swipe-away.',
+    desc: 'Diagnoses whether the first 3 lines break feed inertia or cause immediate swipe-away.',
   },
   {
-    icon: <Eye className="w-5 h-5 text-cyan-400" />,
+    icon: <Eye className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
     name: 'Clarity & Comprehension',
-    desc: 'Measures signal-to-noise ratio, eliminating corporate jargon, fluff, and unnecessary throat-clearing.',
+    desc: 'Measures signal-to-noise ratio, eliminating fluff, filler, and unnecessary throat-clearing.',
   },
   {
-    icon: <BrainCircuit className="w-5 h-5 text-cyan-400" />,
+    icon: <BrainCircuit className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
     name: 'Cognitive Ease',
     desc: 'Evaluates structural friction and visual pacing to prevent cognitive overload.',
   },
   {
-    icon: <Sparkles className="w-5 h-5 text-amber-400" />,
+    icon: <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
     name: 'Emotional Resonance',
-    desc: 'Identifies affective resonance, vulnerable stakes, and intellectual intrigue.',
+    desc: 'Identifies affective resonance, authentic stakes, and intellectual intrigue.',
   },
   {
-    icon: <HelpCircle className="w-5 h-5 text-purple-400" />,
+    icon: <HelpCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
     name: 'Curiosity Gap',
     desc: 'Detects open loops and information gaps that compel the reader to keep reading.',
   },
   {
-    icon: <MessageSquare className="w-5 h-5 text-emerald-400" />,
+    icon: <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
     name: 'Conversation Catalyst',
-    desc: 'Diagnoses whether the copy is a broadcast lecture or invites active debate in comments.',
+    desc: 'Diagnoses whether copy is a broadcast monologue or invites active debate in comments.',
   },
   {
-    icon: <Share2 className="w-5 h-5 text-cyan-400" />,
+    icon: <Share2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
     name: 'Social Currency',
-    desc: 'Determines if the insight reinforces the reader’s identity enough to share with peers.',
+    desc: 'Determines if the insight reinforces reader identity enough to share with peers.',
   },
   {
-    icon: <MousePointerClick className="w-5 h-5 text-rose-400" />,
+    icon: <MousePointerClick className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
     name: 'CTA Friction',
-    desc: 'Evaluates call-to-action sharpness and eliminates resistance before conversion.',
+    desc: 'Evaluates call-to-action sharpness and eliminates friction before conversion.',
   },
   {
-    icon: <Award className="w-5 h-5 text-amber-400" />,
+    icon: <Award className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
     name: 'Audience Value',
     desc: 'Evaluates tangible reference value, actionable frameworks, and save-worthy blueprints.',
   },
   {
-    icon: <AlertOctagon className="w-5 h-5 text-rose-400" />,
+    icon: <AlertOctagon className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
     name: 'Attention Resistance',
     desc: 'Calculates the overall dropoff resistance and attention retention across the post.',
   },
@@ -415,8 +411,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-carbon-950 text-carbon-100 selection:bg-cyan-500/25 selection:text-white">
-      {/* Responsive Laboratory Navigation */}
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-sky-500/20 selection:text-sky-900 dark:selection:text-sky-100 transition-colors duration-150">
+      {/* Responsive Navigation */}
       <Header onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)} hasCustomKey={!!clientApiKey} />
 
       {/* API Key Modal */}
@@ -443,35 +439,31 @@ export default function Home() {
       <main className="flex-1 space-y-16 sm:space-y-20 pb-16">
         {/* 1. HERO SECTION */}
         <section
-          className="relative pt-10 sm:pt-16 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden"
+          className="relative pt-12 sm:pt-20 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden"
           aria-labelledby="hero-title"
         >
-          {/* Subtle Grid Reticle & Ambient Glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(#1E2638_1px,transparent_1px)] [background-size:24px_24px] opacity-30 pointer-events-none" />
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
           <div className="relative z-10 flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
             {/* Pre-header badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 text-xs font-mono tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.15)]">
-              <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-              <span>AI SOCIAL CONTENT FORENSICS</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 text-xs font-semibold tracking-wide">
+              <Activity className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <span>Content Attention &amp; Audience Psychology</span>
             </div>
 
             {/* Brand Title & Tagline */}
             <div className="space-y-3">
               <h1
                 id="hero-title"
-                className="text-4xl sm:text-5xl md:text-6xl font-mono font-extrabold text-white tracking-tight leading-[1.1]"
+                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1]"
               >
-                SOCIAL <span className="text-cyan-400">X-RAY</span>
-                <span className="block text-2xl sm:text-3xl md:text-4xl font-normal text-carbon-200 mt-2">
+                Social <span className="text-sky-600 dark:text-sky-400">X-Ray</span>
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-normal text-slate-600 dark:text-slate-300 mt-2">
                   &ldquo;Find the moment your audience stops caring.&rdquo;
                 </span>
               </h1>
 
               {/* Supporting Text */}
-              <p className="text-base sm:text-lg text-carbon-300 font-sans max-w-2xl mx-auto leading-relaxed pt-2">
-                Upload a social post and discover where attention drops, why engagement stalls, and how to repair it.
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 font-sans max-w-2xl mx-auto leading-relaxed pt-2">
+                Upload a social post and discover where attention drops, why engagement stalls, and how to repair it with evidence-grounded rewrites.
               </p>
             </div>
 
@@ -482,7 +474,7 @@ export default function Home() {
                 size="lg"
                 onClick={() => scrollToSection('upload-section')}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-                className="w-full sm:w-auto font-mono text-sm tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.25)]"
+                className="w-full sm:w-auto text-sm font-semibold"
               >
                 X-Ray My Post →
               </Button>
@@ -491,8 +483,8 @@ export default function Home() {
                 variant="secondary"
                 size="lg"
                 onClick={() => handleLoadDemoPost(false)}
-                leftIcon={<FlaskConical className="w-4 h-4 text-amber-400" />}
-                className="w-full sm:w-auto font-mono text-sm border-amber-500/40 text-amber-200 hover:border-amber-400"
+                leftIcon={<FlaskConical className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+                className="w-full sm:w-auto text-sm"
               >
                 Try a Demo Post
               </Button>
@@ -501,50 +493,49 @@ export default function Home() {
                 variant="outline"
                 size="lg"
                 onClick={() => scrollToSection('how-it-works')}
-                className="w-full sm:w-auto font-mono text-sm text-carbon-300"
+                className="w-full sm:w-auto text-sm text-slate-700 dark:text-slate-300"
               >
                 See How It Works
               </Button>
             </div>
 
-            {/* Hero Forensic Blueprint Schematic */}
+            {/* Hero Blueprint Schematic */}
             <div className="w-full pt-6">
               <Card
-                variant="telemetry"
-                className="p-6 sm:p-8 bg-carbon-900/90 border-carbon-750 text-left relative overflow-hidden"
+                className="p-5 sm:p-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-left relative overflow-hidden shadow-sm"
               >
-                <div className="flex items-center justify-between border-b border-carbon-800 pb-3 mb-4 font-mono text-xs text-carbon-400">
-                  <span className="flex items-center gap-2 text-cyan-400">
-                    <Crosshair className="w-4 h-4" /> FORENSIC DIAGNOSTIC SCHEMATIC
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+                    <Crosshair className="w-4 h-4" /> Diagnostic Schematic
                   </span>
-                  <span className="text-carbon-500">ATTENTION DECAY MODEL</span>
+                  <span className="text-slate-400 dark:text-slate-500 font-normal">Attention Decay Model</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
-                  <div className="p-3.5 rounded-xl bg-carbon-950 border border-cyan-500/30 space-y-1.5">
-                    <div className="text-cyan-400 font-bold uppercase">01. Hook Velocity</div>
-                    <p className="text-carbon-300 font-sans leading-relaxed">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3.5 text-xs">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <div className="text-sky-700 dark:text-sky-400 font-semibold uppercase">01. Hook Velocity</div>
+                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                       First 3 lines measured for cognitive stopping power and feed momentum.
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-carbon-950 border border-rose-500/30 space-y-1.5">
-                    <div className="text-rose-400 font-bold uppercase">02. Attention Cliff</div>
-                    <p className="text-carbon-300 font-sans leading-relaxed">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <div className="text-rose-700 dark:text-rose-400 font-semibold uppercase">02. Attention Cliff</div>
+                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                       Identifies exact dropoff phrases, throat-clearing, and cognitive fatigue.
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-carbon-950 border border-purple-500/30 space-y-1.5">
-                    <div className="text-purple-400 font-bold uppercase">03. Conversation DNA</div>
-                    <p className="text-carbon-300 font-sans leading-relaxed">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <div className="text-indigo-700 dark:text-indigo-400 font-semibold uppercase">03. Conversation DNA</div>
+                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                       Diagnoses audience psychological reaction and replaces inert CTAs.
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-carbon-950 border border-emerald-500/30 space-y-1.5">
-                    <div className="text-emerald-400 font-bold uppercase">04. Surgical Repair</div>
-                    <p className="text-carbon-300 font-sans leading-relaxed">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <div className="text-emerald-700 dark:text-emerald-400 font-semibold uppercase">04. Surgical Repair</div>
+                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                       Provides side-by-side diff rewrites optimized for LinkedIn, Instagram &amp; TikTok.
                     </p>
                   </div>
@@ -556,14 +547,14 @@ export default function Home() {
 
         {/* 2. QUICK ANALYZER CTA */}
         <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20">
-          <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-900 to-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
             <div className="space-y-1 text-center sm:text-left">
-              <h3 className="text-sm sm:text-base font-mono font-bold text-white uppercase tracking-wider flex items-center justify-center sm:justify-start gap-2">
-                <Zap className="w-4 h-4 text-cyan-400" />
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
+                <Zap className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 Ready to X-Ray a post?
               </h3>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed max-w-xl">
-                Upload a screenshot or PDF, choose your optimization goal, and get your forensic report.
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
+                Upload a screenshot or PDF, choose your optimization goal, and get your diagnostic report.
               </p>
             </div>
             <Button
@@ -571,7 +562,7 @@ export default function Home() {
               size="md"
               onClick={() => scrollToSection('upload-section')}
               rightIcon={<ArrowRight className="w-4 h-4" />}
-              className="w-full sm:w-auto font-mono text-xs tracking-wider shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.25)]"
+              className="w-full sm:w-auto text-xs shrink-0 font-semibold"
             >
               Analyze My Post →
             </Button>
@@ -586,54 +577,54 @@ export default function Home() {
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <Badge variant="cyan" size="sm">
-              FORENSIC PIPELINE
+              Forensic Pipeline
             </Badge>
-            <h2 id="how-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              HOW SOCIAL X-RAY OPERATES
+            <h2 id="how-title" className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+              How Social X-Ray Operates
             </h2>
-            <p className="text-sm text-carbon-400 font-sans">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Post assets are processed in-browser before analysis paired with deep psychological diagnosis.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <Card className="p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3.5 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-xs">
                 01
               </div>
-              <div className="space-y-1.5">
-                <h3 className="text-base font-mono font-bold text-white">
-                  Ingest &amp; Client-Side OCR
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Ingest &amp; In-Browser OCR
                 </h3>
-                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
-                  Drop a PDF carousel, screenshot, or graphic. Text is parsed directly in your browser using Tesseract Web Workers and PDF.js—preserving structural line breaks.
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Drop a PDF carousel, screenshot, or graphic. Text is extracted directly in your browser using Web Workers and PDF.js—preserving structural line breaks.
                 </p>
               </div>
             </Card>
 
-            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
+            <Card className="p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3.5 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-xs">
                 02
               </div>
-              <div className="space-y-1.5">
-                <h3 className="text-base font-mono font-bold text-white">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   Attention Friction Mapping
                 </h3>
-                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   The forensic engine evaluates the post against your selected optimization objective, identifying exact dropoff sentences, cognitive load spikes, and weak transitions.
                 </p>
               </div>
             </Card>
 
-            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
+            <Card className="p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3.5 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 font-bold flex items-center justify-center text-xs">
                 03
               </div>
-              <div className="space-y-1.5">
-                <h3 className="text-base font-mono font-bold text-white">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   Surgical Repairs &amp; Platform Variants
                 </h3>
-                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   Receive line-by-line Before/After diffs with rationale, high-converting opening questions, and adapted versions for LinkedIn, Instagram, and TikTok.
                 </p>
               </div>
@@ -649,68 +640,68 @@ export default function Home() {
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <Badge variant="cyan" size="sm">
-              CONTENT AUTOPSY
+              Content Autopsy
             </Badge>
-            <h2 id="reasons-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              4 COMMON REASONS POSTS LOSE ATTENTION
+            <h2 id="reasons-title" className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+              4 Common Reasons Posts Lose Attention
             </h2>
-            <p className="text-sm text-carbon-400 font-sans">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Generic metrics tell you how many scrolled past. Social X-Ray explains why.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card variant="glow" glowColor="red" className="p-5 space-y-3 bg-carbon-900/80 border-carbon-750">
-              <div className="p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-400 w-fit">
-                <AlertOctagon className="w-5 h-5" />
+            <Card className="p-5 space-y-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 w-fit">
+                <AlertOctagon className="w-4 h-4" />
               </div>
-              <h3 className="font-mono text-sm font-bold text-white uppercase">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 1. Throat Clearing
               </h3>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Starting with passive preamble (&ldquo;I’ve been thinking lately...&rdquo;) instead of placing the highest-tension premise in line 1.
               </p>
             </Card>
 
-            <Card variant="glow" glowColor="amber" className="p-5 space-y-3 bg-carbon-900/80 border-carbon-750">
-              <div className="p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-amber-400 w-fit">
-                <BrainCircuit className="w-5 h-5" />
+            <Card className="p-5 space-y-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/50 text-amber-600 dark:text-amber-400 w-fit">
+                <BrainCircuit className="w-4 h-4" />
               </div>
-              <h3 className="font-mono text-sm font-bold text-white uppercase">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 2. Cognitive Drag
               </h3>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Dense walls of text and unstructured transitions that require too much mental energy to scan and decode.
               </p>
             </Card>
 
-            <Card variant="glow" glowColor="cyan" className="p-5 space-y-3 bg-carbon-900/80 border-carbon-750">
-              <div className="p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/40 text-cyan-400 w-fit">
-                <Layers className="w-5 h-5" />
+            <Card className="p-5 space-y-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800/50 text-sky-600 dark:text-sky-400 w-fit">
+                <Layers className="w-4 h-4" />
               </div>
-              <h3 className="font-mono text-sm font-bold text-white uppercase">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 3. Broadcast Monologue
               </h3>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Lecturing the audience rather than creating psychological open loops that invite disagreement, reflection, or debate.
               </p>
             </Card>
 
-            <Card variant="glow" glowColor="emerald" className="p-5 space-y-3 bg-carbon-900/80 border-carbon-750">
-              <div className="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-400 w-fit">
-                <MessageSquare className="w-5 h-5" />
+            <Card className="p-5 space-y-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/50 text-emerald-600 dark:text-emerald-400 w-fit">
+                <MessageSquare className="w-4 h-4" />
               </div>
-              <h3 className="font-mono text-sm font-bold text-white uppercase">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 4. Inert CTAs
               </h3>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Ending with passive questions (&ldquo;Thoughts?&rdquo;) that create zero urgency compared to high-conversion catalyst prompts.
               </p>
             </Card>
           </div>
         </section>
 
-        {/* 5. WHAT YOUR X-RAY REVEALS (BEFORE 10 DIMENSIONS) */}
+        {/* 5. WHAT YOUR X-RAY REVEALS */}
         <section
           id="what-you-get"
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
@@ -718,53 +709,53 @@ export default function Home() {
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <Badge variant="cyan" size="sm">
-              OUTPUT DOSSIER
+              Output Dossier
             </Badge>
-            <h2 id="what-reveals-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              WHAT YOUR X-RAY REVEALS
+            <h2 id="what-reveals-title" className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+              What Your X-Ray Reveals
             </h2>
-            <p className="text-sm text-carbon-400 font-sans">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Every analysis generates a structured forensic breakdown with actionable repairs.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
-              <div className="flex items-center gap-2 text-rose-400 font-mono text-xs font-bold uppercase">
-                <AlertOctagon className="w-4 h-4" />
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-400 text-xs font-semibold uppercase tracking-wider">
+                <AlertOctagon className="w-3.5 h-3.5" />
                 <span>01 — Attention Drop-Off</span>
               </div>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Identify where the post loses momentum and why audience interest decays.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
-              <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold uppercase">
-                <BrainCircuit className="w-4 h-4" />
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-sky-700 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider">
+                <BrainCircuit className="w-3.5 h-3.5" />
                 <span>02 — Forensic Dimensions</span>
               </div>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
-                Evaluate the post across the core audience-psychology dimensions.
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Evaluate the post across 10 core audience-psychology dimensions.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
-              <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
-                <Crosshair className="w-4 h-4" />
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-wider">
+                <Crosshair className="w-3.5 h-3.5" />
                 <span>03 — Friction Map</span>
               </div>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 See the specific text or structural elements creating engagement friction.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold uppercase">
-                <Wrench className="w-4 h-4" />
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+                <Wrench className="w-3.5 h-3.5" />
                 <span>04 — Surgical Repair</span>
               </div>
-              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Get evidence-grounded recommendations for improving the post.
               </p>
             </div>
@@ -779,26 +770,26 @@ export default function Home() {
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <Badge variant="cyan" size="sm">
-              TELEMETRY SPECS
+              Telemetry Specs
             </Badge>
-            <h2 id="dimensions-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              10 FORENSIC DIMENSIONS
+            <h2 id="dimensions-title" className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+              10 Forensic Dimensions
             </h2>
-            <p className="text-sm text-carbon-400 font-sans">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Measure the psychological and structural factors that influence audience response.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {FORENSIC_DIMENSIONS.map((dim, idx) => (
-              <Card key={idx} variant="glow" className="p-4 bg-carbon-900/80 border-carbon-750 space-y-2.5">
-                <div className="p-2 rounded-lg bg-carbon-800 border border-carbon-700 w-fit">
+              <Card key={idx} className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-2xs">
+                <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-fit">
                   {dim.icon}
                 </div>
-                <h3 className="text-xs font-mono font-bold text-white uppercase">
+                <h3 className="text-xs font-semibold text-slate-900 dark:text-white">
                   {dim.name}
                 </h3>
-                <p className="text-[11px] text-carbon-400 font-sans leading-snug">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   {dim.desc}
                 </p>
               </Card>
@@ -814,40 +805,40 @@ export default function Home() {
           aria-labelledby="upload-title"
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-400 text-xs font-mono">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 text-xs font-semibold">
               <Scan className="w-3.5 h-3.5" />
-              <span>INTERACTIVE FORENSIC WORKBENCH</span>
+              <span>Interactive Diagnostic Workbench</span>
             </div>
-            <h2 id="upload-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              INGEST POST &amp; RUN X-RAY
+            <h2 id="upload-title" className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Ingest Post &amp; Run X-Ray
             </h2>
-            <p className="text-sm text-carbon-400 font-sans">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Choose your optimization objective, upload your post asset, review extracted copy, and generate your diagnosis.
             </p>
           </div>
 
           {/* Global Error Notification */}
           {(errorMessage || errorDetails) && (
-            <div className="p-5 rounded-2xl bg-rose-950/40 border border-rose-800/80 space-y-3 text-rose-100 animate-fade-in">
+            <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 space-y-3 text-rose-950 dark:text-rose-100 animate-fade-in">
               <div className="flex items-start gap-3">
-                <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                <ShieldAlert className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 <div className="space-y-1 flex-1">
-                  <h4 className="font-mono text-sm font-bold text-rose-300 uppercase">
-                    {errorDetails?.title || 'Forensic Pipeline Notice'}
+                  <h4 className="text-sm font-bold text-rose-900 dark:text-rose-300 uppercase">
+                    {errorDetails?.title || 'Diagnostic Pipeline Notice'}
                   </h4>
-                  <p className="text-xs sm:text-sm font-sans leading-relaxed text-rose-200">
+                  <p className="text-xs sm:text-sm leading-relaxed text-rose-800 dark:text-rose-200">
                     {errorDetails?.message || errorMessage}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-2.5 pt-1 border-t border-rose-900/40">
+              <div className="flex items-center justify-end gap-2 pt-1 border-t border-rose-200 dark:border-rose-900/40">
                 {errorDetails?.requiresKeyConfig && (
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => setIsApiKeyModalOpen(true)}
-                    leftIcon={<KeyRound className="w-3.5 h-3.5 text-cyan-400" />}
-                    className="text-xs font-mono"
+                    leftIcon={<KeyRound className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />}
+                    className="text-xs"
                   >
                     Configure API Key
                   </Button>
@@ -857,8 +848,8 @@ export default function Home() {
                     variant="primary"
                     size="sm"
                     onClick={executeAnalysis}
-                    leftIcon={<RotateCcw className="w-3.5 h-3.5 text-carbon-950" />}
-                    className="text-xs font-mono"
+                    leftIcon={<RotateCcw className="w-3.5 h-3.5 text-white dark:text-slate-950" />}
+                    className="text-xs"
                   >
                     Retry Analysis
                   </Button>
@@ -899,17 +890,17 @@ export default function Home() {
           {workflowState !== 'scanning' && workflowState !== 'results' && (
             <div className="space-y-8">
               {/* FEATURED: Try a Demo Post Banner */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-900 to-amber-950/20 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="amber" size="sm" className="font-mono">
-                      DEMO POST
+                    <Badge variant="amber" size="sm">
+                      Demo Post
                     </Badge>
-                    <span className="font-mono text-xs font-bold text-white uppercase">
+                    <span className="text-xs font-semibold text-slate-900 dark:text-white uppercase">
                       Try a Demo Post
                     </span>
                   </div>
-                  <p className="text-xs text-carbon-300 font-sans max-w-xl leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
                     See how Social X-Ray analyzes a realistic weak post before uploading your own.
                   </p>
                 </div>
@@ -919,8 +910,8 @@ export default function Home() {
                     variant="secondary"
                     size="sm"
                     onClick={() => handleLoadDemoPost(true)}
-                    leftIcon={<FlaskConical className="w-3.5 h-3.5 text-amber-400" />}
-                    className="text-xs font-mono border-amber-500/40 text-amber-200 hover:border-amber-400 flex-1 sm:flex-none"
+                    leftIcon={<FlaskConical className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
+                    className="text-xs flex-1 sm:flex-none"
                   >
                     Try Demo Analysis →
                   </Button>
@@ -928,12 +919,12 @@ export default function Home() {
               </div>
 
               {/* STEP 1: Goal Objective Selector */}
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-                    STEP 1 — CHOOSE YOUR OBJECTIVE
+                  <span className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-300">
+                    Step 1 — Choose Your Objective
                   </span>
-                  <span className="text-[11px] font-mono text-carbon-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     Diagnostics adapt to your selected goal
                   </span>
                 </div>
@@ -947,13 +938,13 @@ export default function Home() {
               </div>
 
               {/* STEP 2: Primary File Dropzone (PDF / Image / OCR) */}
-              <div className="space-y-3" id="formats">
+              <div className="space-y-2.5" id="formats">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-                    STEP 2 — UPLOAD YOUR POST
+                  <span className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-300">
+                    Step 2 — Upload Your Post
                   </span>
-                  <span className="text-[11px] font-mono text-carbon-400">
-                    Client-side PDF &amp; OCR Web Worker
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    In-browser PDF &amp; OCR extraction
                   </span>
                 </div>
                 <FileDropzone
@@ -968,31 +959,31 @@ export default function Home() {
               </div>
 
               {/* Collapsible Benchmark Examples */}
-              <div className="rounded-xl bg-carbon-900/40 border border-carbon-800/80 overflow-hidden">
+              <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setShowMoreExamples(!showMoreExamples)}
-                  className="w-full p-3.5 flex items-center justify-between text-xs font-mono text-carbon-400 hover:text-white transition-colors cursor-pointer"
+                  className="w-full p-3.5 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                    <span>MORE BENCHMARK EXAMPLES</span>
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="font-semibold">More Benchmark Examples</span>
                   </div>
-                  <span className="text-[11px] text-carbon-500 font-mono">
+                  <span className="text-xs text-slate-400">
                     {showMoreExamples ? 'Hide Examples ▴' : 'Explore Examples ▾'}
                   </span>
                 </button>
 
                 {showMoreExamples && (
-                  <div className="p-3.5 pt-0 border-t border-carbon-800/60 flex flex-wrap gap-2 animate-fade-in">
+                  <div className="p-3.5 pt-0 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 animate-fade-in">
                     {SAMPLE_POSTS.map((sample, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => handleLoadSample(sample)}
-                        className="px-3 py-1.5 rounded-lg bg-carbon-800 border border-carbon-700 hover:border-cyan-500/50 hover:text-white text-xs font-mono text-carbon-300 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-sky-500/50 hover:text-slate-900 dark:hover:text-white text-xs text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-500 cursor-pointer"
                       >
-                        <FileCode className="w-3.5 h-3.5 text-cyan-400" />
+                        <FileCode className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                         {sample.title} ({sample.goal.toUpperCase()})
                       </button>
                     ))}
@@ -1001,12 +992,12 @@ export default function Home() {
               </div>
 
               {/* STEP 3 & STEP 4: Review Extracted Copy & Run Analysis */}
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-                    STEP 3 — REVIEW EXTRACTED CONTENT
+                  <span className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-300">
+                    Step 3 — Review Extracted Content
                   </span>
-                  <span className="text-[11px] font-mono text-carbon-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     Edit copy freely before final scan
                   </span>
                 </div>
@@ -1035,14 +1026,14 @@ export default function Home() {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-carbon-800 bg-carbon-950 py-8 text-xs font-mono text-carbon-500">
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 text-xs text-slate-500 dark:text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-cyan-400" />
-            <span className="text-white font-bold">SOCIAL X-RAY</span>
-            <span>• AI SOCIAL CONTENT FORENSICS</span>
+            <Activity className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <span className="text-slate-900 dark:text-white font-semibold">Social X-Ray</span>
+            <span>• Content Attention &amp; Audience Forensics</span>
           </div>
-          <p className="text-carbon-600">
+          <p className="text-slate-400 dark:text-slate-500">
             &ldquo;Find the moment your audience stops caring.&rdquo;
           </p>
         </div>

@@ -4,18 +4,14 @@ import React, { useEffect, useState } from 'react';
 import {
   Activity,
   Scan,
-  Radio,
-  Sparkles,
-  Terminal,
   Layers,
   BrainCircuit,
   MessageSquare,
   Stethoscope,
   CheckCircle2,
-  Cpu,
+  Loader2,
 } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
 import { cn } from '@/lib/utils/cn';
 
 interface ScanningHUDProps {
@@ -25,27 +21,25 @@ interface ScanningHUDProps {
 const FORENSIC_STAGES = [
   { id: 1, label: 'Scanning content', desc: 'Parsing structural layers & token density', icon: Scan },
   { id: 2, label: 'Mapping attention', desc: 'Tracking hook velocity & cognitive pacing', icon: BrainCircuit },
-  { id: 3, label: 'Detecting friction', desc: 'Isolating attention cliffs & throat-clearing', icon: Layers },
-  { id: 4, label: 'Analyzing conversation', desc: 'Evaluating psychological debate triggers', icon: MessageSquare },
-  { id: 5, label: 'Preparing treatment', desc: 'Formulating surgical rewrites & platform variants', icon: Stethoscope },
-  { id: 6, label: 'X-Ray complete', desc: 'Synthesizing forensic dossier', icon: CheckCircle2 },
+  { id: 3, label: 'Detecting friction', desc: 'Isolating attention cliffs & dropoffs', icon: Layers },
+  { id: 4, label: 'Analyzing conversation', desc: 'Evaluating psychological triggers', icon: MessageSquare },
+  { id: 5, label: 'Preparing treatment', desc: 'Formulating surgical repairs & platform variants', icon: Stethoscope },
+  { id: 6, label: 'Analysis complete', desc: 'Synthesizing diagnostic dossier', icon: CheckCircle2 },
 ];
 
 const TELEMETRY_STREAM = [
-  'INITIALIZING NEURAL AUDIENCE SIMULATOR...',
-  'MEASURING HOOK RETENTION COEFFICIENT...',
-  'CALCULATING COGNITIVE STRAIN INDEX...',
-  'ISOLATING PASSIVE BROADCAST PHRASES...',
-  'COMPILING SURGICAL BEFORE/AFTER DIFF...',
-  'CALIBRATING LINKEDIN, INSTAGRAM & TIKTOK DERIVATIVES...',
-  'FINALIZING FORENSIC AUTOPSY DOSSIER...',
+  'Measuring hook velocity & initial cognitive load...',
+  'Evaluating conversational friction points...',
+  'Detecting passive broadcast phrasing...',
+  'Compiling surgical line-by-line recommendations...',
+  'Calibrating LinkedIn, Instagram & TikTok adaptations...',
+  'Finalizing grounded intelligence report...',
 ];
 
 export const ScanningHUD: React.FC<ScanningHUDProps> = ({ goalName }) => {
   const [activeStage, setActiveStage] = useState(0);
   const [logIndex, setLogIndex] = useState(0);
 
-  // Progressive stage simulation for smooth non-blocking UX
   useEffect(() => {
     const stageInterval = setInterval(() => {
       setActiveStage((prev) => (prev < FORENSIC_STAGES.length - 1 ? prev + 1 : prev));
@@ -62,44 +56,30 @@ export const ScanningHUD: React.FC<ScanningHUDProps> = ({ goalName }) => {
   }, []);
 
   return (
-    <Card variant="telemetry" className="p-6 sm:p-10 relative overflow-hidden border-cyan-500/50 shadow-[0_0_40px_rgba(0,240,255,0.12)]">
-      {/* Radar scanning grid background */}
-      <div className="absolute inset-0 bg-[radial-gradient(#1E2638_1px,transparent_1px)] [background-size:18px_18px] opacity-40 pointer-events-none" />
-
-      {/* Laser scan line effect */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_25px_#00f0ff] animate-scan-line" />
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-2xl mx-auto">
-        {/* Radar Reticle Animation */}
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-cyan-500/30 animate-pulse-slow" />
-          <div className="absolute inset-2 rounded-full border border-dashed border-cyan-400/40 animate-[spin_12s_linear_infinite]" />
-          <div className="absolute inset-6 rounded-full border border-cyan-400/70" />
-          <div className="relative w-11 h-11 rounded-full bg-cyan-950/90 border border-cyan-400 flex items-center justify-center text-cyan-300 shadow-[0_0_30px_rgba(0,240,255,0.8)]">
-            <Radio className="w-6 h-6 animate-ping opacity-60 absolute" />
-            <Activity className="w-5 h-5 text-cyan-400" />
-          </div>
+    <Card className="p-6 sm:p-10 relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg font-sans">
+      <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 max-w-2xl mx-auto">
+        {/* Modern Loader Icon */}
+        <div className="relative w-16 h-16 rounded-2xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/60 flex items-center justify-center text-sky-600 dark:text-sky-400 shadow-sm">
+          <Loader2 className="w-8 h-8 animate-spin text-sky-600 dark:text-sky-400" />
         </div>
 
         {/* Status Header */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-center gap-2 text-xs font-mono text-cyan-400 tracking-widest uppercase">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            AI FORENSIC SCANNER ACTIVE
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+            Analyzing Post Content
           </div>
-          <h2 className="text-xl sm:text-2xl font-mono font-bold text-white tracking-wide">
-            DIAGNOSING AUDIENCE ATTENTION CLIFFS
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+            Diagnosing Audience Attention &amp; Engagement
           </h2>
-          <p className="text-xs sm:text-sm font-sans text-carbon-400 max-w-md mx-auto">
-            Calibrating engagement heuristics for{' '}
-            <span className="text-cyan-300 font-mono font-semibold uppercase">{goalName}</span> objective.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            Calibrating diagnostic heuristics for{' '}
+            <span className="text-slate-800 dark:text-slate-200 font-semibold uppercase">{goalName}</span> objective.
           </p>
         </div>
 
-        {/* 6-Stage Forensic Sequence Progress HUD */}
-        <div className="w-full space-y-3">
+        {/* 6-Stage Forensic Sequence Progress */}
+        <div className="w-full space-y-3 pt-2">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-left">
             {FORENSIC_STAGES.map((stage, idx) => {
               const Icon = stage.icon;
@@ -110,31 +90,31 @@ export const ScanningHUD: React.FC<ScanningHUDProps> = ({ goalName }) => {
                 <div
                   key={stage.id}
                   className={cn(
-                    'p-3 rounded-xl border transition-all duration-300 flex items-start gap-2.5',
+                    'p-3 rounded-xl border transition-all duration-200 flex items-start gap-2.5',
                     isCurrent
-                      ? 'bg-cyan-950/60 border-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.2)] text-white'
+                      ? 'bg-sky-50/80 dark:bg-sky-950/40 border-sky-300 dark:border-sky-700 text-slate-900 dark:text-white shadow-sm'
                       : isPast
-                      ? 'bg-carbon-900/90 border-emerald-500/40 text-carbon-200'
-                      : 'bg-carbon-950/40 border-carbon-800 text-carbon-500 opacity-50'
+                      ? 'bg-slate-50 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200'
+                      : 'bg-slate-50/40 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800/60 text-slate-400 dark:text-slate-600 opacity-60'
                   )}
                 >
                   <div
                     className={cn(
                       'p-1.5 rounded-lg shrink-0 mt-0.5',
                       isCurrent
-                        ? 'bg-cyan-500/20 text-cyan-300'
+                        ? 'bg-sky-500 text-white dark:bg-sky-500 dark:text-slate-950'
                         : isPast
-                        ? 'bg-emerald-950 text-emerald-400'
-                        : 'bg-carbon-800 text-carbon-600'
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600'
                     )}
                   >
                     <Icon className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-mono text-xs font-bold leading-tight truncate">
+                    <div className="text-xs font-semibold leading-tight truncate">
                       {stage.label}
                     </div>
-                    <div className="text-[10px] font-sans text-carbon-400 truncate">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                       {isCurrent ? 'Running...' : isPast ? 'Complete' : 'Queued'}
                     </div>
                   </div>
@@ -144,26 +124,20 @@ export const ScanningHUD: React.FC<ScanningHUDProps> = ({ goalName }) => {
           </div>
         </div>
 
-        {/* Live Terminal Telemetry Stream */}
-        <div className="w-full bg-carbon-950 border border-carbon-750 rounded-xl p-3.5 font-mono text-left text-xs space-y-1 shadow-inner">
-          <div className="flex items-center justify-between text-[11px] text-carbon-500 pb-1 border-b border-carbon-800">
-            <span className="flex items-center gap-1.5 text-cyan-400">
-              <Terminal className="w-3.5 h-3.5" /> NEURAL TELEMETRY STREAM
+        {/* Live Diagnostics Log */}
+        <div className="w-full bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 text-left text-xs space-y-1">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pb-1 border-b border-slate-200/80 dark:border-slate-800">
+            <span className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 font-medium">
+              <Activity className="w-3.5 h-3.5" /> Diagnostic Progress
             </span>
-            <span className="text-emerald-400 animate-pulse flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> ACTIVE
+            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
             </span>
           </div>
 
-          <div className="pt-1.5 space-y-1 text-[11px]">
-            <div className="text-carbon-400">
-              &gt; TARGET OBJECTIVE: <span className="text-cyan-300 uppercase">{goalName}</span>
-            </div>
-            <div className="text-cyan-300 flex items-center gap-2">
-              <span className="text-cyan-500">&gt;</span>
-              <span className="truncate">{TELEMETRY_STREAM[logIndex]}</span>
-              <span className="w-1.5 h-3 bg-cyan-400 animate-pulse ml-auto shrink-0" />
-            </div>
+          <div className="pt-1 text-xs text-slate-700 dark:text-slate-300 font-mono flex items-center gap-2">
+            <span className="text-sky-600 dark:text-sky-400">&gt;</span>
+            <span className="truncate">{TELEMETRY_STREAM[logIndex]}</span>
           </div>
         </div>
       </div>

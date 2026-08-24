@@ -60,26 +60,26 @@ export function getScoreColor(score: number): {
 } {
   if (score >= 80) {
     return {
-      text: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-      border: 'border-emerald-500/30',
+      text: 'text-emerald-700 dark:text-emerald-400',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+      border: 'border-emerald-200 dark:border-emerald-800/40',
       bar: 'bg-emerald-500',
       label: 'Optimal',
     };
   }
   if (score >= 60) {
     return {
-      text: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/30',
+      text: 'text-amber-700 dark:text-amber-400',
+      bg: 'bg-amber-50 dark:bg-amber-950/30',
+      border: 'border-amber-200 dark:border-amber-800/40',
       bar: 'bg-amber-500',
       label: 'Moderate Friction',
     };
   }
   return {
-    text: 'text-rose-400',
-    bg: 'bg-rose-500/10',
-    border: 'border-rose-500/30',
+    text: 'text-rose-700 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-950/30',
+    border: 'border-rose-200 dark:border-rose-800/40',
     bar: 'bg-rose-500',
     label: 'High Friction',
   };
@@ -95,26 +95,26 @@ export function getSeverityBadge(severity: SeverityLevel): {
   switch (severity) {
     case 'critical':
       return {
-        text: 'text-rose-400',
-        bg: 'bg-rose-950/40',
-        border: 'border-rose-800/60',
+        text: 'text-rose-700 dark:text-rose-300',
+        bg: 'bg-rose-50 dark:bg-rose-950/40',
+        border: 'border-rose-200 dark:border-rose-800/50',
         dot: 'bg-rose-500',
         label: 'CRITICAL DROP',
       };
     case 'moderate':
       return {
-        text: 'text-amber-400',
-        bg: 'bg-amber-950/40',
-        border: 'border-amber-800/60',
+        text: 'text-amber-700 dark:text-amber-300',
+        bg: 'bg-amber-50 dark:bg-amber-950/40',
+        border: 'border-amber-200 dark:border-amber-800/50',
         dot: 'bg-amber-500',
         label: 'MODERATE FRICTION',
       };
     case 'minor':
       return {
-        text: 'text-cyan-400',
-        bg: 'bg-cyan-950/40',
-        border: 'border-cyan-800/60',
-        dot: 'bg-cyan-400',
+        text: 'text-sky-700 dark:text-sky-300',
+        bg: 'bg-sky-50 dark:bg-sky-950/40',
+        border: 'border-sky-200 dark:border-sky-800/50',
+        dot: 'bg-sky-500',
         label: 'MINOR FRICTION',
       };
   }

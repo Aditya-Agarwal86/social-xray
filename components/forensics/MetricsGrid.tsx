@@ -19,7 +19,6 @@ import { DimensionDiagnosis, DiagnosticSeverity, GoalFitDiagnosis } from '@/lib/
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { ScoreCountUp } from '../ui/ScoreCountUp';
-import { XRayScanOverlay } from '../ui/XRayScanOverlay';
 import { getScoreColor } from '@/lib/utils/formatters';
 import { getGoalFitLabel } from '@/lib/analysis/prompt';
 import { cn } from '@/lib/utils/cn';
@@ -98,46 +97,44 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans text-slate-900 dark:text-slate-100">
       {/* 1. Goal-Specific Fit Score Card */}
-      <Card variant="accent" className="p-6 sm:p-8 bg-carbon-900/95 border-cyan-500/40 shadow-xl relative overflow-hidden">
-        <XRayScanOverlay active={true} showCorners={true} />
-
+      <Card className="p-5 sm:p-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-2 max-w-2xl">
+          <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-400 flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5" /> 03 — OBJECTIVE FIT
+              <span className="w-2 h-2 rounded-full bg-sky-500" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5" /> 03 — Objective Fit
               </span>
-              <Badge variant="cyan" size="sm" className="font-mono">
-                GOAL-SPECIFIC DIAGNOSIS
+              <Badge variant="cyan" size="sm">
+                Goal Diagnosis
               </Badge>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              {goalLabel.toUpperCase()}
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              {goalLabel}
             </h2>
-            <p className="text-xs sm:text-sm text-carbon-200 font-sans leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               {getInterpretation(overallScore)}
             </p>
           </div>
 
-          <div className="flex items-center gap-4 shrink-0 self-stretch sm:self-auto justify-between sm:justify-start p-4 rounded-2xl bg-carbon-950/90 border border-carbon-700 shadow-inner">
-            <div className="text-right font-mono">
-              <div className="text-[11px] text-carbon-400 uppercase">Goal Alignment</div>
-              <div className={cn('text-sm font-bold uppercase', overallStyle.text)}>
+          <div className="flex items-center gap-4 shrink-0 self-stretch sm:self-auto justify-between sm:justify-start p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800">
+            <div className="text-right">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-medium">Alignment</div>
+              <div className={cn('text-xs font-semibold', overallStyle.text)}>
                 {overallStyle.label}
               </div>
             </div>
 
-            <div className="h-10 w-px bg-carbon-750" />
+            <div className="h-9 w-px bg-slate-200 dark:bg-slate-800" />
 
-            <div className="flex items-baseline gap-1 font-mono">
+            <div className="flex items-baseline gap-1">
               <ScoreCountUp
                 value={overallScore}
-                className={cn('text-4xl sm:text-5xl font-extrabold tracking-tight', overallStyle.text)}
+                className={cn('text-3xl sm:text-4xl font-extrabold tracking-tight', overallStyle.text)}
               />
-              <span className="text-carbon-500 text-sm">/100</span>
+              <span className="text-slate-400 text-xs">/100</span>
             </div>
           </div>
         </div>
@@ -147,18 +144,18 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-carbon-200">
-              04 — 10 CORE FORENSIC DIMENSIONS
+            <TrendingUp className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              04 — 10 Core Forensic Dimensions
             </h3>
-            <Badge variant="neutral" size="sm" className="font-mono">
-              EVIDENCE-GROUNDED INFERENCES
+            <Badge variant="neutral" size="sm">
+              Evidence-Grounded
             </Badge>
           </div>
-          <span className="text-xs font-mono text-carbon-400">10 Core Dimensions</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">10 Core Dimensions</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {signalCards.map(({ key, name, data, icon: Icon }) => {
             if (!data) return null;
             const scoreStyle = getScoreColor(data.score);
@@ -167,20 +164,19 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
             return (
               <Card
                 key={key}
-                variant="glow"
-                className="p-4 flex flex-col justify-between space-y-3 bg-carbon-900/80 border-carbon-750 hover:border-carbon-600 transition-all duration-200"
+                className="p-4 flex flex-col justify-between space-y-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm transition-all duration-150"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="p-1.5 rounded-lg bg-carbon-800 border border-carbon-700 text-cyan-400">
-                      <Icon className="w-4 h-4" />
+                    <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 text-sky-600 dark:text-sky-400">
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <Badge variant={badgeVariant} size="sm" className="uppercase font-mono">
+                    <Badge variant={badgeVariant} size="sm" className="capitalize">
                       {data.severity}
                     </Badge>
                   </div>
 
-                  <h4 className="text-xs font-mono font-bold text-white leading-tight">
+                  <h4 className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">
                     {name}
                   </h4>
                 </div>
@@ -189,13 +185,13 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
                   <div className="flex items-baseline justify-between font-mono">
                     <ScoreCountUp
                       value={data.score}
-                      className={cn('text-2xl font-black', scoreStyle.text)}
+                      className={cn('text-xl font-bold', scoreStyle.text)}
                     />
-                    <span className="text-[11px] text-carbon-500">/ 100</span>
+                    <span className="text-[11px] text-slate-400">/ 100</span>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-full bg-carbon-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                     <div
                       className={cn('h-full transition-all duration-500 rounded-full', scoreStyle.bar)}
                       style={{ width: `${Math.min(100, Math.max(5, data.score))}%` }}
@@ -203,11 +199,11 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
                   </div>
 
                   {/* Evidence-Backed Explanation */}
-                  <div className="pt-1 text-[11px] text-carbon-300 font-sans leading-snug space-y-0.5">
-                    <span className="font-mono text-[10px] text-cyan-400 uppercase tracking-wider block font-semibold">
+                  <div className="pt-0.5 text-xs text-slate-600 dark:text-slate-300 leading-relaxed space-y-0.5">
+                    <span className="text-[10px] text-sky-600 dark:text-sky-400 uppercase tracking-wider block font-semibold">
                       Evidence:
                     </span>
-                    <p className="line-clamp-3 text-carbon-200">
+                    <p className="line-clamp-3 text-slate-600 dark:text-slate-300 text-xs">
                       {data.explanation || data.problem}
                     </p>
                   </div>

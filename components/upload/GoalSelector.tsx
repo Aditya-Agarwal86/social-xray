@@ -45,15 +45,13 @@ export const GoalSelector: React.FC<GoalSelectorProps> = ({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-mono font-semibold uppercase tracking-wider text-carbon-200">
-            Target Optimization Objective
-          </span>
+    <div className="space-y-2.5 font-sans">
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-200">
+          <Target className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+          <span>Target Optimization Objective</span>
         </div>
-        <span className="text-[11px] font-mono text-carbon-400">
+        <span className="text-slate-500 dark:text-slate-400 text-[11px]">
           Analysis adapts to your selected goal
         </span>
       </div>
@@ -68,10 +66,10 @@ export const GoalSelector: React.FC<GoalSelectorProps> = ({
               disabled={disabled}
               onClick={() => onSelectGoal(goal.id)}
               className={cn(
-                'group relative flex flex-col items-start p-3 rounded-xl border text-left transition-all duration-150',
+                'group relative flex flex-col items-start p-3 rounded-xl border text-left transition-all duration-150 cursor-pointer',
                 isSelected
-                  ? 'bg-cyan-950/40 border-cyan-400 text-white shadow-[0_0_20px_rgba(0,240,255,0.15)] ring-1 ring-cyan-400/50'
-                  : 'bg-carbon-900/80 border-carbon-750 text-carbon-300 hover:border-carbon-600 hover:text-white hover:bg-carbon-850',
+                  ? 'bg-sky-50/80 dark:bg-sky-950/30 border-sky-500 dark:border-sky-500/80 text-slate-900 dark:text-white shadow-sm ring-1 ring-sky-500/20'
+                  : 'bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-850 shadow-sm dark:shadow-none',
                 disabled && 'opacity-50 cursor-not-allowed'
               )}
             >
@@ -79,21 +77,21 @@ export const GoalSelector: React.FC<GoalSelectorProps> = ({
                 className={cn(
                   'p-1.5 rounded-lg border mb-2 transition-colors',
                   isSelected
-                    ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300'
-                    : 'bg-carbon-800 border-carbon-700 text-carbon-400 group-hover:text-carbon-200'
+                    ? 'bg-sky-500 text-white dark:bg-sky-500 dark:text-slate-950 border-transparent'
+                    : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'
                 )}
               >
                 {getIcon(goal.icon)}
               </div>
-              <div className="font-mono text-xs font-bold leading-tight mb-1">
+              <div className="font-semibold text-xs leading-tight mb-1 text-slate-900 dark:text-white">
                 {goal.label}
               </div>
-              <div className="text-[10px] text-carbon-400 leading-snug line-clamp-2">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
                 {goal.tagline}
               </div>
 
               {isSelected && (
-                <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f0ff]" />
+                <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-sky-500" />
               )}
             </button>
           );

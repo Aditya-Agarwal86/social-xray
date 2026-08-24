@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Activity, ArrowRight, Menu, X, KeyRound, Sparkles } from 'lucide-react';
+import { Activity, ArrowRight, Menu, X, KeyRound } from 'lucide-react';
 import { Button } from './Button';
 import { Badge } from './Badge';
+import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
   onOpenApiKeyModal?: () => void;
@@ -22,72 +23,73 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
   };
 
   return (
-    <header className="border-b border-carbon-750 bg-carbon-950/90 backdrop-blur-xl sticky top-0 z-50">
+    <header className="border-b border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand & Logo */}
         <a
           href="#"
-          className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-lg"
+          className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-lg"
           aria-label="SOCIAL X-RAY Homepage"
         >
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-carbon-900 border border-cyan-500/40 text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.2)] group-hover:border-cyan-400 transition-colors">
-            <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
-            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full animate-ping opacity-75" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/60 text-sky-600 dark:text-sky-400 group-hover:border-sky-400 transition-colors shadow-sm">
+            <Activity className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-base sm:text-lg font-bold tracking-wider text-white">
-                SOCIAL <span className="text-cyan-400">X-RAY</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-sans text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                Social <span className="text-sky-600 dark:text-sky-400">X-Ray</span>
               </span>
-              <Badge variant="cyan" size="sm" className="hidden sm:inline-flex text-[10px]">
+              <Badge variant="cyan" size="sm" className="hidden sm:inline-flex text-[9px] py-0 px-1 font-semibold">
                 LAB
               </Badge>
             </div>
-            <p className="text-[10px] text-carbon-400 tracking-tight font-mono hidden sm:block">
-              AI SOCIAL CONTENT FORENSICS
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans hidden sm:block">
+              Content Attention Forensics
             </p>
           </div>
         </a>
 
         {/* Desktop Navigation Links */}
         <nav
-          className="hidden md:flex items-center gap-7 text-xs font-mono text-carbon-300"
+          className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600 dark:text-slate-300 font-sans"
           aria-label="Main Navigation"
         >
           <button
             onClick={() => scrollToSection('how-it-works')}
-            className="hover:text-cyan-300 transition-colors focus:outline-none focus-visible:text-cyan-300 cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:text-sky-600 dark:focus-visible:text-sky-400 cursor-pointer"
           >
-            HOW IT WORKS
+            How It Works
           </button>
           <button
             onClick={() => scrollToSection('common-reasons')}
-            className="hover:text-cyan-300 transition-colors focus:outline-none focus-visible:text-cyan-300 cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:text-sky-600 dark:focus-visible:text-sky-400 cursor-pointer"
           >
-            FRICTIONS
+            Frictions
           </button>
           <button
             onClick={() => scrollToSection('dimensions')}
-            className="hover:text-cyan-300 transition-colors focus:outline-none focus-visible:text-cyan-300 cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:text-sky-600 dark:focus-visible:text-sky-400 cursor-pointer"
           >
-            10 DIMENSIONS
+            10 Dimensions
           </button>
           <button
             onClick={() => scrollToSection('upload-section')}
-            className="hover:text-cyan-300 transition-colors focus:outline-none focus-visible:text-cyan-300 cursor-pointer"
+            className="hover:text-slate-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:text-sky-600 dark:focus-visible:text-sky-400 cursor-pointer"
           >
-            INGEST POST
+            Ingest Post
           </button>
         </nav>
 
-        {/* Action Button & Mobile Hamburger */}
-        <div className="flex items-center gap-2.5">
+        {/* Action Controls & Theme Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
+
           <Button
             variant="primary"
             size="sm"
             onClick={() => scrollToSection('upload-section')}
             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-            className="hidden sm:inline-flex text-xs font-mono tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.2)]"
+            className="hidden sm:inline-flex text-xs font-medium"
           >
             X-Ray My Post →
           </Button>
@@ -96,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-carbon-300 hover:text-white hover:bg-carbon-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+            className="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
           >
@@ -108,32 +110,32 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
         <nav
-          className="md:hidden border-t border-carbon-800 bg-carbon-950/95 backdrop-blur-xl px-4 py-4 space-y-3 font-mono text-xs animate-fade-in"
+          className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-4 space-y-2.5 font-sans text-xs animate-fade-in"
           aria-label="Mobile Navigation"
         >
           <button
             onClick={() => scrollToSection('how-it-works')}
-            className="block w-full text-left py-2 text-carbon-300 hover:text-cyan-400 transition-colors"
+            className="block w-full text-left py-2 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
           >
-            HOW IT WORKS
+            How It Works
           </button>
           <button
             onClick={() => scrollToSection('common-reasons')}
-            className="block w-full text-left py-2 text-carbon-300 hover:text-cyan-400 transition-colors"
+            className="block w-full text-left py-2 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
           >
-            FRICTIONS
+            Frictions
           </button>
           <button
             onClick={() => scrollToSection('dimensions')}
-            className="block w-full text-left py-2 text-carbon-300 hover:text-cyan-400 transition-colors"
+            className="block w-full text-left py-2 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
           >
-            10 DIMENSIONS
+            10 Dimensions
           </button>
           <button
             onClick={() => scrollToSection('upload-section')}
-            className="block w-full text-left py-2 text-cyan-400 font-bold transition-colors"
+            className="block w-full text-left py-2 text-sky-600 dark:text-sky-400 font-semibold transition-colors"
           >
-            X-RAY MY POST →
+            X-Ray My Post →
           </button>
           {onOpenApiKeyModal && (
             <button
@@ -141,10 +143,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
                 setMobileMenuOpen(false);
                 onOpenApiKeyModal();
               }}
-              className="block w-full text-left py-2 text-carbon-300 hover:text-cyan-300 transition-colors flex items-center gap-2"
+              className="block w-full text-left py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800"
             >
-              <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
-              <span>CONFIGURE GEMINI API KEY</span>
+              <KeyRound className="w-3.5 h-3.5 text-sky-500" />
+              <span>Configure Gemini API Key</span>
             </button>
           )}
         </nav>

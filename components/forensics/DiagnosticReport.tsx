@@ -6,24 +6,15 @@ import {
   Download,
   Printer,
   RotateCcw,
-  Sparkles,
-  Share2,
-  FileCheck2,
   Calendar,
   Clock,
   AlignLeft,
-  FileText,
   RefreshCw,
-  Layers,
   MessageSquare,
   Repeat2,
   Heart,
   Eye,
-  Bookmark,
-  Image as ImageIcon,
   CheckCircle2,
-  AlertCircle,
-  ShieldCheck,
   Info,
   Award,
 } from 'lucide-react';
@@ -31,7 +22,6 @@ import { SocialXRayAnalysisResult } from '@/lib/analysis/types';
 import { UploadedFileState } from '@/types/analysis';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Card } from '../ui/Card';
 import { MetricsGrid } from './MetricsGrid';
 import { FrictionMap } from './FrictionMap';
 import { PostAutopsy } from './PostAutopsy';
@@ -137,62 +127,61 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
     report.overallScore >= 80 ? 'OPTIMAL' : report.overallScore >= 60 ? 'MODERATE' : 'CRITICAL ATTENTION FRICTION';
 
   return (
-    <div className="space-y-10 animate-fade-in print:space-y-6">
+    <div className="space-y-8 animate-fade-in print:space-y-6 font-sans text-slate-900 dark:text-slate-100">
       {/* 1. Analysis Screen Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 bg-carbon-900 border border-carbon-750 rounded-2xl shadow-xl">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs text-cyan-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-              SOCIAL X-RAY
+            <span className="text-xs text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              Social X-Ray
             </span>
-            <span className="text-carbon-600 font-mono text-xs">•</span>
-            <span className="font-mono text-xs text-white font-bold uppercase tracking-wider">
-              FORENSIC DOSSIER
+            <span className="text-slate-300 dark:text-slate-700 text-xs">•</span>
+            <span className="text-xs text-slate-700 dark:text-slate-200 font-semibold uppercase tracking-wider">
+              Diagnostic Dossier
             </span>
-            <Badge variant="cyan" size="sm" className="font-mono">
+            <Badge variant="cyan" size="sm">
               {targetGoal.toUpperCase()} GOAL
             </Badge>
             {uploadedFile && (
               <Badge
                 variant={uploadedFile.source === 'demo' ? 'amber' : uploadedFile.source === 'pdf' ? 'red' : 'cyan'}
                 size="sm"
-                className="font-mono"
               >
                 {uploadedFile.source === 'demo' ? 'DEMO POST' : uploadedFile.source.toUpperCase()}
               </Badge>
             )}
             {report.contentInventory?.captionStatus === 'NOT_DETECTED' && (
-              <Badge variant="cyan" size="sm" className="font-mono">
+              <Badge variant="cyan" size="sm">
                 VISUAL POST
               </Badge>
             )}
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-mono font-bold text-white tracking-tight">
-            GROUNDED FORENSIC AUDIT REPORT
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Grounded Forensic Audit Report
           </h1>
 
           {/* Telemetry metadata chips */}
-          <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-carbon-400 pt-0.5">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 pt-0.5">
             <span className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-carbon-500" />
+              <Calendar className="w-3.5 h-3.5" />
               {new Date().toLocaleDateString(undefined, {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
               })}
             </span>
-            <span className="text-carbon-600">•</span>
+            <span>•</span>
             <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-carbon-500" />
-              ~{readingTimeSeconds}s view / reading load
+              <Clock className="w-3.5 h-3.5" />
+              ~{readingTimeSeconds}s reading load
             </span>
             {wordCount > 0 && (
               <>
-                <span className="text-carbon-600">•</span>
+                <span>•</span>
                 <span className="flex items-center gap-1.5">
-                  <AlignLeft className="w-3.5 h-3.5 text-carbon-500" />
+                  <AlignLeft className="w-3.5 h-3.5" />
                   {wordCount} words analyzed
                 </span>
               </>
@@ -201,24 +190,24 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
 
         {/* Global Action Controls */}
-        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0 print:hidden">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 print:hidden">
           <Button
             variant="outline"
             size="sm"
             onClick={handleExportJson}
-            leftIcon={<Download className="w-3.5 h-3.5 text-carbon-400" />}
-            className="text-xs font-mono"
+            leftIcon={<Download className="w-3.5 h-3.5" />}
+            className="text-xs"
             aria-label="Export complete diagnostic report as structured JSON"
           >
-            Export JSON
+            {downloadSuccess ? 'Exported!' : 'Export JSON'}
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             onClick={handlePrint}
-            leftIcon={<Printer className="w-3.5 h-3.5 text-carbon-400" />}
-            className="text-xs font-mono"
+            leftIcon={<Printer className="w-3.5 h-3.5" />}
+            className="text-xs"
             aria-label="Print or save PDF report"
           >
             Print
@@ -228,8 +217,8 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             variant="secondary"
             size="sm"
             onClick={onReanalyze}
-            leftIcon={<RefreshCw className="w-3.5 h-3.5 text-cyan-400" />}
-            className="text-xs font-mono"
+            leftIcon={<RefreshCw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />}
+            className="text-xs"
             aria-label="Re-analyze this post"
           >
             Re-Analyze
@@ -239,8 +228,8 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             variant="primary"
             size="sm"
             onClick={onReset}
-            leftIcon={<RotateCcw className="w-3.5 h-3.5 text-carbon-950" />}
-            className="text-xs font-mono"
+            leftIcon={<RotateCcw className="w-3.5 h-3.5 text-white dark:text-slate-950" />}
+            className="text-xs"
             aria-label="Analyze Another"
           >
             Analyze Another
@@ -249,77 +238,77 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       </div>
 
       {/* 01 — CONTENT SNAPSHOT (Observed Facts & Performance Evidence) */}
-      <div className="p-5 bg-carbon-900 border border-carbon-750 rounded-2xl font-mono text-xs space-y-4 shadow-lg">
+      <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-cyan-400" /> 01 — CONTENT SNAPSHOT
+          <span className="font-semibold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+            <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400" /> 01 — Content Snapshot
           </span>
-          <Badge variant="cyan" size="sm" className="font-mono">
-            OBSERVED FACTS
+          <Badge variant="cyan" size="sm">
+            Observed Facts
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
           {observedFacts.map((fact, idx) => (
-            <div key={idx} className="p-3 rounded-xl bg-carbon-950/80 border border-carbon-800 flex items-start gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
-              <span className="text-carbon-200 font-sans leading-relaxed text-xs">{fact}</span>
+            <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 shrink-0" />
+              <span className="text-slate-700 dark:text-slate-200 leading-relaxed text-xs">{fact}</span>
             </div>
           ))}
         </div>
 
         {/* Observed Performance Metrics (if present in asset) */}
         {hasObservedMetrics && metrics && (
-          <div className="pt-3 border-t border-carbon-800 space-y-3">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-cyan-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-cyan-400" /> Observed Performance Counters
+              <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> Observed Performance Counters
               </span>
-              <Badge variant="cyan" size="sm" className="font-mono text-[9px]">
-                HISTORICAL OBSERVATIONS
+              <Badge variant="cyan" size="sm" className="text-[10px]">
+                Historical Baseline
               </Badge>
             </div>
-            <p className="text-[11px] text-carbon-400 font-sans">
-              Extracted directly from visible interface counters. Historical descriptive evidence, not AI predictions.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Extracted directly from visible interface counters. Historical descriptive evidence, not predictions.
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {metrics.replies !== null && (
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/90 border border-carbon-800">
-                  <MessageSquare className="w-4 h-4 text-carbon-400" />
+                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                  <MessageSquare className="w-4 h-4 text-slate-400" />
                   <div>
-                    <span className="text-[10px] text-carbon-400 block uppercase">Replies (Observed)</span>
-                    <span className="font-bold text-white text-base">{metrics.replies}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Replies</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-sm">{metrics.replies}</span>
                   </div>
                 </div>
               )}
 
               {metrics.reposts !== null && (
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/90 border border-carbon-800">
-                  <Repeat2 className="w-4 h-4 text-emerald-400" />
+                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                  <Repeat2 className="w-4 h-4 text-emerald-500" />
                   <div>
-                    <span className="text-[10px] text-carbon-400 block uppercase">Reposts (Observed)</span>
-                    <span className="font-bold text-white text-base">{metrics.reposts}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Reposts</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-sm">{metrics.reposts}</span>
                   </div>
                 </div>
               )}
 
               {metrics.likes !== null && (
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/90 border border-carbon-800">
-                  <Heart className="w-4 h-4 text-rose-400" />
+                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                  <Heart className="w-4 h-4 text-rose-500" />
                   <div>
-                    <span className="text-[10px] text-carbon-400 block uppercase">Likes (Observed)</span>
-                    <span className="font-bold text-white text-base">{metrics.likes}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Likes</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-sm">{metrics.likes}</span>
                   </div>
                 </div>
               )}
 
               {metrics.views !== null && (
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/90 border border-carbon-800">
-                  <Eye className="w-4 h-4 text-cyan-400" />
+                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                  <Eye className="w-4 h-4 text-sky-500" />
                   <div>
-                    <span className="text-[10px] text-carbon-400 block uppercase">Views (Observed)</span>
-                    <span className="font-bold text-white text-base">{metrics.views}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Views</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-sm">{metrics.views}</span>
                   </div>
                 </div>
               )}
@@ -327,28 +316,28 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
 
             {/* Observable Descriptive Ratios */}
             {report.descriptiveRatios && report.descriptiveRatios.length > 0 && (
-              <div className="pt-2 border-t border-carbon-800/80 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
                     Observed Descriptive Rates:
                   </span>
-                  <span className="text-[10px] text-carbon-500 font-mono">Platform counter rates</span>
+                  <span className="text-[11px] text-slate-400">Platform counter rates</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {report.descriptiveRatios.map((ratio, idx) => (
-                    <div key={idx} className="p-2.5 rounded-xl bg-carbon-950/80 border border-carbon-800 space-y-1">
+                    <div key={idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-0.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-carbon-300 font-sans font-semibold">{ratio.metric}</span>
-                        <span className="text-xs font-mono font-bold text-cyan-300">{ratio.value}</span>
+                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{ratio.metric}</span>
+                        <span className="text-xs font-mono font-bold text-sky-600 dark:text-sky-400">{ratio.value}</span>
                       </div>
-                      <div className="text-[10px] text-carbon-500 font-mono">
+                      <div className="text-[10px] text-slate-400 font-mono">
                         {ratio.numerator} / {ratio.denominator}
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-carbon-500 font-sans italic">
-                  Calculated from visible platform counters at time of capture. Multiple unmeasured factors influence performance; the screenshot alone cannot establish causation.
+                <p className="text-[11px] text-slate-400 italic">
+                  Calculated from visible platform counters at time of capture. Unmeasured factors influence performance; the screenshot alone cannot establish causation.
                 </p>
               </div>
             )}
@@ -357,10 +346,10 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       </div>
 
       {/* 02 — EXECUTIVE VERDICT */}
-      <div className="p-5 sm:p-6 bg-carbon-900 border border-carbon-750 rounded-2xl font-mono text-xs space-y-4 shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-800 pb-3">
-          <span className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
-            <Award className="w-4 h-4 text-cyan-400" /> 02 — EXECUTIVE VERDICT
+      <div className="p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs space-y-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+          <span className="font-semibold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+            <Award className="w-4 h-4 text-sky-600 dark:text-sky-400" /> 02 — Executive Verdict
           </span>
           <div className="flex items-center gap-2">
             <Badge
@@ -372,47 +361,47 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
                   : 'red'
               }
               size="sm"
-              className="font-bold uppercase"
+              className="font-semibold uppercase"
             >
               {overallSeverity}
             </Badge>
-            <span className="text-white font-bold text-sm">{report.overallScore} / 100</span>
+            <span className="text-slate-900 dark:text-white font-bold text-sm">{report.overallScore} / 100</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          <div className="p-3.5 rounded-xl bg-carbon-950/80 border border-carbon-800 space-y-1">
-            <span className="text-[10px] uppercase font-semibold text-rose-400 block">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+            <span className="text-[10px] uppercase font-semibold text-rose-600 dark:text-rose-400 block">
               Primary Friction:
             </span>
-            <p className="text-xs text-carbon-200 font-sans leading-relaxed">
+            <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               {primaryFrictionSummary}
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-carbon-950/80 border border-carbon-800 space-y-1">
-            <span className="text-[10px] uppercase font-semibold text-emerald-400 block">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+            <span className="text-[10px] uppercase font-semibold text-emerald-600 dark:text-emerald-400 block">
               Strongest Dimension:
             </span>
-            <p className="text-xs text-carbon-200 font-sans leading-relaxed">
-              <strong className="text-white">{strongestDimension.name}</strong> — {strongestDimension.score}/100
+            <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+              <strong className="text-slate-900 dark:text-white">{strongestDimension.name}</strong> — {strongestDimension.score}/100
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-carbon-950/80 border border-carbon-800 space-y-1">
-            <span className="text-[10px] uppercase font-semibold text-cyan-400 block">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+            <span className="text-[10px] uppercase font-semibold text-sky-600 dark:text-sky-400 block">
               Biggest Opportunity:
             </span>
-            <p className="text-xs text-carbon-200 font-sans leading-relaxed">
+            <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               {biggestOpportunitySummary}
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-carbon-950/80 border border-carbon-800 space-y-1">
-            <span className="text-[10px] uppercase font-semibold text-amber-400 block">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+            <span className="text-[10px] uppercase font-semibold text-amber-600 dark:text-amber-400 block">
               Highest-Priority Action:
             </span>
-            <p className="text-xs text-carbon-200 font-sans leading-relaxed">
+            <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               {highestPriorityActionSummary}
             </p>
           </div>
@@ -462,18 +451,18 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       <GoalAdaptiveCard recommendation={report.goalRecommendation} />
 
       {/* 11 — LIMITATIONS & CONFIDENCE */}
-      <div className="p-5 rounded-2xl bg-carbon-950 border border-carbon-800 space-y-4 font-mono text-xs shadow-lg">
+      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3.5 text-xs shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="space-y-0.5">
-            <span className="font-bold text-carbon-200 uppercase tracking-wider flex items-center gap-2">
-              <Info className="w-4 h-4 text-cyan-400" /> 11 — LIMITATIONS &amp; CONFIDENCE
+            <span className="font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+              <Info className="w-4 h-4 text-sky-600 dark:text-sky-400" /> 11 — Limitations &amp; Confidence
             </span>
-            <span className="text-[11px] text-carbon-400 font-sans block">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
               What the screenshot cannot establish &amp; confidence ratings
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-carbon-400">Overall Diagnostic Confidence:</span>
+            <span className="text-slate-500 dark:text-slate-400">Overall Confidence:</span>
             <Badge
               variant={report.confidence?.level === 'HIGH' ? 'emerald' : report.confidence?.level === 'MEDIUM' ? 'amber' : 'red'}
               size="sm"
@@ -483,24 +472,23 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
           </div>
         </div>
 
-        <p className="text-carbon-300 text-xs font-sans leading-relaxed">
+        <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
           {report.confidence?.reason || 'Diagnostics based directly on detected visual elements and verified content inventory.'}
         </p>
 
         {/* Confidence Domains Breakdown */}
         {report.confidence?.breakdown && report.confidence.breakdown.length > 0 && (
-          <div className="pt-2 border-t border-carbon-800/80 space-y-2">
-            <span className="text-[10px] text-cyan-400 uppercase tracking-wider block font-bold">
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <span className="text-[11px] text-slate-700 dark:text-slate-300 uppercase tracking-wider block font-semibold">
               Confidence By Analysis Domain:
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {report.confidence.breakdown.map((item, idx) => (
-                <div key={idx} className="p-2.5 rounded-lg bg-carbon-900/80 border border-carbon-800 flex items-center justify-between gap-2">
-                  <span className="text-carbon-200 font-sans text-xs">{item.domain}</span>
+                <div key={idx} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-slate-700 dark:text-slate-200 text-xs">{item.domain}</span>
                   <Badge
                     variant={item.level === 'HIGH' ? 'emerald' : item.level === 'MEDIUM' ? 'amber' : 'red'}
                     size="sm"
-                    className="font-mono text-[9px] py-0 px-1.5 uppercase"
                   >
                     {item.level}
                   </Badge>
@@ -511,11 +499,11 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         )}
 
         {report.limitations && report.limitations.length > 0 && (
-          <div className="pt-2 border-t border-carbon-800/80 space-y-1">
-            <span className="text-[10px] text-carbon-500 uppercase tracking-wider block">
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-medium">
               Forensic Boundary Notes:
             </span>
-            <ul className="space-y-1 text-[11px] text-carbon-400 font-sans list-disc list-inside">
+            <ul className="space-y-1 text-xs text-slate-500 dark:text-slate-400 list-disc list-inside">
               {report.limitations.map((lim, idx) => (
                 <li key={idx}>{lim}</li>
               ))}
@@ -525,17 +513,17 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       </div>
 
       {/* Bottom Re-scan Bar */}
-      <div className="pt-6 border-t border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
-        <div className="text-xs font-mono text-carbon-500">
-          SOCIAL X-RAY LAB • GROUNDED AUDIENCE PSYCHOLOGY FORENSICS
+      <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
+        <div className="text-xs text-slate-500 dark:text-slate-400">
+          Social X-Ray • Content Attention &amp; Audience Psychology Forensics
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <Button
             variant="secondary"
             size="md"
             onClick={onReanalyze}
-            leftIcon={<RefreshCw className="w-4 h-4 text-cyan-400" />}
-            className="flex-1 sm:flex-none text-xs font-mono"
+            leftIcon={<RefreshCw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />}
+            className="flex-1 sm:flex-none text-xs"
           >
             Re-Analyze Post
           </Button>
@@ -543,8 +531,8 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             variant="primary"
             size="md"
             onClick={onReset}
-            leftIcon={<RotateCcw className="w-4 h-4 text-carbon-950" />}
-            className="flex-1 sm:flex-none text-xs font-mono"
+            leftIcon={<RotateCcw className="w-3.5 h-3.5 text-white dark:text-slate-950" />}
+            className="flex-1 sm:flex-none text-xs"
           >
             Analyze Another Post
           </Button>

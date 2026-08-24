@@ -13,23 +13,16 @@ export const Card: React.FC<CardProps> = ({
   glowColor = 'cyan',
   ...props
 }) => {
-  const glowStyles = {
-    cyan: 'hover:border-cyan-500/50 hover:shadow-[0_0_25px_rgba(0,240,255,0.12)]',
-    amber: 'hover:border-amber-500/50 hover:shadow-[0_0_25px_rgba(245,158,11,0.12)]',
-    red: 'hover:border-rose-500/50 hover:shadow-[0_0_25px_rgba(239,68,68,0.12)]',
-    emerald: 'hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.12)]',
-  };
-
   const variantStyles = {
-    default: 'bg-carbon-850/80 border border-carbon-700/80 backdrop-blur-md',
-    glow: cn('bg-carbon-850/80 border border-carbon-700/80 backdrop-blur-md transition-all duration-200', glowStyles[glowColor]),
-    accent: 'bg-gradient-to-b from-carbon-800/90 to-carbon-900/90 border border-cyan-500/30 backdrop-blur-md',
-    telemetry: 'bg-carbon-900/95 border border-carbon-750 font-mono relative overflow-hidden',
+    default: 'bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none',
+    glow: 'bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow transition-all duration-150',
+    accent: 'bg-white dark:bg-slate-900/95 border border-sky-500/30 dark:border-sky-500/30 shadow-sm',
+    telemetry: 'bg-slate-50/80 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800',
   };
 
   return (
     <div
-      className={cn('rounded-xl p-5 text-carbon-100 relative', variantStyles[variant], className)}
+      className={cn('rounded-xl p-5 text-slate-900 dark:text-slate-100 relative font-sans', variantStyles[variant], className)}
       {...props}
     >
       {children}

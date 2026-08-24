@@ -82,16 +82,12 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
   );
 
   return (
-    <div className={`space-y-4 rounded-2xl transition-all ${
-      isReviewRecommended && sourceType === 'image' && !isImageOnly
-        ? 'p-1 bg-amber-500/5'
-        : ''
-    }`}>
-      {/* Header bar with forensic telemetry */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-carbon-900 border border-carbon-750 rounded-xl font-mono text-xs text-carbon-300">
+    <div className="space-y-3 font-sans text-slate-900 dark:text-slate-100">
+      {/* Header bar with content summary */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-white uppercase tracking-wider">
-            STEP 3: CONTENT REVIEW
+          <span className="font-semibold text-slate-900 dark:text-white">
+            Step 3: Content Review
           </span>
           {sourceType === 'demo' ? (
             <Badge variant="amber" size="sm">
@@ -107,7 +103,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             </Badge>
           ) : typeof confidence === 'number' ? (
             <Badge variant={confidence >= 80 ? 'emerald' : confidence >= 60 ? 'amber' : 'red'} size="sm">
-              EXTRACTION CONFIDENCE: {confidence >= 80 ? 'HIGH' : confidence >= 60 ? 'MEDIUM' : 'LOW'}
+              CONFIDENCE: {confidence >= 80 ? 'HIGH' : confidence >= 60 ? 'MEDIUM' : 'LOW'}
             </Badge>
           ) : (
             <Badge variant={quality === 'HIGH' ? 'emerald' : 'amber'} size="sm">
@@ -116,23 +112,23 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-4 text-carbon-400">
+        <div className="flex items-center gap-3.5 text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-1.5">
-            <Type className="w-3.5 h-3.5 text-carbon-500" />
+            <Type className="w-3.5 h-3.5" />
             <span>
-              <strong className="text-white">{characterCount}</strong> chars
+              <strong className="text-slate-800 dark:text-slate-200">{characterCount}</strong> chars
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <AlignLeft className="w-3.5 h-3.5 text-carbon-500" />
+            <AlignLeft className="w-3.5 h-3.5" />
             <span>
-              <strong className="text-white">{words}</strong> words
+              <strong className="text-slate-800 dark:text-slate-200">{words}</strong> words
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-carbon-500" />
+            <Clock className="w-3.5 h-3.5" />
             <span>
-              ~<strong className="text-white">{seconds}s</strong> read
+              ~<strong className="text-slate-800 dark:text-slate-200">{seconds}s</strong> read
             </span>
           </div>
         </div>
@@ -140,100 +136,100 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
 
       {/* CONTENT INVENTORY HUD */}
       {inventory && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-xl bg-carbon-950/90 border border-carbon-800 text-xs font-mono">
-          <div className="p-2.5 rounded-lg bg-carbon-900/70 border border-carbon-800 space-y-1">
-            <span className="text-carbon-400 text-[10px] uppercase flex items-center gap-1">
-              <ImageIcon className="w-3 h-3 text-cyan-400" /> Visual Media
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-xs">
+          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
+              <ImageIcon className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Visual Media
             </span>
-            <span className={`text-sm font-bold ${inventory.hasVisualMedia ? 'text-cyan-400' : 'text-carbon-400'}`}>
-              {inventory.hasVisualMedia ? 'DETECTED' : 'TEXT ONLY'}
+            <span className={`text-xs font-semibold ${inventory.hasVisualMedia ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500'}`}>
+              {inventory.hasVisualMedia ? 'Detected' : 'Text Only'}
             </span>
           </div>
 
-          <div className="p-2.5 rounded-lg bg-carbon-900/70 border border-carbon-800 space-y-1">
-            <span className="text-carbon-400 text-[10px] uppercase flex items-center gap-1">
-              <Type className="w-3 h-3 text-carbon-400" /> Caption Text
+          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
+              <Type className="w-3 h-3 text-slate-500" /> Caption Text
             </span>
-            <span className={`text-sm font-bold ${
+            <span className={`text-xs font-semibold ${
               inventory.captionStatus === 'DETECTED'
-                ? 'text-emerald-400'
+                ? 'text-emerald-600 dark:text-emerald-400'
                 : inventory.captionStatus === 'UNCERTAIN'
-                ? 'text-amber-400'
-                : 'text-carbon-400'
+                ? 'text-amber-600 dark:text-amber-400'
+                : 'text-slate-500'
             }`}>
               {inventory.captionStatus === 'NOT_DETECTED'
-                ? 'NOT DETECTED'
+                ? 'Not Detected'
                 : inventory.captionStatus}
             </span>
           </div>
 
-          <div className="p-2.5 rounded-lg bg-carbon-900/70 border border-carbon-800 space-y-1">
-            <span className="text-carbon-400 text-[10px] uppercase flex items-center gap-1">
+          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
               # Hashtags
             </span>
-            <span className="text-sm font-bold text-carbon-200">
-              {inventory.hashtags.length > 0 ? `${inventory.hashtags.length} Detected` : 'NONE'}
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {inventory.hashtags.length > 0 ? `${inventory.hashtags.length} Detected` : 'None'}
             </span>
           </div>
 
-          <div className="p-2.5 rounded-lg bg-carbon-900/70 border border-carbon-800 space-y-1">
-            <span className="text-carbon-400 text-[10px] uppercase flex items-center gap-1">
+          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
               CTA / Action
             </span>
-            <span className={`text-sm font-bold ${inventory.cta ? 'text-emerald-400' : 'text-carbon-400'}`}>
-              {inventory.cta ? 'DETECTED' : 'NONE DETECTED'}
+            <span className={`text-xs font-semibold ${inventory.cta ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}`}>
+              {inventory.cta ? 'Detected' : 'None Detected'}
             </span>
           </div>
         </div>
       )}
 
-      {/* OBSERVED PERFORMANCE METRICS (From screenshot UI) */}
+      {/* OBSERVED PERFORMANCE METRICS */}
       {hasObservedMetrics && inventory?.engagementMetrics && (
-        <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-900/40 text-xs font-mono space-y-2">
+        <div className="p-3.5 rounded-xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200/80 dark:border-sky-900/40 text-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-cyan-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <Eye className="w-3.5 h-3.5 text-cyan-400" /> OBSERVED SCREENSHOT PERFORMANCE (BASELINE)
+            <span className="font-semibold text-sky-800 dark:text-sky-300 text-xs flex items-center gap-1.5">
+              <Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> Observed Performance Counters (Baseline)
             </span>
-            <span className="text-[10px] text-carbon-400">Extracted from interface counters</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Extracted from interface counters</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-0.5">
             {inventory.engagementMetrics.replies !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-carbon-900/80 border border-carbon-800">
-                <MessageSquare className="w-3.5 h-3.5 text-carbon-400" />
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block">Replies</span>
-                  <span className="font-bold text-white text-sm">{inventory.engagementMetrics.replies}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Replies</span>
+                  <span className="font-semibold text-slate-900 dark:text-white text-xs">{inventory.engagementMetrics.replies}</span>
                 </div>
               </div>
             )}
 
             {inventory.engagementMetrics.reposts !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-carbon-900/80 border border-carbon-800">
-                <Repeat2 className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <Repeat2 className="w-3.5 h-3.5 text-emerald-500" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block">Reposts</span>
-                  <span className="font-bold text-white text-sm">{inventory.engagementMetrics.reposts}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Reposts</span>
+                  <span className="font-semibold text-slate-900 dark:text-white text-xs">{inventory.engagementMetrics.reposts}</span>
                 </div>
               </div>
             )}
 
             {inventory.engagementMetrics.likes !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-carbon-900/80 border border-carbon-800">
-                <Heart className="w-3.5 h-3.5 text-rose-400" />
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <Heart className="w-3.5 h-3.5 text-rose-500" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block">Likes</span>
-                  <span className="font-bold text-white text-sm">{inventory.engagementMetrics.likes}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Likes</span>
+                  <span className="font-semibold text-slate-900 dark:text-white text-xs">{inventory.engagementMetrics.likes}</span>
                 </div>
               </div>
             )}
 
             {inventory.engagementMetrics.views !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-carbon-900/80 border border-carbon-800">
-                <Eye className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <Eye className="w-3.5 h-3.5 text-sky-500" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block">Views</span>
-                  <span className="font-bold text-white text-sm">{inventory.engagementMetrics.views}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Views</span>
+                  <span className="font-semibold text-slate-900 dark:text-white text-xs">{inventory.engagementMetrics.views}</span>
                 </div>
               </div>
             )}
@@ -243,30 +239,30 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
 
       {/* ONE Primary Extraction Status Block */}
       {isImageOnly ? (
-        <div className="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-800/50 text-cyan-200 text-xs font-mono flex items-start gap-2.5">
-          <ImageIcon className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/50 text-sky-900 dark:text-sky-200 text-xs flex items-start gap-2.5">
+          <ImageIcon className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-bold text-cyan-300 block uppercase">VISUAL-ONLY POST DETECTED</span>
-            <p className="font-sans text-cyan-100/90 leading-relaxed">
+            <span className="font-semibold text-sky-900 dark:text-sky-300 block">Visual-Only Post Detected</span>
+            <p className="text-sky-800/90 dark:text-sky-100/90 text-xs leading-relaxed font-sans">
               No written post caption was found in this screenshot. The diagnostic engine will evaluate visual stopping power, composition, and aesthetic resonance, and prescribe goal-specific captions and conversion hooks.
             </p>
           </div>
         </div>
       ) : isReviewRecommended && words > 0 ? (
-        <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/60 text-amber-200 text-xs font-mono space-y-1.5">
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
           <div className="flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <span className="font-bold text-amber-300 uppercase block">
-                EXTRACTION CONFIDENCE: {typeof confidence === 'number' && confidence < 60 ? 'LOW' : 'MEDIUM'}
+              <span className="font-semibold text-amber-900 dark:text-amber-300 block">
+                Extraction Confidence: {typeof confidence === 'number' && confidence < 60 ? 'Low' : 'Medium'}
               </span>
-              <p className="font-sans leading-relaxed text-amber-100">
+              <p className="leading-relaxed text-amber-800 dark:text-amber-100">
                 Some characters may have been misread. Review and refine the extracted copy before analysis.
               </p>
             </div>
           </div>
           {telemetry?.possibleUiCount && telemetry.possibleUiCount > 0 ? (
-            <div className="pt-1.5 border-t border-amber-800/40 text-[11px] text-amber-300/80 font-mono">
+            <div className="pt-1.5 border-t border-amber-200 dark:border-amber-800/40 text-[11px] text-amber-700 dark:text-amber-300/80">
               {telemetry.possibleUiCount} peripheral UI / metric items filtered from post text.
             </div>
           ) : null}
@@ -275,11 +271,11 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
 
       {/* Editable Textarea Section */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs font-mono text-carbon-400">
-          <span className="uppercase font-semibold text-carbon-300">
-            {isImageOnly ? 'OPTIONAL DRAFT CAPTION (OR PROCEED WITH VISUAL SCAN)' : 'EXTRACTED POST COPY'}
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span className="font-semibold text-slate-700 dark:text-slate-300">
+            {isImageOnly ? 'Optional Draft Caption (or proceed with visual scan)' : 'Extracted Post Copy'}
           </span>
-          <span className="text-[11px] text-carbon-500 font-sans">
+          <span className="text-[11px]">
             {isImageOnly ? 'Leave blank to analyze visual asset alone, or add text below.' : 'Detected from your uploaded asset. Edit freely before analysis.'}
           </span>
         </div>
@@ -295,18 +291,18 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             }
             rows={isImageOnly ? 4 : 8}
             disabled={isAnalyzing}
-            className={`w-full bg-carbon-900/90 border rounded-xl p-4 font-sans text-sm text-carbon-100 placeholder-carbon-500 outline-none leading-relaxed transition-all resize-y selection:bg-cyan-500/30 selection:text-white ${
+            className={`w-full bg-slate-50/60 dark:bg-slate-900/90 border rounded-xl p-4 font-sans text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none leading-relaxed transition-all resize-y shadow-2xs ${
               isReviewRecommended && sourceType === 'image' && !isImageOnly
-                ? 'border-amber-500/40 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400'
-                : 'border-carbon-700 group-hover:border-carbon-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500'
+                ? 'border-amber-300 dark:border-amber-500/40 focus:border-sky-500 focus:ring-1 focus:ring-sky-500'
+                : 'border-slate-200 dark:border-slate-800 group-hover:border-slate-300 dark:group-hover:border-slate-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500'
             }`}
           />
 
           {isEmpty && !isImageOnly && (
-            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6 text-center space-y-1 bg-carbon-900/40 rounded-xl backdrop-blur-[1px]">
-              <FileCode2 className="w-8 h-8 text-carbon-600 mb-1" />
-              <p className="text-sm font-mono text-carbon-400">AWAITING POST CONTENT</p>
-              <p className="text-xs text-carbon-500 font-sans">
+            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6 text-center space-y-1 bg-white/60 dark:bg-slate-900/60 rounded-xl backdrop-blur-[1px]">
+              <FileCode2 className="w-7 h-7 text-slate-400 mb-1" />
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Awaiting Post Content</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-sans">
                 Drop an image or PDF above, load a Demo Post, or type/paste your draft directly into this panel.
               </p>
             </div>
@@ -316,9 +312,9 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
 
       {/* Validation Notice if too brief */}
       {isTooShort && !isImageOnly && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-950/40 border border-amber-800/60 text-amber-300 text-xs font-mono">
-          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
-          <span>Post is very brief. Provide at least 3-5 words for meaningful forensic attention mapping.</span>
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <span>Post is very brief. Provide at least 3-5 words for meaningful attention mapping.</span>
         </div>
       )}
 
@@ -332,8 +328,8 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
               size="sm"
               onClick={() => setShowOriginalModal(true)}
               disabled={isAnalyzing}
-              leftIcon={<Eye className="w-3.5 h-3.5 text-cyan-400" />}
-              className="text-xs font-mono border-cyan-500/40 text-cyan-200 hover:border-cyan-400"
+              leftIcon={<Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />}
+              className="text-xs"
             >
               View Original
             </Button>
@@ -345,8 +341,8 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
               size="sm"
               onClick={onOpenCrop}
               disabled={isAnalyzing}
-              leftIcon={<Crop className="w-3.5 h-3.5 text-cyan-400" />}
-              className="text-xs font-mono border-cyan-500/40 text-cyan-200 hover:border-cyan-400"
+              leftIcon={<Crop className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />}
+              className="text-xs"
             >
               Crop &amp; Re-extract
             </Button>
@@ -358,8 +354,8 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
               size="sm"
               onClick={onRerunOcr}
               disabled={isAnalyzing}
-              leftIcon={<RefreshCw className="w-3.5 h-3.5 text-carbon-400" />}
-              className="text-xs font-mono text-carbon-300"
+              leftIcon={<RefreshCw className="w-3.5 h-3.5 text-slate-400" />}
+              className="text-xs text-slate-600 dark:text-slate-300"
             >
               Re-run OCR
             </Button>
@@ -371,7 +367,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
               size="sm"
               onClick={onReset}
               disabled={isAnalyzing}
-              className="text-xs font-mono text-carbon-400 hover:text-rose-300"
+              className="text-xs text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-300"
             >
               <RotateCcw className="w-3.5 h-3.5 mr-1" /> Clear
             </Button>
@@ -386,14 +382,14 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             onClick={onStartAnalysis}
             disabled={(isEmpty && !isImageOnly) || (isTooShort && !isImageOnly) || isAnalyzing}
             isLoading={isAnalyzing}
-            leftIcon={<Zap className="w-4 h-4 text-carbon-950 fill-carbon-950" />}
-            className="w-full sm:w-auto font-mono text-xs tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.2)]"
+            leftIcon={<Zap className="w-4 h-4 text-white dark:text-slate-950 fill-current" />}
+            className="w-full sm:w-auto text-xs"
           >
             {isAnalyzing
               ? 'RUNNING FORENSIC SCAN...'
               : isImageOnly
-              ? 'ANALYZE VISUAL POST →'
-              : 'ANALYZE THIS POST →'}
+              ? 'Analyze Visual Post →'
+              : 'Analyze This Post →'}
           </Button>
         </div>
       </div>
@@ -404,34 +400,34 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="original-asset-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-carbon-950/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in"
           onClick={() => setShowOriginalModal(false)}
         >
           <div
-            className="relative max-w-3xl w-full bg-carbon-900 border border-carbon-700 rounded-2xl shadow-2xl overflow-hidden p-5 space-y-4"
+            className="relative max-w-3xl w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-5 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-cyan-400" />
-                <h3 id="original-asset-title" className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                <ImageIcon className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <h3 id="original-asset-title" className="text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-wider">
                   Original Uploaded Asset
                 </h3>
                 <Badge variant="cyan" size="sm">
-                  GROUND TRUTH COMPARISON
+                  Ground Truth
                 </Badge>
               </div>
               <button
                 type="button"
                 onClick={() => setShowOriginalModal(false)}
-                className="p-1 rounded-lg text-carbon-400 hover:text-white hover:bg-carbon-800 transition-colors font-mono text-xs flex items-center gap-1"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-xs flex items-center gap-1 cursor-pointer"
                 aria-label="Close original asset preview"
               >
                 <X className="w-4 h-4" /> Close
               </button>
             </div>
 
-            <div className="max-h-[70vh] overflow-auto rounded-xl bg-carbon-950/90 border border-carbon-800 p-2 flex items-center justify-center">
+            <div className="max-h-[70vh] overflow-auto rounded-xl bg-slate-950 p-2 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
@@ -440,13 +436,13 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
               />
             </div>
 
-            <div className="flex items-center justify-between text-xs font-mono text-carbon-400 pt-1">
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1">
               <span>Compare original screenshot with extracted text to verify accuracy.</span>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setShowOriginalModal(false)}
-                className="text-xs font-mono"
+                className="text-xs"
               >
                 Done Reviewing
               </Button>

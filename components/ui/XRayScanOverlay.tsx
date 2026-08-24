@@ -10,9 +10,9 @@ interface XRayScanOverlayProps {
 }
 
 export const XRayScanOverlay: React.FC<XRayScanOverlayProps> = ({
-  active = true,
+  active = false,
   className = '',
-  showCorners = true,
+  showCorners = false,
 }) => {
   return (
     <div
@@ -22,18 +22,15 @@ export const XRayScanOverlay: React.FC<XRayScanOverlayProps> = ({
       )}
       aria-hidden="true"
     >
-      {/* Precision reticle corner brackets */}
+      {/* Subtle corner hairline guides */}
       {showCorners && (
         <>
-          <div className="absolute top-2 left-2 w-2.5 h-2.5 border-t border-l border-cyan-500/40" />
-          <div className="absolute top-2 right-2 w-2.5 h-2.5 border-t border-r border-cyan-500/40" />
-          <div className="absolute bottom-2 left-2 w-2.5 h-2.5 border-b border-l border-cyan-500/40" />
-          <div className="absolute bottom-2 right-2 w-2.5 h-2.5 border-b border-r border-cyan-500/40" />
+          <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-slate-300/50 dark:border-slate-700/60" />
+          <div className="absolute top-2 right-2 w-2 h-2 border-t border-r border-slate-300/50 dark:border-slate-700/60" />
+          <div className="absolute bottom-2 left-2 w-2 h-2 border-b border-l border-slate-300/50 dark:border-slate-700/60" />
+          <div className="absolute bottom-2 right-2 w-2 h-2 border-b border-r border-slate-300/50 dark:border-slate-700/60" />
         </>
       )}
-
-      {/* Subtle sweep line */}
-      {active && <div className="animate-xray-sweep" />}
     </div>
   );
 };

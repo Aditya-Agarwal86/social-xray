@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Crop, X, Check, RotateCcw, Sparkles, ZoomIn, ZoomOut } from 'lucide-react';
+import { Crop, X, Check, RotateCcw } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 
@@ -46,7 +46,6 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // Load object URL when file changes
   useEffect(() => {
     if (!file) {
       setImageSrc(null);
@@ -56,7 +55,6 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const url = URL.createObjectURL(file);
     setImageSrc(url);
 
-    // Initial default crop: target middle/right area often used for social captions
     setCropBox({
       x: 15,
       y: 15,
@@ -69,7 +67,6 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     };
   }, [file]);
 
-  // Handle Drag / Resize
   const handleMouseDown = (
     e: React.MouseEvent,
     mode: 'move' | 'nw' | 'ne' | 'sw' | 'se'
@@ -105,30 +102,27 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         const newH = Math.max(10, Math.min(100 - init.y, init.height + deltaYPercent));
         setCropBox((prev) => ({ ...prev, width: newW, height: newH }));
       } else if (dragMode === 'sw') {
-        const maxDelta = init.width - 10;
-        const boundedDeltaX = Math.min(maxDelta, Math.max(-init.x, deltaXPercent));
-        const newX = init.x + boundedDeltaX;
-        const newW = init.width - boundedDeltaX;
+        const rawX = init.x + deltaXPercent;
+        const newX = Math.max(0, Math.min(init.x + init.width - 10, rawX));
+        const newW = init.width + (init.x - newX);
         const newH = Math.max(10, Math.min(100 - init.y, init.height + deltaYPercent));
         setCropBox((prev) => ({ ...prev, x: newX, width: newW, height: newH }));
       } else if (dragMode === 'ne') {
-        const maxDeltaY = init.height - 10;
-        const boundedDeltaY = Math.min(maxDeltaY, Math.max(-init.y, deltaYPercent));
-        const newY = init.y + boundedDeltaY;
-        const newH = init.height - boundedDeltaY;
+        const rawY = init.y + deltaYPercent;
+        const newY = Math.max(0, Math.min(init.y + init.height - 10, rawY));
+        const newH = init.height + (init.y - newY);
         const newW = Math.max(10, Math.min(100 - init.x, init.width + deltaXPercent));
-        setCropBox((prev) => ({ ...prev, y: newY, height: newH, width: newW }));
+        setCropBox((prev) => ({ ...prev, y: newY, width: newW, height: newH }));
       } else if (dragMode === 'nw') {
-        const maxDeltaX = init.width - 10;
-        const maxDeltaY = init.height - 10;
-        const boundedDeltaX = Math.min(maxDeltaX, Math.max(-init.x, deltaXPercent));
-        const boundedDeltaY = Math.min(maxDeltaY, Math.max(-init.y, deltaYPercent));
-        setCropBox({
-          x: init.x + boundedDeltaX,
-          y: init.y + boundedDeltaY,
-          width: init.width - boundedDeltaX,
-          height: init.height - boundedDeltaY,
-        });
+        const rawX = init.x + deltaXPercent;
+        const newX = Math.max(0, Math.min(init.x + init.width - 10, rawX));
+        const newW = init.width + (init.x - newX);
+
+        const rawY = init.y + deltaYPercent;
+        const newY = Math.max(0, Math.min(init.y + init.height - 10, rawY));
+        const newH = init.height + (init.y - newY);
+
+        setCropBox({ x: newX, y: newY, width: newW, height: newH });
       }
     },
     [isDragging, dragMode, dragStart]
@@ -143,125 +137,147 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
     }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  // Execute Native Canvas Crop and trigger re-extraction
+  const handlePresetSelect = (preset: 'full' | 'top_half' | 'bottom_half' | 'right_column' | 'center') => {
+    switch (preset) {
+      case 'full':
+        setCropBox({ x: 0, y: 0, width: 100, height: 100 });
+        break;
+      case 'top_half':
+        setCropBox({ x: 0, y: 0, width: 100, height: 50 });
+        break;
+      case 'bottom_half':
+        setCropBox({ x: 0, y: 50, width: 100, height: 50 });
+        break;
+      case 'right_column':
+        setCropBox({ x: 45, y: 0, width: 55, height: 100 });
+        break;
+      case 'center':
+        setCropBox({ x: 15, y: 15, width: 70, height: 70 });
+        break;
+    }
+  };
+
   const handleExecuteCrop = async () => {
     if (!imageRef.current || !file) return;
 
     const img = imageRef.current;
-    const naturalW = img.naturalWidth || img.width;
-    const naturalH = img.naturalHeight || img.height;
-
-    const sourceX = Math.round((cropBox.x / 100) * naturalW);
-    const sourceY = Math.round((cropBox.y / 100) * naturalH);
-    const sourceW = Math.round((cropBox.width / 100) * naturalW);
-    const sourceH = Math.round((cropBox.height / 100) * naturalH);
-
     const canvas = document.createElement('canvas');
-    canvas.width = Math.max(sourceW, 10);
-    canvas.height = Math.max(sourceH, 10);
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, 0, 0, canvas.width, canvas.height);
+    const naturalW = img.naturalWidth;
+    const naturalH = img.naturalHeight;
+
+    const cropPixelX = (cropBox.x / 100) * naturalW;
+    const cropPixelY = (cropBox.y / 100) * naturalH;
+    const cropPixelW = (cropBox.width / 100) * naturalW;
+    const cropPixelH = (cropBox.height / 100) * naturalH;
+
+    canvas.width = Math.max(1, cropPixelW);
+    canvas.height = Math.max(1, cropPixelH);
+
+    ctx.drawImage(
+      img,
+      cropPixelX,
+      cropPixelY,
+      cropPixelW,
+      cropPixelH,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
 
     canvas.toBlob((blob) => {
       if (blob) {
-        const croppedName = `cropped-${file.name}`;
+        const croppedName = `cropped_${file.name.replace(/\.[^/.]+$/, '')}.png`;
         onCropAndExtract(blob, croppedName);
-        onClose();
       }
     }, 'image/png');
   };
 
-  const handlePresetSelect = (preset: 'full' | 'right_column' | 'bottom_half' | 'top_half') => {
-    if (preset === 'full') {
-      setCropBox({ x: 0, y: 0, width: 100, height: 100 });
-    } else if (preset === 'right_column') {
-      setCropBox({ x: 45, y: 5, width: 52, height: 90 });
-    } else if (preset === 'bottom_half') {
-      setCropBox({ x: 5, y: 50, width: 90, height: 45 });
-    } else if (preset === 'top_half') {
-      setCropBox({ x: 5, y: 5, width: 90, height: 45 });
-    }
-  };
-
-  if (!isOpen || !file || !imageSrc) return null;
+  if (!isOpen || !imageSrc) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="crop-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-carbon-950/80 backdrop-blur-md animate-fade-in"
-    >
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-carbon-900 border border-cyan-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-slate-100">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-carbon-800 bg-carbon-950/60">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400">
-              <Crop className="w-4 h-4" />
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 text-sky-600 dark:text-sky-400">
+              <Crop className="w-5 h-5" />
             </div>
             <div>
-              <h3 id="crop-modal-title" className="text-sm sm:text-base font-mono font-bold text-white uppercase tracking-wider">
-                Crop &amp; Target Social Copy
-              </h3>
-              <p className="text-xs text-carbon-400 font-sans">
-                Drag the box over the post caption &amp; hashtags to isolate them from platform UI.
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                  Crop &amp; Target OCR Area
+                </h3>
+                <Badge variant="cyan" size="sm">
+                  Precision Scan
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Drag the crop box to isolate the exact post copy, caption, or thread.
               </p>
             </div>
           </div>
+
           <button
-            type="button"
             onClick={onClose}
-            disabled={isProcessing}
-            className="p-2 text-carbon-400 hover:text-white rounded-lg hover:bg-carbon-800 transition-colors"
-            aria-label="Close crop modal"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Close Crop modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Quick Crop Presets */}
-        <div className="flex flex-wrap items-center gap-2 px-5 py-2.5 bg-carbon-950/40 border-b border-carbon-800/80 text-xs font-mono text-carbon-300">
-          <span className="text-carbon-400 text-[11px] uppercase">Quick Presets:</span>
+        {/* Presets Bar */}
+        <div className="px-4 py-2.5 bg-slate-100/60 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 overflow-x-auto text-xs text-slate-600 dark:text-slate-400">
+          <span className="font-medium text-slate-700 dark:text-slate-300 shrink-0">
+            Quick Presets:
+          </span>
+          <button
+            type="button"
+            onClick={() => handlePresetSelect('center')}
+            className="px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-sky-600 dark:hover:text-sky-300 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
+          >
+            Main Post Center
+          </button>
           <button
             type="button"
             onClick={() => handlePresetSelect('right_column')}
-            className="px-2.5 py-1 rounded bg-carbon-800 hover:bg-carbon-700 hover:text-cyan-300 transition-colors border border-carbon-700"
+            className="px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-sky-600 dark:hover:text-sky-300 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
           >
-            Right Column (Desktop Post)
+            Right Column
           </button>
           <button
             type="button"
             onClick={() => handlePresetSelect('bottom_half')}
-            className="px-2.5 py-1 rounded bg-carbon-800 hover:bg-carbon-700 hover:text-cyan-300 transition-colors border border-carbon-700"
+            className="px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-sky-600 dark:hover:text-sky-300 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
           >
-            Bottom Area (Mobile Caption)
+            Bottom Caption
           </button>
           <button
             type="button"
             onClick={() => handlePresetSelect('full')}
-            className="px-2.5 py-1 rounded bg-carbon-800 hover:bg-carbon-700 hover:text-cyan-300 transition-colors border border-carbon-700"
+            className="px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-sky-600 dark:hover:text-sky-300 transition-colors border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
           >
             Full Image
           </button>
         </div>
 
         {/* Interactive Crop Canvas Viewport */}
-        <div className="flex-1 overflow-auto p-4 sm:p-6 flex items-center justify-center bg-carbon-950/90 relative min-h-[320px]">
+        <div className="flex-1 overflow-auto p-4 sm:p-6 flex items-center justify-center bg-slate-900 relative min-h-[320px]">
           <div
             ref={containerRef}
-            className="relative inline-block select-none max-h-[55vh] max-w-full rounded-lg overflow-hidden border border-carbon-800 shadow-xl cursor-crosshair"
+            className="relative inline-block select-none max-h-[55vh] max-w-full rounded-lg overflow-hidden border border-slate-700 shadow-xl cursor-crosshair"
           >
             {/* Base Image */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -272,8 +288,8 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               className="max-h-[55vh] max-w-full object-contain pointer-events-none block"
             />
 
-            {/* Dark Mask Over Outside Area */}
-            <div className="absolute inset-0 bg-carbon-950/60 pointer-events-none" />
+            {/* Mask Over Outside Area */}
+            <div className="absolute inset-0 bg-slate-950/60 pointer-events-none" />
 
             {/* Interactive Selected Crop Window */}
             <div
@@ -284,36 +300,30 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
                 height: `${cropBox.height}%`,
               }}
               onMouseDown={(e) => handleMouseDown(e, 'move')}
-              className="absolute border-2 border-cyan-400 shadow-[0_0_0_9999px_rgba(7,8,12,0.65)] cursor-move z-10 box-border bg-cyan-500/10"
+              className="absolute border-2 border-sky-400 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] cursor-move z-10 box-border bg-sky-500/10"
             >
-              {/* Scan Reticle corners */}
-              <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-white" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-white" />
-              <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-white" />
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-white" />
-
               {/* Corner Resize Handles */}
               <div
                 onMouseDown={(e) => handleMouseDown(e, 'nw')}
-                className="absolute -top-2 -left-2 w-4 h-4 bg-cyan-400 rounded-sm cursor-nwse-resize"
+                className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 bg-sky-400 rounded-sm cursor-nwse-resize"
               />
               <div
                 onMouseDown={(e) => handleMouseDown(e, 'ne')}
-                className="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-sm cursor-nesw-resize"
+                className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-sky-400 rounded-sm cursor-nesw-resize"
               />
               <div
                 onMouseDown={(e) => handleMouseDown(e, 'sw')}
-                className="absolute -bottom-2 -left-2 w-4 h-4 bg-cyan-400 rounded-sm cursor-nesw-resize"
+                className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 bg-sky-400 rounded-sm cursor-nesw-resize"
               />
               <div
                 onMouseDown={(e) => handleMouseDown(e, 'se')}
-                className="absolute -bottom-2 -right-2 w-4 h-4 bg-cyan-400 rounded-sm cursor-nwse-resize"
+                className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-sky-400 rounded-sm cursor-nwse-resize"
               />
 
-              {/* Center target indicator */}
+              {/* Center target label */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="px-2 py-0.5 rounded bg-carbon-950/80 text-[10px] font-mono text-cyan-300 border border-cyan-500/30">
-                  TARGET OCR ZONE
+                <span className="px-2 py-0.5 rounded bg-slate-900/80 text-[10px] font-medium text-sky-300 border border-sky-500/30">
+                  Target OCR Zone
                 </span>
               </div>
             </div>
@@ -321,9 +331,9 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-5 border-t border-carbon-800 bg-carbon-950/80">
-          <div className="text-xs font-mono text-carbon-400">
-            Selected Box: <strong className="text-white">{Math.round(cropBox.width)}% × {Math.round(cropBox.height)}%</strong>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 sm:p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90">
+          <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+            Selected Box: <strong className="text-slate-900 dark:text-white">{Math.round(cropBox.width)}% × {Math.round(cropBox.height)}%</strong>
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
@@ -332,7 +342,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               size="md"
               onClick={onClose}
               disabled={isProcessing}
-              className="text-xs font-mono"
+              className="text-xs"
             >
               Cancel
             </Button>
@@ -341,8 +351,8 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               size="md"
               onClick={handleExecuteCrop}
               isLoading={isProcessing}
-              leftIcon={<Check className="w-4 h-4 text-carbon-950" />}
-              className="text-xs font-mono"
+              leftIcon={<Check className="w-4 h-4 text-white dark:text-slate-950" />}
+              className="text-xs"
             >
               Run OCR on Selected Area
             </Button>

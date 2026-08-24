@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,46 +10,75 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Semantic Token Mapping
+        app: 'var(--bg-app)',
+        surface: {
+          DEFAULT: 'var(--bg-surface)',
+          elevated: 'var(--bg-surface-elevated)',
+          muted: 'var(--bg-surface-muted)',
+          subtle: 'var(--bg-subtle)',
+          hover: 'var(--bg-surface-hover)',
+        },
+        border: {
+          DEFAULT: 'var(--border-app)',
+          subtle: 'var(--border-subtle)',
+          muted: 'var(--border-muted)',
+          accent: 'var(--border-accent)',
+        },
+        content: {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+          subtle: 'var(--text-subtle)',
+        },
+        accent: {
+          DEFAULT: 'var(--accent-primary)',
+          surface: 'var(--accent-surface)',
+          hover: 'var(--accent-hover)',
+          contrast: 'var(--accent-contrast)',
+        },
+
+        // Backward compatibility carbon mappings to semantic slate/charcoal
         carbon: {
-          950: '#07080C',
-          900: '#090B10',
-          850: '#0D1117',
-          800: '#121620',
-          750: '#171D2A',
-          700: '#1E2638',
-          600: '#2A364F',
-          500: '#4A5B7D',
-          400: '#7E8EA8',
-          300: '#B0BDD1',
-          200: '#E2E8F0',
-          100: '#F8FAFC',
+          950: '#0d1117',
+          900: '#131722',
+          850: '#161b26',
+          800: '#1c2230',
+          750: '#232c3d',
+          700: '#2d374d',
+          600: '#3d4b66',
+          500: '#64748b',
+          400: '#94a3b8',
+          300: '#cbd5e1',
+          200: '#e2e8f0',
+          100: '#f8fafc',
         },
         forensic: {
-          cyan: '#00F0FF',
-          'cyan-muted': '#06B6D4',
-          amber: '#F59E0B',
-          red: '#EF4444',
-          emerald: '#10B981',
-          violet: '#8B5CF6',
+          cyan: '#0284c7',
+          'cyan-muted': '#0369a1',
+          amber: '#d97706',
+          red: '#dc2626',
+          emerald: '#059669',
+          violet: '#6366f1',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+      },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
       },
       animation: {
-        'scan-line': 'scan 3s ease-in-out infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'radar-sweep': 'radar 4s linear infinite',
+        'fade-in': 'fadeIn 0.2s ease-out',
       },
       keyframes: {
-        scan: {
-          '0%, 100%': { transform: 'translateY(0%)', opacity: '0.8' },
-          '50%': { transform: 'translateY(100%)', opacity: '0.3' },
-        },
-        radar: {
-          '0%': { transform: 'rotate(0deg)' },
-          '100%': { transform: 'rotate(360deg)' },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(2px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
     },
