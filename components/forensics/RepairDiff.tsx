@@ -58,7 +58,7 @@ export const RepairDiff: React.FC<RepairDiffProps> = ({ repair }) => {
               08 — RECOMMENDED REPAIR
             </h3>
             <Badge variant="cyan" size="sm">
-              AI-GENERATED SUGGESTION
+              EVIDENCE-GROUNDED SUGGESTION
             </Badge>
           </div>
           <p className="text-[11px] font-mono text-carbon-400 flex items-center gap-1.5">

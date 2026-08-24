@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FileCode2,
   Crop,
@@ -18,6 +18,7 @@ import {
   Eye,
   Bookmark,
   CheckCircle2,
+  X,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -37,6 +38,7 @@ interface ExtractionPreviewProps {
   inventory?: ContentInventory;
   warnings?: string[];
   confidence?: number;
+  previewUrl?: string;
 }
 
 export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
@@ -52,7 +54,9 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
   inventory,
   warnings = [],
   confidence,
+  previewUrl,
 }) => {
+  const [showOriginalModal, setShowOriginalModal] = useState(false);
   const { words, seconds } = calculateReadingTime(text);
   const characterCount = text.length;
 
@@ -237,49 +241,37 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
         </div>
       )}
 
-      {/* Image-Only Post Notice */}
-      {isImageOnly && (
+      {/* ONE Primary Extraction Status Block */}
+      {isImageOnly ? (
         <div className="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-800/50 text-cyan-200 text-xs font-mono flex items-start gap-2.5">
           <ImageIcon className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <span className="font-bold text-cyan-300 block">VISUAL-ONLY POST DETECTED</span>
+          <div className="space-y-0.5">
+            <span className="font-bold text-cyan-300 block uppercase">VISUAL-ONLY POST DETECTED</span>
             <p className="font-sans text-cyan-100/90 leading-relaxed">
-              No written post caption was found in this screenshot. The AI diagnostician will directly evaluate visual stopping power, composition, and aesthetic resonance, and prescribe goal-specific captions and conversion hooks.
+              No written post caption was found in this screenshot. The diagnostic engine will evaluate visual stopping power, composition, and aesthetic resonance, and prescribe goal-specific captions and conversion hooks.
             </p>
           </div>
         </div>
-      )}
-
-      {/* Actionable Review Warnings or Medium/Low Confidence Notice */}
-      {((warnings && warnings.length > 0) || (typeof confidence === 'number' && confidence < 80 && words > 0)) && !isImageOnly && (
-        <div className="space-y-2">
-          {typeof confidence === 'number' && confidence < 80 && (
-            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-950/30 border border-amber-800/60 text-amber-200 text-xs font-mono">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <span className="font-bold text-amber-300 uppercase block">
-                  Extraction Confidence: {confidence >= 60 ? 'Medium' : 'Low'}
-                </span>
-                <span className="font-sans leading-relaxed text-amber-100">
-                  Some characters may have been misread. Review and edit the extracted text below before analysis.
-                </span>
-              </div>
+      ) : isReviewRecommended && words > 0 ? (
+        <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/60 text-amber-200 text-xs font-mono space-y-1.5">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-bold text-amber-300 uppercase block">
+                EXTRACTION CONFIDENCE: {typeof confidence === 'number' && confidence < 60 ? 'LOW' : 'MEDIUM'}
+              </span>
+              <p className="font-sans leading-relaxed text-amber-100">
+                Some characters may have been misread. Review and refine the extracted copy before analysis.
+              </p>
             </div>
-          )}
-          {warnings.map((warning, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-950/30 border border-amber-800/60 text-amber-200 text-xs font-mono"
-            >
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <span className="font-bold text-amber-300 uppercase block">Review Recommended</span>
-                <span className="font-sans leading-relaxed text-amber-100">{warning}</span>
-              </div>
+          </div>
+          {telemetry?.possibleUiCount && telemetry.possibleUiCount > 0 ? (
+            <div className="pt-1.5 border-t border-amber-800/40 text-[11px] text-amber-300/80 font-mono">
+              {telemetry.possibleUiCount} peripheral UI / metric items filtered from post text.
             </div>
-          ))}
+          ) : null}
         </div>
-      )}
+      ) : null}
 
       {/* Editable Textarea Section */}
       <div className="space-y-1.5">
@@ -332,8 +324,21 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
 
       {/* Action Controls Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-        {/* Secondary Tool Actions (Crop / Re-run / Clear) */}
+        {/* Secondary Tool Actions (View Original / Crop / Re-run / Clear) */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {previewUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowOriginalModal(true)}
+              disabled={isAnalyzing}
+              leftIcon={<Eye className="w-3.5 h-3.5 text-cyan-400" />}
+              className="text-xs font-mono border-cyan-500/40 text-cyan-200 hover:border-cyan-400"
+            >
+              View Original
+            </Button>
+          )}
+
           {sourceType === 'image' && onOpenCrop && (
             <Button
               variant="outline"
@@ -392,6 +397,63 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Original Image Inspection Lightbox */}
+      {showOriginalModal && previewUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="original-asset-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-carbon-950/80 backdrop-blur-md animate-fade-in"
+          onClick={() => setShowOriginalModal(false)}
+        >
+          <div
+            className="relative max-w-3xl w-full bg-carbon-900 border border-carbon-700 rounded-2xl shadow-2xl overflow-hidden p-5 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-carbon-800 pb-3">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-cyan-400" />
+                <h3 id="original-asset-title" className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                  Original Uploaded Asset
+                </h3>
+                <Badge variant="cyan" size="sm">
+                  GROUND TRUTH COMPARISON
+                </Badge>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowOriginalModal(false)}
+                className="p-1 rounded-lg text-carbon-400 hover:text-white hover:bg-carbon-800 transition-colors font-mono text-xs flex items-center gap-1"
+                aria-label="Close original asset preview"
+              >
+                <X className="w-4 h-4" /> Close
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] overflow-auto rounded-xl bg-carbon-950/90 border border-carbon-800 p-2 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt="Original uploaded post asset"
+                className="max-h-[65vh] w-auto object-contain rounded-lg shadow-md"
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-xs font-mono text-carbon-400 pt-1">
+              <span>Compare original screenshot with extracted text to verify accuracy.</span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowOriginalModal(false)}
+                className="text-xs font-mono"
+              >
+                Done Reviewing
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

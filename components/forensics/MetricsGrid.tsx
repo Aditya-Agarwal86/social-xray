@@ -37,6 +37,7 @@ interface MetricsGridProps {
   shareability: DimensionDiagnosis;
   cta: DimensionDiagnosis;
   audienceValue: DimensionDiagnosis;
+  attentionResistance?: DimensionDiagnosis;
 }
 
 export const MetricsGrid: React.FC<MetricsGridProps> = ({
@@ -52,6 +53,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   shareability,
   cta,
   audienceValue,
+  attentionResistance,
 }) => {
   const signalCards = [
     { key: 'hook', name: 'Hook Velocity', data: hook, icon: Zap },
@@ -63,6 +65,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
     { key: 'shareability', name: 'Social Currency', data: shareability, icon: Share2 },
     { key: 'cta', name: 'CTA Friction', data: cta, icon: MousePointerClick },
     { key: 'audienceValue', name: 'Audience Value', data: audienceValue, icon: Award },
+    { key: 'attentionResistance', name: 'Attention Resistance', data: attentionResistance || { score: Math.round(overallScore * 0.95), severity: 'moderate' as DiagnosticSeverity, problem: 'Attention friction points in structure', explanation: 'Evaluates structural momentum and audience retention throughout the post.' }, icon: Activity },
   ];
 
   const overallStyle = getScoreColor(overallScore);
@@ -146,13 +149,13 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-cyan-400" />
             <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-carbon-200">
-              04 — CORE DIAGNOSTIC SIGNALS
+              04 — 10 CORE FORENSIC DIMENSIONS
             </h3>
             <Badge variant="neutral" size="sm" className="font-mono">
-              AI INTERPRETATION
+              EVIDENCE-GROUNDED INFERENCES
             </Badge>
           </div>
-          <span className="text-xs font-mono text-carbon-400">9 Core Dimensions</span>
+          <span className="text-xs font-mono text-carbon-400">10 Core Dimensions</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">

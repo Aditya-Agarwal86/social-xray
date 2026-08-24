@@ -934,7 +934,7 @@ export default function Home() {
                     STEP 1 — CHOOSE YOUR OBJECTIVE
                   </span>
                   <span className="text-[11px] font-mono text-carbon-400">
-                    Diagnostics tune to your selected goal
+                    Diagnostics adapt to your selected goal
                   </span>
                 </div>
                 <GoalSelector
@@ -1026,6 +1026,7 @@ export default function Home() {
                   inventory={uploadedFile?.inventory}
                   warnings={uploadedFile?.warnings}
                   confidence={uploadedFile?.confidence}
+                  previewUrl={uploadedFile?.previewUrl}
                 />
               </div>
             </div>

@@ -10,15 +10,18 @@ import { XRayScanOverlay } from '../ui/XRayScanOverlay';
 interface PostAutopsyProps {
   autopsy: (GroundedPostAutopsy & PostAutopsyData) | any;
   strengths?: StrengthItem[];
+  targetGoal?: string;
 }
 
-export const PostAutopsy: React.FC<PostAutopsyProps> = ({ autopsy, strengths }) => {
+export const PostAutopsy: React.FC<PostAutopsyProps> = ({ autopsy, strengths, targetGoal = 'conversation' }) => {
   if (!autopsy) return null;
 
   const primaryFriction = autopsy.primaryFriction || autopsy.primaryFailure || autopsy.causeOfDeath || 'Limited conversation trigger';
   const secondaryFriction = autopsy.secondaryFriction || autopsy.secondaryFailure || 'No explicit CTA is visible';
   const hiddenStrength = autopsy.hiddenStrength || 'Strong visual presentation';
   const treatment = autopsy.treatment || 'Add a specific audience prompt aligned with the selected objective.';
+
+  const isConversation = targetGoal.toLowerCase() === 'conversation';
 
   return (
     <div className="space-y-4">
@@ -27,7 +30,7 @@ export const PostAutopsy: React.FC<PostAutopsyProps> = ({ autopsy, strengths }) 
         <div className="flex items-center gap-2">
           <Stethoscope className="w-5 h-5 text-cyan-400" />
           <h3 className="text-base font-mono font-bold uppercase tracking-wider text-white">
-            06 — STRENGTHS & POST AUTOPSY
+            06 — STRENGTHS &amp; POST AUTOPSY
           </h3>
         </div>
         <Badge variant="cyan" size="sm">
@@ -40,7 +43,7 @@ export const PostAutopsy: React.FC<PostAutopsyProps> = ({ autopsy, strengths }) 
         <XRayScanOverlay active={false} showCorners={true} />
         <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase tracking-wider relative z-10">
           <Zap className="w-4 h-4 text-amber-400" />
-          PRIMARY ENGAGEMENT FRICTION
+          {isConversation ? 'PRIMARY CONVERSATION FRICTION' : 'PRIMARY ENGAGEMENT FRICTION'}
         </div>
         <h4 className="text-base sm:text-lg font-mono font-bold text-white leading-snug relative z-10">
           {primaryFriction}

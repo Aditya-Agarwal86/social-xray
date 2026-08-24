@@ -19,7 +19,7 @@ export const GoalAdaptiveCard: React.FC<GoalAdaptiveCardProps> = ({ recommendati
         <div className="flex items-center gap-2">
           <Target className="w-5 h-5 text-cyan-400" />
           <h3 className="text-base font-mono font-bold uppercase tracking-wider text-white">
-            Goal-Adaptive Strategic Tuning
+            10 — GOAL-ADAPTIVE STRATEGIC TUNING
           </h3>
           <Badge variant="cyan" size="sm">
             {recommendation.selectedGoal.toUpperCase()} OBJECTIVE

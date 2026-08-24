@@ -54,7 +54,7 @@ export const GoalSelector: React.FC<GoalSelectorProps> = ({
           </span>
         </div>
         <span className="text-[11px] font-mono text-carbon-400">
-          AI adapts diagnostics to selected goal
+          Analysis adapts to your selected goal
         </span>
       </div>
 

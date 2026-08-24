@@ -384,6 +384,12 @@ export function validateAndNormalizeAnalysis(
     'Audience finishes viewing without a concrete emotional, visual, or practical payoff.'
   );
 
+  const attentionResistance = normalizeDimension(
+    raw.attentionResistance || raw.frictionScore,
+    'Attention friction points detected in post structure.',
+    'Evaluates dropoff resistance, structural fatigue, and sustained audience attention throughout the post.'
+  );
+
   // Friction Points List (Never present absence of text or ordinary copy as a "problematic text fragment")
   const rawFriction = Array.isArray(raw.frictionPoints) ? raw.frictionPoints : [];
   const frictionPoints: FrictionPointItem[] = rawFriction.slice(0, 5).map((fp: any, idx: number) => {
@@ -699,6 +705,7 @@ export function validateAndNormalizeAnalysis(
     shareability,
     cta,
     audienceValue,
+    attentionResistance,
     frictionPoints,
     strengths,
     postAutopsy,

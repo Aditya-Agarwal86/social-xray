@@ -147,6 +147,7 @@ export interface SocialXRayAnalysisResult {
   shareability: DimensionDiagnosis;
   cta: DimensionDiagnosis;
   audienceValue: DimensionDiagnosis;
+  attentionResistance: DimensionDiagnosis;
   frictionPoints: FrictionPointItem[];
   strengths: StrengthItem[];
   postAutopsy: GroundedPostAutopsy & PostAutopsyData;

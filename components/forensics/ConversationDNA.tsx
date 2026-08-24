@@ -96,7 +96,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
             <ArrowDown className="w-4 h-4 text-purple-400 animate-bounce" />
           </div>
 
-          {/* Step 2: Unspoken Audience Reaction */}
+          {/* Step 2: Inferred Audience Reaction */}
           <div className="flex items-start gap-3 p-3.5 rounded-xl bg-purple-950/30 border border-purple-800/40">
             <div className="p-1.5 rounded-lg bg-purple-900/60 text-purple-300 shrink-0 font-mono text-xs font-bold">
               02
@@ -104,7 +104,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-[11px] font-mono uppercase tracking-wider text-purple-400 font-semibold flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5" /> Subconscious Audience Reaction
+                  <Users className="w-3.5 h-3.5" /> Inferred Audience Reaction
                 </span>
                 <Badge variant="violet" size="sm" className="text-[9px] py-0 px-1.5">
                   INFERENCE · CONFIDENCE: MEDIUM
@@ -120,7 +120,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
             <ArrowDown className="w-4 h-4 text-purple-400" />
           </div>
 
-          {/* Step 3: Likely Action */}
+          {/* Step 3: Likely Engagement Path */}
           <div className="flex items-start gap-3 p-3.5 rounded-xl bg-carbon-950/80 border border-carbon-800">
             <div className="p-1.5 rounded-lg bg-carbon-800 text-carbon-300 shrink-0 font-mono text-xs font-bold">
               03
@@ -128,7 +128,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-semibold flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5" /> Induced Action / Likely Engagement Path
+                  <Activity className="w-3.5 h-3.5" /> Likely Engagement Path
                 </span>
                 <Badge variant="cyan" size="sm" className="text-[9px] py-0 px-1.5">
                   INFERENCE

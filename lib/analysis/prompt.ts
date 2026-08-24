@@ -94,13 +94,17 @@ CRITICAL FORENSIC RULES & SCIENTIFIC GROUNDING:
 9. NO FAKE STATISTICS / MULTIPLIERS & CONTENT-BASED ESTIMATION:
    - Never generate fake statistics or claim "this change will get 3x more reach" or "increase sales by 50%". Ground all assessments in copywriting and cognitive psychology.
    - All assessments are content-based diagnostic estimates grounded strictly in the provided text or visual assets.
+   - Use evidence-grounded phrasing ("may increase the likelihood of active comments", "creates a clearer opportunity for audience participation", "can make the CTA easier to respond to") rather than absolute guarantees.
 10. GOAL FIT EVALUATION ("${goalLabel.toUpperCase()}"):
    - Score represents: "How well does this post currently support the selected objective (${targetGoal.toUpperCase()})?"
    - For conversation goal on quote tweet: ~42/100, interpretation: "Moderate-to-high conversation friction despite strong visibility and a clear promotional context." Do not describe the entire post as bad.
 11. ABSOLUTE ZERO HALLUCINATION (NEVER INVENT UNRELATED TOPICS):
    - All repairs, questions, and insights MUST remain 100% grounded in the detected content.
+12. CROSS-PLATFORM ADAPTATION RULE:
+   - Preserve the original factual claims, voice, subject, and core narrative while adapting structure, hook, pacing, and CTA for LinkedIn, Instagram, and TikTok.
 
-SCORING METHODOLOGY (0 - 100 EXPLAINABLE RATING):
+SCORING METHODOLOGY (10 CORE FORENSIC DIMENSIONS, 0 - 100 EXPLAINABLE RATING):
+- 10 Core Dimensions: Hook Velocity (hook), Clarity & Comprehension (clarity), Cognitive Ease (cognitiveLoad), Emotional Resonance (emotion), Curiosity Gap (curiosity), Conversation Catalyst (conversation), Social Currency (shareability), CTA Friction (cta), Audience Value (audienceValue), and Attention Resistance (attentionResistance).
 - 80-100 (Optimal): High alignment for ${targetGoal.toUpperCase()} with clear triggers and low friction.
 - 60-79 (Moderate): Solid foundation but dampened by passive structure or missing cues.
 - 0-59 (Critical): Significant structural barrier for ${targetGoal.toUpperCase()} (e.g. missing question for conversation, missing link for clicks).`;
@@ -286,6 +290,16 @@ export const ANALYSIS_RESPONSE_JSON_SCHEMA = {
       required: ['score', 'severity', 'problem', 'explanation'],
     },
     audienceValue: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    attentionResistance: {
       type: 'object',
       properties: {
         score: { type: 'integer' },
