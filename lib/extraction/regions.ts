@@ -125,8 +125,12 @@ export function classifyRegionType(
     return 'PLATFORM_UI';
   }
 
-  // 5. Link Check
-  if (/https?:\/\/[^\s]+|bit\.ly\/[^\s]+|t\.co\/[^\s]+/i.test(trimmed)) {
+  // 5. Link Check (including short links a.co, amzn.to, t.co, bit.ly, tinyurl, linktr.ee)
+  if (
+    /https?:\/\/[^\s]+|bit\.ly\/[^\s]+|t\.co\/[^\s]+|a\.co\/[^\s]+|amzn\.to\/[^\s]+|tinyurl\.com\/[^\s]+|linktr\.ee\/[^\s]+|(?:^|\s)(?:www\.)?[a-zA-Z0-9-]+\.(?:com|co|org|io|me|app)\/[a-zA-Z0-9_\-\/]+/i.test(
+      trimmed
+    )
+  ) {
     return 'LINK';
   }
 
@@ -214,8 +218,8 @@ export function isEngagementMetric(text: string): boolean {
 export function isProfileMetadata(text: string, relY: number, lineCount: number): boolean {
   const trimmed = text.trim();
 
-  // Header handle with timestamp: e.g. "2) ¥% © @guloona der - 20h" or "@guloona · 20h"
-  if (/@\w+.*(?:\d+[hdwmy]|\bago\b)/i.test(trimmed)) {
+  // Header handle with timestamp or separator: e.g. "Elon Musk @elonmusk · Aug 23", "@AriEmanuel · Aug 22", "2) ¥% © @guloona der - 20h"
+  if (/@\w+.*(?:\d+[hdwmy]|\bago\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b|[·•\-])/i.test(trimmed)) {
     return true;
   }
 
@@ -224,9 +228,13 @@ export function isProfileMetadata(text: string, relY: number, lineCount: number)
     return true;
   }
 
-  // Top header zone with handle or short name + timestamp
+  // Top header zone with handle or short name + timestamp (hours or date)
   if (relY < 0.25 && lineCount <= 2) {
-    if (/(?:^|\s)@?[a-zA-Z0-9._]{3,30}\s*[-·•]\s*\d+\s*(?:h|m|s|d|w|mo|y|hours?|days?|ago)\b/i.test(trimmed)) {
+    if (
+      /(?:^|\s)@?[a-zA-Z0-9._]{3,30}\s*[-·•]\s*(?:\d+\s*(?:h|m|s|d|w|mo|y|hours?|days?|ago)|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*\d+|\d+\s*(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))\b/i.test(
+        trimmed
+      )
+    ) {
       return true;
     }
     // Short author name alone at the top (1-3 words, no sentence punctuation)
@@ -306,6 +314,13 @@ export function isPlatformUi(lower: string, rawText: string, relY: number): bool
  */
 export function isCallToAction(lower: string): boolean {
   if (
+    /preorder\s+/i.test(lower) ||
+    /pre-order\s+/i.test(lower) ||
+    /order\s+(?:now|today|your|at|on|below)/i.test(lower) ||
+    /buy\s+(?:now|today|your|at|on|below)/i.test(lower) ||
+    /get\s+(?:your\s+copy|started|access|tickets)/i.test(lower) ||
+    /grab\s+(?:your|a\s+copy)/i.test(lower) ||
+    /check\s+(?:out|it\s+out)/i.test(lower) ||
     /tag\s+(?:a|someone|your|a\s+friend|an?\s+\w+)/i.test(lower) ||
     /share\s+(?:this|with)/i.test(lower) ||
     /save\s+(?:this|for)/i.test(lower) ||
@@ -321,6 +336,12 @@ export function isCallToAction(lower: string): boolean {
   }
 
   const ctaPhrases = [
+    'preorder',
+    'pre-order',
+    'order now',
+    'order today',
+    'buy now',
+    'get your copy',
     'link in bio',
     'click the link',
     'tap the link',
@@ -346,6 +367,30 @@ function shouldGroupLines(
   lineB: OcrLineData,
   totalHeight: number
 ): boolean {
+  // Never group profile headers with post copy or other elements
+  const relYA = lineA.bbox ? lineA.bbox.y0 / totalHeight : 0;
+  const relYB = lineB.bbox ? lineB.bbox.y0 / totalHeight : 0;
+
+  if (isProfileMetadata(lineA.text, relYA, 1) || isProfileMetadata(lineB.text, relYB, 1)) {
+    return false;
+  }
+
+  // Never group engagement metrics with post copy or other elements
+  if (isEngagementMetric(lineA.text) || isEngagementMetric(lineB.text)) {
+    return false;
+  }
+
+  // Keep explicit CTA lines separate
+  if (isCallToAction(lineA.text.toLowerCase()) || isCallToAction(lineB.text.toLowerCase())) {
+    return false;
+  }
+
+  // Keep link lines separate
+  const linkRegex = /https?:\/\/[^\s]+|bit\.ly\/[^\s]+|t\.co\/[^\s]+|a\.co\/[^\s]+|amzn\.to\/[^\s]+/i;
+  if (linkRegex.test(lineA.text) || linkRegex.test(lineB.text)) {
+    return false;
+  }
+
   if (!lineA.bbox || !lineB.bbox) {
     return true;
   }

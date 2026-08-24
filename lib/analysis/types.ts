@@ -3,6 +3,8 @@ import type {
   ObservedEngagementMetrics,
   ProfileMetadata,
   CaptionStatus,
+  NestedPostInventory,
+  CtaDetails,
 } from '@/lib/extraction/types';
 
 export type {
@@ -10,6 +12,8 @@ export type {
   ObservedEngagementMetrics,
   ProfileMetadata,
   CaptionStatus,
+  NestedPostInventory,
+  CtaDetails,
 };
 
 export type DiagnosticSeverity = 'critical' | 'moderate' | 'minor' | 'optimal';
@@ -107,6 +111,15 @@ export interface ConfidenceItem {
   reason?: string;
 }
 
+export interface DescriptiveMetricRatio {
+  metric: string; // e.g. "Reply-to-View Rate", "Like-to-View Rate", "Repost-to-View Rate"
+  value: string; // e.g. "0.018%"
+  numerator: string; // e.g. "935 replies"
+  denominator: string; // e.g. "5.2M views"
+  label: string; // "OBSERVED DESCRIPTIVE METRIC"
+  contextNote: string; // "Calculated from visible platform counters at time of capture. Multiple unmeasured factors influence performance; this screenshot alone cannot establish causation."
+}
+
 export interface AnalysisConfidence {
   level: 'HIGH' | 'MEDIUM' | 'LOW';
   reason: string;
@@ -118,6 +131,9 @@ export interface SocialXRayAnalysisResult {
   observedFacts: string[];
   contentInventory?: ContentInventory;
   observedMetrics?: ObservedEngagementMetrics;
+  descriptiveRatios?: DescriptiveMetricRatio[];
+  nestedPost?: NestedPostInventory;
+  ctaDetails?: CtaDetails;
 
   // LAYER B: DIAGNOSED (Grounded forensic interpretations)
   goalFit: GoalFitDiagnosis;

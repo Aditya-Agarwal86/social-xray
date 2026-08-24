@@ -35,6 +35,8 @@ export type OcrRegionType =
 
 export type ExtractionQuality = 'HIGH' | 'MEDIUM' | 'LOW';
 
+export type CaptionStatus = 'DETECTED' | 'NOT_DETECTED' | 'UNCERTAIN';
+
 export interface TextRegion {
   id: string;
   text: string;
@@ -60,7 +62,26 @@ export interface ProfileMetadata {
   timestamp: string | null;
 }
 
-export type CaptionStatus = 'DETECTED' | 'UNCERTAIN' | 'NOT_DETECTED';
+export interface CtaDetails {
+  detected: boolean;
+  text?: string;
+  type?: 'purchase' | 'preorder' | 'link' | 'conversation' | 'follow' | 'save' | 'share' | 'none';
+  visibility: 'primary' | 'secondary' | 'nested' | 'none';
+  location?: 'outer_post' | 'nested_post' | 'image' | 'none';
+  destinationUrl?: string;
+}
+
+export interface NestedPostInventory {
+  detected: boolean;
+  authorHandle?: string | null;
+  displayName?: string | null;
+  timestamp?: string | null;
+  text?: string | null;
+  cta?: string | null;
+  links: string[];
+  hasMedia?: boolean;
+  mediaSummary?: string;
+}
 
 export interface ContentInventory {
   hasVisualMedia: boolean;
@@ -69,9 +90,11 @@ export interface ContentInventory {
   captionStatus: CaptionStatus;
   hashtags: string[];
   cta: string | null;
+  ctaDetails?: CtaDetails;
   links: string[];
   engagementMetrics: ObservedEngagementMetrics;
   profileMetadata: ProfileMetadata;
+  nestedPost?: NestedPostInventory;
   extractionWarnings: string[];
 }
 

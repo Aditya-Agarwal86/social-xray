@@ -834,6 +834,143 @@ test('TEST 5: Screenshot with severe OCR noise flags extraction warning without 
   assert.ok(result.inventory.extractionWarnings.length > 0);
 });
 
+// 34. TEST 6: X/Twitter Quote Tweet (Elon Musk quoting Ari Emanuel memoir preorder)
+test('TEST 6: X/Twitter quote tweet extracts outer vs nested layers, detects preorder CTA, and calculates descriptive ratios without claiming causation', () => {
+  const quoteTweetLines = [
+    { text: 'Elon Musk @elonmusk · Aug 23', confidence: 95, bbox: { x0: 50, y0: 30, x1: 450, y1: 55 } },
+    { text: 'Truth is better than fiction', confidence: 98, bbox: { x0: 50, y0: 65, x1: 500, y1: 90 } },
+    { text: 'Ari Emanuel @AriEmanuel · Aug 22', confidence: 92, bbox: { x0: 80, y0: 130, x1: 480, y1: 155 } },
+    { text: 'Preorder Roll the Calls ⬇️', confidence: 94, bbox: { x0: 80, y0: 165, x1: 460, y1: 190 } },
+    { text: 'a.co/d/0gaDvahC', confidence: 91, bbox: { x0: 80, y0: 200, x1: 300, y1: 220 } },
+    { text: 'ROLL THE CALLS A MEMOIR ARI EMANUEL', confidence: 88, bbox: { x0: 150, y0: 300, x1: 650, y1: 650 } },
+    { text: '935 1K 5K 5.2M', confidence: 90, bbox: { x0: 50, y0: 950, x1: 700, y1: 980 } },
+  ];
+
+  const regions = segmentTextRegions(quoteTweetLines);
+  const result = extractSocialPostContent(regions, quoteTweetLines, true);
+
+  // 1. Separation of outer post and nested post
+  assert.strictEqual(result.captionText, 'Truth is better than fiction');
+  assert.strictEqual(result.inventory.profileMetadata.username, 'elonmusk');
+  assert.strictEqual(result.inventory.nestedPost?.detected, true);
+  assert.strictEqual(result.inventory.nestedPost?.authorHandle, 'AriEmanuel');
+  assert.ok(result.inventory.nestedPost?.text?.includes('Preorder Roll the Calls'));
+  assert.ok(result.inventory.nestedPost?.links.includes('a.co/d/0gaDvahC'));
+
+  // 2. CTA Detection across nested posts
+  assert.strictEqual(result.inventory.ctaDetails?.detected, true);
+  assert.strictEqual(result.inventory.ctaDetails?.type, 'preorder');
+  assert.strictEqual(result.inventory.ctaDetails?.visibility, 'nested');
+  assert.strictEqual(result.inventory.ctaDetails?.destinationUrl, 'a.co/d/0gaDvahC');
+
+  // 3. Normalized Analysis with Descriptive Ratios and Grounded Friction
+  const normalized = validateAndNormalizeAnalysis(
+    {
+      observedFacts: [
+        "Outer post: 'Truth is better than fiction' by @elonmusk",
+        "Nested quote post: 'Preorder Roll the Calls ⬇️' by @AriEmanuel with shortlink a.co/d/0gaDvahC",
+        "Book cover image for 'Roll the Calls / Ari Emanuel: A Memoir'",
+        '935 replies, 1K reposts, 5K likes, 5.2M views are visible',
+      ],
+      goalFit: {
+        objective: 'conversation',
+        score: 42,
+        label: 'Conversation Fit',
+        verdict: 'Moderate-to-high conversation friction',
+        reason: 'Moderate-to-high conversation friction despite strong visibility and a clear promotional context.',
+      },
+      hook: { score: 75, severity: 'minor', problem: 'None.', explanation: 'Concise aphoristic statement.' },
+      clarity: { score: 85, severity: 'optimal', problem: 'None.', explanation: 'Clear statement and clear quoted book.' },
+      cognitiveLoad: { score: 90, severity: 'optimal', problem: 'None.', explanation: 'Clear layout with book cover visual.' },
+      emotion: { score: 65, severity: 'moderate', problem: 'Closed aphorism.', explanation: 'Evokes interest in real-life stories.' },
+      curiosity: { score: 70, severity: 'minor', problem: 'None.', explanation: 'Implies memoirs contain shocking truth.' },
+      conversation: { score: 42, severity: 'critical', problem: 'No response mechanism.', explanation: 'No question or opinion prompt is visible.' },
+      shareability: { score: 80, severity: 'optimal', problem: 'None.', explanation: 'High shareability for industry/memoir discussion.' },
+      cta: {
+        score: 60,
+        severity: 'moderate',
+        problem: 'Nested preorder CTA is present, but outer post does not reinforce or direct to it.',
+        explanation: 'A purchase/preorder CTA and shortlink are present in the nested quoted post, but the outer post does not explicitly prompt action.',
+      },
+      audienceValue: { score: 70, severity: 'minor', problem: 'None.', explanation: 'High entertainment value for followers.' },
+      frictionPoints: [
+        {
+          category: 'Conversation Friction',
+          severity: 'moderate',
+          text: 'Truth is better than fiction',
+          explanation: 'The statement expresses a viewpoint but does not explicitly invite the audience to respond.',
+          repair: 'Do you think truth really is better than fiction? Why?',
+        },
+      ],
+      strengths: [
+        { title: 'High Visual & Profile Stopping Power', detail: 'Elon Musk quoting Ari Emanuel book creates high organic reach.' },
+        { title: 'Clear Nested Preorder Path', detail: 'Direct preorder CTA and Amazon link provided in nested tweet.' },
+      ],
+      postAutopsy: {
+        primaryFriction: 'Absence of explicit question or response anchor in outer post',
+        secondaryFriction: 'Outer post does not explicitly reinforce the nested preorder link',
+        hiddenStrength: 'High organic curiosity around industry memoirs',
+        treatment: 'Convert the aphorism into a debate prompt.',
+      },
+      conversationDNA: {
+        deliveredToFeed: 'The outer post says "Truth is better than fiction."',
+        audienceReaction: 'The statement expresses a clear viewpoint but does not directly invite response.',
+        inducedAction: 'Agreement/disagreement, like, repost, or passive consumption.',
+        conversationOpportunity: 'Convert the existing viewpoint into an explicit opinion prompt.',
+        replacementQuestion: 'Do you think truth really is better than fiction? Why?',
+        followUpQuestion: 'Have you ever read a real-life memoir that was crazier than any fiction story?',
+      },
+      repair: {
+        original: 'Truth is better than fiction',
+        recommended: 'Do you think truth really is better than fiction? Why? 📖 Check out Ari Emanuel’s new memoir below ⬇️',
+        rationale: 'A specific question gives viewers a clear response format and may reduce the effort required to participate, while the screenshot alone cannot establish causation.',
+      },
+      platformVariants: {
+        linkedin: 'Truth is often far more instructive than fiction. Do you agree with Ari Emanuel’s premise?',
+        instagram: 'Is truth really stranger than fiction? 📚 Preorder Roll the Calls via link in bio!',
+        tiktok: 'Do you believe real life is wilder than movies? Tell me your craziest true story below!',
+      },
+      goalRecommendation: {
+        selectedGoal: 'conversation',
+        reasoning: 'Transforming the declarative statement into an interactive question may reduce response effort.',
+        recommendedChange: 'Add an open-ended question asking followers if they agree.',
+      },
+      limitations: [
+        'Analysis is based on visible screenshot evidence.',
+        'The screenshot alone cannot establish causation for observed engagement metrics.',
+      ],
+      confidence: {
+        level: 'HIGH',
+        reason: 'Directly visible text, verified nested post structure, and visible engagement metrics.',
+      },
+    },
+    result.cleanedFullText,
+    'conversation'
+  );
+
+  // 4. Check Descriptive Ratios
+  assert.ok(normalized.descriptiveRatios && normalized.descriptiveRatios.length >= 2);
+  const replyRatio = normalized.descriptiveRatios.find((r) => r.metric === 'Reply-to-View Rate');
+  assert.ok(replyRatio);
+  assert.strictEqual(replyRatio.value, '~0.018%');
+  assert.strictEqual(replyRatio.numerator, '935 replies');
+  assert.strictEqual(replyRatio.denominator, '5.2M views');
+  assert.strictEqual(replyRatio.label, 'OBSERVED DESCRIPTIVE METRIC');
+  assert.ok(replyRatio.contextNote.includes('cannot establish causation'));
+
+  // 5. Check Friction Map Terminology
+  assert.strictEqual(normalized.frictionPoints[0].category, 'Conversation Friction');
+  assert.strictEqual(normalized.frictionPoints[0].text, 'Truth is better than fiction');
+  assert.ok(normalized.frictionPoints[0].explanation.includes('does not explicitly invite the audience to respond'));
+
+  // 6. Check Zero Rumor/Gossip Hallucinations
+  const fullJson = JSON.stringify(normalized);
+  assert.strictEqual(fullJson.includes('wildest true Hollywood story'), false);
+  assert.strictEqual(fullJson.includes('secrets'), false);
+  assert.strictEqual(fullJson.includes('scandals'), false);
+  assert.strictEqual(normalized.conversationDNA.replacementQuestion, 'Do you think truth really is better than fiction? Why?');
+});
+
 console.log(`\n📊 RESULTS: ${passed}/${total} test specifications passed successfully.\n`);
 
 if (passed !== total) {

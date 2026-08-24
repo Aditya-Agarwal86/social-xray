@@ -290,6 +290,34 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
               </div>
             )}
           </div>
+
+          {/* Observable Descriptive Ratios */}
+          {report.descriptiveRatios && report.descriptiveRatios.length > 0 && (
+            <div className="pt-3 border-t border-carbon-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400">
+                  Observed Descriptive Ratios:
+                </span>
+                <span className="text-[10px] text-carbon-500 font-mono">Historical descriptive rates</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {report.descriptiveRatios.map((ratio, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-carbon-950/80 border border-carbon-800 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-carbon-300 font-sans font-semibold">{ratio.metric}</span>
+                      <span className="text-xs font-mono font-bold text-cyan-300">{ratio.value}</span>
+                    </div>
+                    <div className="text-[10px] text-carbon-500 font-mono">
+                      {ratio.numerator} / {ratio.denominator}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-carbon-500 font-sans italic pt-1">
+                Calculated from visible platform counters at time of capture. Multiple unmeasured factors influence performance; the screenshot alone cannot establish causation.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

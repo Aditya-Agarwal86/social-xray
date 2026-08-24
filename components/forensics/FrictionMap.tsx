@@ -196,11 +196,11 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
                   </Badge>
                 </div>
 
-                {/* 1. Problematic Post Fragment OR Missing Engagement Element */}
+                {/* 1. Analyzed Statement OR Missing Engagement Element */}
                 <div className="space-y-1.5 relative z-10">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-rose-400 font-semibold flex items-center gap-1.5">
                     <Quote className="w-3.5 h-3.5" />
-                    {isMissingElement ? 'MISSING ENGAGEMENT ELEMENT' : 'PROBLEMATIC TEXT FRAGMENT'}
+                    {isMissingElement ? 'MISSING ENGAGEMENT ELEMENT' : 'ANALYZED TEXT / STATEMENT'}
                   </span>
                   <div className="p-3.5 rounded-xl border text-rose-200 font-mono text-xs leading-relaxed italic animate-highlight-pulse">
                     {isMissingElement

@@ -85,6 +85,15 @@ export function extractSocialPostContent(
   let parsedDisplayName: string | null = null;
   let parsedTimestamp: string | null = null;
 
+  let nestedAuthorHandle: string | null = null;
+  let nestedDisplayName: string | null = null;
+  let nestedTimestamp: string | null = null;
+  const nestedCaptionSegments: string[] = [];
+  const nestedCtaSegments: string[] = [];
+  const nestedLinkSegments: string[] = [];
+
+  let inNestedSection = false;
+
   const observedMetrics: ObservedEngagementMetrics = {
     replies: null,
     reposts: null,
@@ -111,13 +120,21 @@ export function extractSocialPostContent(
       continue;
     }
 
-    // Profile Metadata
+    // Profile Metadata (Outer vs Nested / Quoted Post)
     if (regionType === 'PROFILE_METADATA') {
       filteredRegions.push(region);
       const meta = parseProfileMetadata(text);
-      if (meta.username && !parsedHandle) parsedHandle = meta.username;
-      if (meta.displayName && !parsedDisplayName) parsedDisplayName = meta.displayName;
-      if (meta.timestamp && !parsedTimestamp) parsedTimestamp = meta.timestamp;
+      if (!parsedHandle) {
+        if (meta.username) parsedHandle = meta.username;
+        if (meta.displayName) parsedDisplayName = meta.displayName;
+        if (meta.timestamp) parsedTimestamp = meta.timestamp;
+      } else {
+        // Subsequent profile header indicates a quoted / nested post!
+        inNestedSection = true;
+        if (meta.username) nestedAuthorHandle = meta.username;
+        if (meta.displayName) nestedDisplayName = meta.displayName;
+        if (meta.timestamp) nestedTimestamp = meta.timestamp;
+      }
       continue;
     }
 
@@ -146,8 +163,14 @@ export function extractSocialPostContent(
     // CTA
     if (regionType === 'CTA') {
       contentRegions.push(region);
-      ctaSegments.push(text.trim());
-      captionSegments.push(text.trim());
+      const trimmedCta = text.trim();
+      if (inNestedSection) {
+        nestedCtaSegments.push(trimmedCta);
+        nestedCaptionSegments.push(trimmedCta);
+      } else {
+        ctaSegments.push(trimmedCta);
+        captionSegments.push(trimmedCta);
+      }
       const tags = text.match(/#[a-zA-Z0-9_]+/g) || [];
       tags.forEach((t) => {
         if (!hashtagsFound.includes(t)) hashtagsFound.push(t);
@@ -158,9 +181,16 @@ export function extractSocialPostContent(
     // Link
     if (regionType === 'LINK') {
       uncertainRegions.push(region);
-      const urls = text.match(/https?:\/\/[^\s]+|bit\.ly\/[^\s]+|t\.co\/[^\s]+/gi) || [];
+      const urls =
+        text.match(
+          /https?:\/\/[^\s]+|bit\.ly\/[^\s]+|t\.co\/[^\s]+|a\.co\/[^\s]+|amzn\.to\/[^\s]+|tinyurl\.com\/[^\s]+|linktr\.ee\/[^\s]+|(?:^|\s)(?:www\.)?[a-zA-Z0-9-]+\.(?:com|co|org|io|me|app)\/[a-zA-Z0-9_\-\/]+/gi
+        ) || [];
       urls.forEach((u) => {
-        if (!linkSegments.includes(u)) linkSegments.push(u);
+        const cleanUrl = u.trim();
+        if (inNestedSection) {
+          if (!nestedLinkSegments.includes(cleanUrl)) nestedLinkSegments.push(cleanUrl);
+        }
+        if (!linkSegments.includes(cleanUrl)) linkSegments.push(cleanUrl);
       });
       continue;
     }
@@ -191,8 +221,9 @@ export function extractSocialPostContent(
 
         // Strip author prefix if accidentally prepended to text
         let cleanedLine = line;
-        if (parsedHandle) {
-          const escaped = parsedHandle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const currentHandle = inNestedSection ? nestedAuthorHandle : parsedHandle;
+        if (currentHandle) {
+          const escaped = currentHandle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const handleRegex = new RegExp(`^@?${escaped}\\s*[:\\-]?\\s*`, 'i');
           cleanedLine = cleanedLine.replace(handleRegex, '').trim();
         }
@@ -204,7 +235,11 @@ export function extractSocialPostContent(
         if (isMicroArtifact(cleanedLine)) continue;
 
         if (cleanedLine.length > 0) {
-          captionSegments.push(cleanedLine);
+          if (inNestedSection) {
+            nestedCaptionSegments.push(cleanedLine);
+          } else {
+            captionSegments.push(cleanedLine);
+          }
         }
       }
     }
@@ -212,15 +247,16 @@ export function extractSocialPostContent(
 
   // 2. Assemble caption and check caption status
   const primaryCaption = captionSegments.length > 0 ? captionSegments.join('\n').trim() : null;
+  const nestedCaption = nestedCaptionSegments.length > 0 ? nestedCaptionSegments.join('\n').trim() : null;
   const hashtagBlock = hashtagsFound.join(' ');
   const supplementalText = supplementalSegments.join('\n').trim();
 
   const fullParts: string[] = [];
   if (primaryCaption) fullParts.push(primaryCaption);
+  if (nestedCaption) fullParts.push(`[Nested Post: ${nestedCaption}]`);
   if (hashtagBlock) fullParts.push(hashtagBlock);
   if (supplementalText) fullParts.push(supplementalText);
 
-  // Note: If no post text was detected, cleanedFullText MUST be empty. NEVER dump raw OCR lines!
   const cleanedFullText = fullParts.join('\n\n').trim();
 
   // 3. Determine Caption Detection Status
@@ -230,15 +266,71 @@ export function extractSocialPostContent(
       ? contentRegions.reduce((sum, r) => sum + r.confidence, 0) / contentRegions.length
       : 0;
     captionStatus = avgPostConf >= 70 ? 'DETECTED' : 'UNCERTAIN';
+  } else if (nestedCaption && nestedCaption.length > 0) {
+    captionStatus = 'DETECTED';
   }
 
-  // 4. Construct Content Inventory
+  // 4. Construct Nested Post Inventory (if secondary author or nested copy detected)
+  const isNestedDetected = !!(nestedAuthorHandle || nestedDisplayName || nestedCaption || nestedCtaSegments.length > 0 || nestedLinkSegments.length > 0);
+  const nestedPost = isNestedDetected
+    ? {
+        detected: true,
+        authorHandle: nestedAuthorHandle,
+        displayName: nestedDisplayName,
+        timestamp: nestedTimestamp,
+        text: nestedCaption,
+        cta: nestedCtaSegments.length > 0 ? nestedCtaSegments.join('; ') : null,
+        links: nestedLinkSegments,
+        hasMedia: hasVisualMedia,
+        mediaSummary: supplementalSegments.length > 0 ? supplementalSegments.join(' ') : undefined,
+      }
+    : undefined;
+
+  // 5. Construct CTA Details Breakdown
+  const hasOuterCta = ctaSegments.length > 0;
+  const hasNestedCta = nestedCtaSegments.length > 0 || nestedLinkSegments.length > 0;
+  const hasAnyLink = linkSegments.length > 0;
+
+  const rawCtaText = hasOuterCta
+    ? ctaSegments.join('; ')
+    : hasNestedCta
+    ? (nestedCtaSegments.length > 0 ? nestedCtaSegments.join('; ') : nestedLinkSegments.join(', '))
+    : hasAnyLink
+    ? linkSegments.join(', ')
+    : undefined;
+
+  const ctaType = rawCtaText
+    ? /preorder|pre-order/i.test(rawCtaText)
+      ? ('preorder' as const)
+      : /order|buy|purchase/i.test(rawCtaText)
+      ? ('purchase' as const)
+      : /link|a\.co|amzn|t\.co|bit\.ly/i.test(rawCtaText)
+      ? ('link' as const)
+      : /comment|reply|drop|share|tag/i.test(rawCtaText)
+      ? ('conversation' as const)
+      : ('link' as const)
+    : ('none' as const);
+
+  const ctaVisibility = hasOuterCta ? ('primary' as const) : hasNestedCta ? ('nested' as const) : hasAnyLink ? ('secondary' as const) : ('none' as const);
+  const ctaLocation = hasOuterCta ? ('outer_post' as const) : hasNestedCta ? ('nested_post' as const) : ('none' as const);
+
+  const ctaDetails = {
+    detected: hasOuterCta || hasNestedCta || hasAnyLink,
+    text: rawCtaText,
+    type: ctaType,
+    visibility: ctaVisibility,
+    location: ctaLocation,
+    destinationUrl: linkSegments[0] || nestedLinkSegments[0] || undefined,
+  };
+
+  // 6. Construct Content Inventory
   const inventory: ContentInventory = {
     hasVisualMedia,
     caption: primaryCaption,
     captionStatus,
     hashtags: hashtagsFound,
-    cta: ctaSegments.length > 0 ? ctaSegments.join('; ') : null,
+    cta: rawCtaText || null,
+    ctaDetails,
     links: linkSegments,
     engagementMetrics: observedMetrics,
     profileMetadata: {
@@ -246,6 +338,7 @@ export function extractSocialPostContent(
       displayName: parsedDisplayName,
       timestamp: parsedTimestamp,
     },
+    nestedPost,
     extractionWarnings: [],
   };
 

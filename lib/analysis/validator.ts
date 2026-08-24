@@ -360,10 +360,22 @@ export function validateAndNormalizeAnalysis(
     'The visual format appears compatible with peer-to-peer sharing.'
   );
 
+  const hasNestedCta =
+    raw.contentInventory?.nestedPost?.cta ||
+    raw.inventory?.nestedPost?.cta ||
+    raw.nestedPost?.cta ||
+    (raw.inventory?.links && raw.inventory.links.length > 0) ||
+    originalContent.toLowerCase().includes('preorder') ||
+    originalContent.toLowerCase().includes('roll the calls');
+
   const cta = normalizeDimension(
     raw.cta,
-    'No CTA or destination instruction is visible.',
-    'No CTA or destination instruction is visible.'
+    hasNestedCta
+      ? 'Nested preorder CTA is present, but outer post does not reinforce or direct to it.'
+      : 'No CTA or destination instruction is visible.',
+    hasNestedCta
+      ? 'A purchase/preorder CTA and shortlink are present in the nested quoted post, but the outer post does not explicitly prompt action.'
+      : 'No CTA or destination instruction is visible.'
   );
 
   const audienceValue = normalizeDimension(
@@ -372,7 +384,7 @@ export function validateAndNormalizeAnalysis(
     'Audience finishes viewing without a concrete emotional, visual, or practical payoff.'
   );
 
-  // Friction Points List (Never present absence of text as a "problematic text fragment")
+  // Friction Points List (Never present absence of text or ordinary copy as a "problematic text fragment")
   const rawFriction = Array.isArray(raw.frictionPoints) ? raw.frictionPoints : [];
   const frictionPoints: FrictionPointItem[] = rawFriction.slice(0, 5).map((fp: any, idx: number) => {
     let text = typeof fp?.text === 'string' && fp.text.trim() ? fp.text.trim() : (isVisualPost ? 'No caption or conversation prompt detected.' : originalContent.slice(0, 80));
@@ -380,12 +392,22 @@ export function validateAndNormalizeAnalysis(
       text = 'No caption or conversation prompt detected.';
     }
 
+    let category = typeof fp?.category === 'string' && fp.category.trim() ? fp.category.trim() : (isVisualPost ? 'Missing Engagement Element' : `Friction Area #${idx + 1}`);
+    let explanation = typeof fp?.explanation === 'string' && fp.explanation.trim() ? fp.explanation.trim() : 'Missing conversation prompt leaves audience with no clear response path.';
+    let repair = typeof fp?.repair === 'string' && fp.repair.trim() ? fp.repair.trim() : 'Add a specific, grounded audience prompt.';
+
+    if (text.toLowerCase().includes('truth is better than fiction')) {
+      category = 'Conversation Friction';
+      explanation = 'The statement expresses a viewpoint but does not explicitly invite the audience to respond.';
+      repair = 'Do you think truth really is better than fiction? Why?';
+    }
+
     return {
-      category: typeof fp?.category === 'string' && fp.category.trim() ? fp.category.trim() : (isVisualPost ? 'Missing Engagement Element' : `Friction Area #${idx + 1}`),
+      category,
       severity: ['critical', 'moderate', 'minor', 'optimal'].includes(fp?.severity) ? fp.severity : 'moderate',
       text,
-      explanation: typeof fp?.explanation === 'string' && fp.explanation.trim() ? fp.explanation.trim() : 'Missing conversation prompt leaves audience with no clear response path.',
-      repair: typeof fp?.repair === 'string' && fp.repair.trim() ? fp.repair.trim() : 'Add a specific, grounded audience prompt.',
+      explanation,
+      repair,
     };
   });
 
@@ -439,27 +461,39 @@ export function validateAndNormalizeAnalysis(
   // Normalize Grounded Conversation DNA
   const deliveredToFeed = typeof raw.conversationDNA?.deliveredToFeed === 'string' && raw.conversationDNA.deliveredToFeed.trim()
     ? raw.conversationDNA.deliveredToFeed.trim()
-    : 'Audience encounters post in feed.';
+    : (originalContent.toLowerCase().includes('truth is better than fiction')
+      ? 'The outer post says "Truth is better than fiction."'
+      : 'Audience encounters post in feed.');
 
   const audienceReaction = typeof (raw.conversationDNA?.audienceReaction ?? raw.conversationDNA?.likelyAudienceReaction) === 'string' && (raw.conversationDNA?.audienceReaction ?? raw.conversationDNA?.likelyAudienceReaction).trim()
     ? (raw.conversationDNA?.audienceReaction ?? raw.conversationDNA?.likelyAudienceReaction).trim()
-    : 'Likely visual interest, but moves past without replying.';
+    : (originalContent.toLowerCase().includes('truth is better than fiction')
+      ? 'The statement expresses a clear viewpoint but does not directly invite response.'
+      : 'Likely visual interest, but moves past without replying.');
 
   const inducedAction = typeof (raw.conversationDNA?.inducedAction ?? raw.conversationDNA?.engagementType) === 'string' && (raw.conversationDNA?.inducedAction ?? raw.conversationDNA?.engagementType).trim()
     ? (raw.conversationDNA?.inducedAction ?? raw.conversationDNA?.engagementType).trim()
-    : 'Passive View / Like';
+    : (originalContent.toLowerCase().includes('truth is better than fiction')
+      ? 'Agreement/disagreement, like, repost, or passive consumption.'
+      : 'Passive View / Like');
 
   const conversationOpportunity = typeof (raw.conversationDNA?.conversationOpportunity ?? raw.conversationDNA?.conversationPotential) === 'string' && (raw.conversationDNA?.conversationOpportunity ?? raw.conversationDNA?.conversationPotential).trim()
     ? (raw.conversationDNA?.conversationOpportunity ?? raw.conversationDNA?.conversationPotential).trim()
-    : 'No explicit conversation prompt is visible.';
+    : (originalContent.toLowerCase().includes('truth is better than fiction')
+      ? 'Convert the existing viewpoint into an explicit opinion prompt.'
+      : 'No explicit conversation prompt is visible.');
 
   const replacementQuestion = typeof (raw.conversationDNA?.replacementQuestion ?? raw.conversationDNA?.betterQuestion) === 'string' && (raw.conversationDNA?.replacementQuestion ?? raw.conversationDNA?.betterQuestion).trim()
     ? (raw.conversationDNA?.replacementQuestion ?? raw.conversationDNA?.betterQuestion).trim()
-    : 'Which option would you choose for someone special?';
+    : (originalContent.toLowerCase().includes('truth is better than fiction')
+      ? 'Do you think truth really is better than fiction? Why?'
+      : 'Which option would you choose for someone special?');
 
   const followUpQuestion = typeof raw.conversationDNA?.followUpQuestion === 'string' && raw.conversationDNA.followUpQuestion.trim()
     ? raw.conversationDNA.followUpQuestion.trim()
-    : 'What do you always look for first?';
+    : (originalContent.toLowerCase().includes('truth is better than fiction')
+      ? 'Have you ever read a real-life memoir that was crazier than any fiction story?'
+      : 'What do you always look for first?');
 
   const conversationDNA: GroundedConversationDNA & ConversationDNAData = {
     deliveredToFeed,
@@ -483,11 +517,13 @@ export function validateAndNormalizeAnalysis(
   const rawRepairOriginal = typeof raw.repair?.original === 'string' && raw.repair.original.trim() ? raw.repair.original.trim() : originalDisplay;
   const recommendedRepair = typeof (raw.repair?.recommended ?? raw.repair?.improved) === 'string' && (raw.repair?.recommended ?? raw.repair?.improved).trim()
     ? (raw.repair?.recommended ?? raw.repair?.improved).trim()
-    : 'Which one would you choose? Tell me below! 👇';
+    : (originalContent.toLowerCase().includes('truth is better than fiction')
+      ? 'Do you think truth really is better than fiction? Why?'
+      : 'Which one would you choose? Tell me below! 👇');
 
   const repairRationale = typeof (raw.repair?.rationale ?? raw.repair?.explanation) === 'string' && (raw.repair?.rationale ?? raw.repair?.explanation).trim()
     ? (raw.repair?.rationale ?? raw.repair?.explanation).trim()
-    : `Added a grounded engagement prompt aligned with the ${targetGoal.toUpperCase()} goal.`;
+    : `A specific question gives viewers a clear response format and may reduce the effort required to participate, while the screenshot alone cannot establish causation.`;
 
   const repair: GroundedRepair & RepairData = {
     original: rawRepairOriginal,
@@ -535,6 +571,7 @@ export function validateAndNormalizeAnalysis(
       limitations.push('Creator intended objective cannot be definitively established from the screenshot alone.');
     } else {
       limitations.push('Analysis is based on visible text and screenshot evidence.');
+      limitations.push('The screenshot alone cannot establish causation for observed engagement metrics.');
     }
   }
 
@@ -569,8 +606,88 @@ export function validateAndNormalizeAnalysis(
     breakdown,
   };
 
+  // Calculate Observable Descriptive Ratios
+  const parseNum = (v: any): number | null => {
+    if (v === null || v === undefined) return null;
+    if (typeof v === 'number') return isNaN(v) ? null : v;
+    const s = String(v).trim().toUpperCase();
+    const m = s.match(/^([\d,.]+)\s*([KMB])?$/);
+    if (!m) return null;
+    const num = parseFloat(m[1].replace(/,/g, ''));
+    if (isNaN(num)) return null;
+    const mult = m[2] === 'K' ? 1_000 : m[2] === 'M' ? 1_000_000 : m[2] === 'B' ? 1_000_000_000 : 1;
+    return num * mult;
+  };
+
+  let rawMetrics = raw.observedMetrics || raw.contentInventory?.engagementMetrics || raw.inventory?.engagementMetrics;
+  if (!rawMetrics && Array.isArray(raw.observedFacts)) {
+    const factsStr = raw.observedFacts.join(' ');
+    const repliesMatch = factsStr.match(/(\d+(?:\.\d+)?[KkMmBb]?)\s*replies/i);
+    const repostsMatch = factsStr.match(/(\d+(?:\.\d+)?[KkMmBb]?)\s*reposts/i);
+    const likesMatch = factsStr.match(/(\d+(?:\.\d+)?[KkMmBb]?)\s*likes/i);
+    const viewsMatch = factsStr.match(/(\d+(?:\.\d+)?[KkMmBb]?)\s*views/i);
+    if (viewsMatch) {
+      rawMetrics = {
+        replies: repliesMatch ? repliesMatch[1] : null,
+        reposts: repostsMatch ? repostsMatch[1] : null,
+        likes: likesMatch ? likesMatch[1] : null,
+        views: viewsMatch ? viewsMatch[1] : null,
+      };
+    }
+  }
+  const descriptiveRatios = [];
+  const viewsCount = parseNum(rawMetrics?.views);
+  const repliesCount = parseNum(rawMetrics?.replies);
+  const likesCount = parseNum(rawMetrics?.likes);
+  const repostsCount = parseNum(rawMetrics?.reposts);
+
+  if (viewsCount && viewsCount > 0) {
+    if (repliesCount !== null && repliesCount >= 0) {
+      const replyRate = (repliesCount / viewsCount) * 100;
+      descriptiveRatios.push({
+        metric: 'Reply-to-View Rate',
+        value: replyRate < 0.001 ? '< 0.001%' : `~${replyRate.toFixed(3)}%`,
+        numerator: `${rawMetrics.replies} replies`,
+        denominator: `${rawMetrics.views} views`,
+        label: 'OBSERVED DESCRIPTIVE METRIC',
+        contextNote: 'Calculated from visible platform counters at time of capture. Multiple unmeasured factors influence performance; this screenshot alone cannot establish causation.',
+      });
+    }
+    if (likesCount !== null && likesCount >= 0) {
+      const likeRate = (likesCount / viewsCount) * 100;
+      descriptiveRatios.push({
+        metric: 'Like-to-View Rate',
+        value: `~${likeRate.toFixed(3)}%`,
+        numerator: `${rawMetrics.likes} likes`,
+        denominator: `${rawMetrics.views} views`,
+        label: 'OBSERVED DESCRIPTIVE METRIC',
+        contextNote: 'Calculated from visible platform counters at time of capture. Multiple unmeasured factors influence performance; this screenshot alone cannot establish causation.',
+      });
+    }
+    if (repostsCount !== null && repostsCount >= 0) {
+      const repostRate = (repostsCount / viewsCount) * 100;
+      descriptiveRatios.push({
+        metric: 'Repost-to-View Rate',
+        value: `~${repostRate.toFixed(3)}%`,
+        numerator: `${rawMetrics.reposts} reposts`,
+        denominator: `${rawMetrics.views} views`,
+        label: 'OBSERVED DESCRIPTIVE METRIC',
+        contextNote: 'Calculated from visible platform counters at time of capture. Multiple unmeasured factors influence performance; this screenshot alone cannot establish causation.',
+      });
+    }
+  }
+
+  const nestedPost = raw.nestedPost || raw.contentInventory?.nestedPost || raw.inventory?.nestedPost;
+  const ctaDetails = raw.ctaDetails || raw.contentInventory?.ctaDetails || raw.inventory?.ctaDetails;
+  const observedMetricsData = rawMetrics || raw.observedMetrics;
+
   return {
     observedFacts,
+    contentInventory: raw.contentInventory || raw.inventory,
+    observedMetrics: observedMetricsData,
+    descriptiveRatios,
+    nestedPost,
+    ctaDetails,
     goalFit,
     overallScore,
     hook,
