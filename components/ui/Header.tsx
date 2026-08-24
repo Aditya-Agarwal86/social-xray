@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
             onClick={() => scrollToSection('common-reasons')}
             className="hover:text-cyan-300 transition-colors focus:outline-none focus-visible:text-cyan-300 cursor-pointer"
           >
-            COMMON FRICTIONS
+            FRICTIONS
           </button>
           <button
             onClick={() => scrollToSection('dimensions')}
@@ -89,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
             className="hidden sm:inline-flex text-xs font-mono tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.2)]"
           >
-            X-Ray My Post
+            X-Ray My Post →
           </Button>
 
           {/* Mobile Menu Toggle */}
@@ -121,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
             onClick={() => scrollToSection('common-reasons')}
             className="block w-full text-left py-2 text-carbon-300 hover:text-cyan-400 transition-colors"
           >
-            COMMON FRICTIONS
+            FRICTIONS
           </button>
           <button
             onClick={() => scrollToSection('dimensions')}
@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
             onClick={() => scrollToSection('upload-section')}
             className="block w-full text-left py-2 text-cyan-400 font-bold transition-colors"
           >
-            X-RAY MY POST
+            X-RAY MY POST →
           </button>
           {onOpenApiKeyModal && (
             <button

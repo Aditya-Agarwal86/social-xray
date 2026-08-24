@@ -440,10 +440,10 @@ export default function Home() {
         isProcessing={isCroppingOcr}
       />
 
-      <main className="flex-1 space-y-24 pb-20">
+      <main className="flex-1 space-y-16 sm:space-y-20 pb-16">
         {/* 1. HERO SECTION */}
         <section
-          className="relative pt-12 sm:pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden"
+          className="relative pt-10 sm:pt-16 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden"
           aria-labelledby="hero-title"
         >
           {/* Subtle Grid Reticle & Ambient Glow */}
@@ -476,7 +476,7 @@ export default function Home() {
             </div>
 
             {/* Primary, Demo & Secondary Call to Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
               <Button
                 variant="primary"
                 size="lg"
@@ -508,7 +508,7 @@ export default function Home() {
             </div>
 
             {/* Hero Forensic Blueprint Schematic */}
-            <div className="w-full pt-8">
+            <div className="w-full pt-6">
               <Card
                 variant="telemetry"
                 className="p-6 sm:p-8 bg-carbon-900/90 border-carbon-750 text-left relative overflow-hidden"
@@ -555,7 +555,7 @@ export default function Home() {
         </section>
 
         {/* 2. QUICK ANALYZER CTA */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 relative z-20">
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-10 relative z-20">
           <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-900 to-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
             <div className="space-y-1 text-center sm:text-left">
               <h3 className="text-sm sm:text-base font-mono font-bold text-white uppercase tracking-wider flex items-center justify-center sm:justify-start gap-2">
@@ -578,10 +578,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. HOW SOCIAL X-RAY WORKS */}
+        {/* 3. HOW SOCIAL X-RAY OPERATES */}
         <section
           id="how-it-works"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
           aria-labelledby="how-title"
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
@@ -592,7 +592,7 @@ export default function Home() {
               HOW SOCIAL X-RAY OPERATES
             </h2>
             <p className="text-sm text-carbon-400 font-sans">
-              Zero server-side image hoarding. In-browser extraction paired with deep psychological diagnosis.
+              Post assets are processed in-browser before analysis paired with deep psychological diagnosis.
             </p>
           </div>
 
@@ -631,7 +631,7 @@ export default function Home() {
               </div>
               <div className="space-y-1.5">
                 <h3 className="text-base font-mono font-bold text-white">
-                  Surgical Repairs &amp; Platform Adaptation
+                  Surgical Repairs &amp; Platform Variants
                 </h3>
                 <p className="text-xs text-carbon-300 font-sans leading-relaxed">
                   Receive line-by-line Before/After diffs with rationale, high-converting opening questions, and adapted versions for LinkedIn, Instagram, and TikTok.
@@ -710,42 +710,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 5. 10 EXECUTIVE FORENSIC DIMENSIONS */}
-        <section
-          id="dimensions"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
-          aria-labelledby="dimensions-title"
-        >
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <Badge variant="cyan" size="sm">
-              TELEMETRY SPECS
-            </Badge>
-            <h2 id="dimensions-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              10 EXECUTIVE FORENSIC DIMENSIONS
-            </h2>
-            <p className="text-sm text-carbon-400 font-sans">
-              Comprehensive diagnostics designed to test every layer of audience psychology.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-            {FORENSIC_DIMENSIONS.map((dim, idx) => (
-              <Card key={idx} variant="glow" className="p-4 bg-carbon-900/80 border-carbon-750 space-y-2.5">
-                <div className="p-2 rounded-lg bg-carbon-800 border border-carbon-700 w-fit">
-                  {dim.icon}
-                </div>
-                <h3 className="text-xs font-mono font-bold text-white uppercase">
-                  {dim.name}
-                </h3>
-                <p className="text-[11px] text-carbon-400 font-sans leading-snug">
-                  {dim.desc}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* 6. WHAT YOUR X-RAY REVEALS */}
+        {/* 5. WHAT YOUR X-RAY REVEALS (BEFORE 10 DIMENSIONS) */}
         <section
           id="what-you-get"
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
@@ -767,7 +732,7 @@ export default function Home() {
             <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
               <div className="flex items-center gap-2 text-rose-400 font-mono text-xs font-bold uppercase">
                 <AlertOctagon className="w-4 h-4" />
-                <span>1. Attention Drop-Off</span>
+                <span>01 — Attention Drop-Off</span>
               </div>
               <p className="text-xs text-carbon-300 font-sans leading-relaxed">
                 Identify where the post loses momentum and why audience interest decays.
@@ -777,7 +742,7 @@ export default function Home() {
             <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
               <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold uppercase">
                 <BrainCircuit className="w-4 h-4" />
-                <span>2. Forensic Dimensions</span>
+                <span>02 — Forensic Dimensions</span>
               </div>
               <p className="text-xs text-carbon-300 font-sans leading-relaxed">
                 Evaluate the post across the core audience-psychology dimensions.
@@ -787,7 +752,7 @@ export default function Home() {
             <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
               <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
                 <Crosshair className="w-4 h-4" />
-                <span>3. Friction Map</span>
+                <span>03 — Friction Map</span>
               </div>
               <p className="text-xs text-carbon-300 font-sans leading-relaxed">
                 See the specific text or structural elements creating engagement friction.
@@ -797,7 +762,7 @@ export default function Home() {
             <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
               <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold uppercase">
                 <Wrench className="w-4 h-4" />
-                <span>4. Surgical Repair</span>
+                <span>04 — Surgical Repair</span>
               </div>
               <p className="text-xs text-carbon-300 font-sans leading-relaxed">
                 Get evidence-grounded recommendations for improving the post.
@@ -806,11 +771,46 @@ export default function Home() {
           </div>
         </section>
 
+        {/* 6. 10 FORENSIC DIMENSIONS */}
+        <section
+          id="dimensions"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
+          aria-labelledby="dimensions-title"
+        >
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <Badge variant="cyan" size="sm">
+              TELEMETRY SPECS
+            </Badge>
+            <h2 id="dimensions-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
+              10 FORENSIC DIMENSIONS
+            </h2>
+            <p className="text-sm text-carbon-400 font-sans">
+              Measure the psychological and structural factors that influence audience response.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+            {FORENSIC_DIMENSIONS.map((dim, idx) => (
+              <Card key={idx} variant="glow" className="p-4 bg-carbon-900/80 border-carbon-750 space-y-2.5">
+                <div className="p-2 rounded-lg bg-carbon-800 border border-carbon-700 w-fit">
+                  {dim.icon}
+                </div>
+                <h3 className="text-xs font-mono font-bold text-white uppercase">
+                  {dim.name}
+                </h3>
+                <p className="text-[11px] text-carbon-400 font-sans leading-snug">
+                  {dim.desc}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         {/* 7. DEDICATED UPLOAD & WORKBENCH */}
         <section
           id="upload-section"
           ref={workbenchRef}
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 pt-8"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 pt-4"
           aria-labelledby="upload-title"
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
@@ -1004,7 +1004,7 @@ export default function Home() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
-                    STEP 3 &amp; 4 — REVIEW EXTRACTED CONTENT &amp; RUN X-RAY
+                    STEP 3 — REVIEW EXTRACTED CONTENT
                   </span>
                   <span className="text-[11px] font-mono text-carbon-400">
                     Edit copy freely before final scan
