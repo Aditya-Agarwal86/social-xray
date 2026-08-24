@@ -54,15 +54,15 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   audienceValue,
 }) => {
   const signalCards = [
-    { key: 'hook', name: 'Visual / Text Hook', data: hook, icon: Zap },
+    { key: 'hook', name: 'Hook Velocity', data: hook, icon: Zap },
     { key: 'clarity', name: 'Clarity & Comprehension', data: clarity, icon: Eye },
-    { key: 'cognitiveLoad', name: 'Visual Processing Ease', data: cognitiveLoad, icon: BrainCircuit },
+    { key: 'cognitiveLoad', name: 'Cognitive Ease', data: cognitiveLoad, icon: BrainCircuit },
     { key: 'emotion', name: 'Emotional Resonance', data: emotion, icon: Flame },
-    { key: 'curiosity', name: 'Curiosity Tension', data: curiosity, icon: HelpCircle },
-    { key: 'conversation', name: 'Conversation Trigger', data: conversation, icon: MessageSquare },
-    { key: 'shareability', name: 'Shareability Compatibility', data: shareability, icon: Share2 },
-    { key: 'cta', name: 'Call to Action Quality', data: cta, icon: MousePointerClick },
-    { key: 'audienceValue', name: 'Audience Value Payoff', data: audienceValue, icon: Award },
+    { key: 'curiosity', name: 'Curiosity Gap', data: curiosity, icon: HelpCircle },
+    { key: 'conversation', name: 'Conversation Catalyst', data: conversation, icon: MessageSquare },
+    { key: 'shareability', name: 'Social Currency', data: shareability, icon: Share2 },
+    { key: 'cta', name: 'CTA Friction', data: cta, icon: MousePointerClick },
+    { key: 'audienceValue', name: 'Audience Value', data: audienceValue, icon: Award },
   ];
 
   const overallStyle = getScoreColor(overallScore);

@@ -87,7 +87,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-carbon-900 border border-carbon-750 rounded-xl font-mono text-xs text-carbon-300">
         <div className="flex items-center gap-2">
           <span className="font-bold text-white uppercase tracking-wider">
-            STEP 2: CONTENT INVENTORY &amp; REVIEW
+            STEP 3: CONTENT REVIEW
           </span>
           {sourceType === 'demo' ? (
             <Badge variant="amber" size="sm">
@@ -101,12 +101,12 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             <Badge variant="emerald" size="sm">
               CAPTION DETECTED
             </Badge>
-          ) : inventory?.captionStatus === 'UNCERTAIN' ? (
-            <Badge variant="amber" size="sm">
-              REVIEW RECOMMENDED
+          ) : typeof confidence === 'number' ? (
+            <Badge variant={confidence >= 80 ? 'emerald' : confidence >= 60 ? 'amber' : 'red'} size="sm">
+              EXTRACTION CONFIDENCE: {confidence >= 80 ? 'HIGH' : confidence >= 60 ? 'MEDIUM' : 'LOW'}
             </Badge>
           ) : (
-            <Badge variant={quality === 'HIGH' ? 'emerald' : quality === 'MEDIUM' ? 'amber' : 'red'} size="sm">
+            <Badge variant={quality === 'HIGH' ? 'emerald' : 'amber'} size="sm">
               {quality === 'HIGH' ? 'READY' : 'REVIEW RECOMMENDED'}
             </Badge>
           )}
@@ -250,9 +250,22 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
         </div>
       )}
 
-      {/* Actionable Review Warnings */}
-      {warnings && warnings.length > 0 && !isImageOnly && (
+      {/* Actionable Review Warnings or Medium/Low Confidence Notice */}
+      {((warnings && warnings.length > 0) || (typeof confidence === 'number' && confidence < 80 && words > 0)) && !isImageOnly && (
         <div className="space-y-2">
+          {typeof confidence === 'number' && confidence < 80 && (
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-950/30 border border-amber-800/60 text-amber-200 text-xs font-mono">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-bold text-amber-300 uppercase block">
+                  Extraction Confidence: {confidence >= 60 ? 'Medium' : 'Low'}
+                </span>
+                <span className="font-sans leading-relaxed text-amber-100">
+                  Some characters may have been misread. Review and edit the extracted text below before analysis.
+                </span>
+              </div>
+            </div>
+          )}
           {warnings.map((warning, idx) => (
             <div
               key={idx}
@@ -374,8 +387,8 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             {isAnalyzing
               ? 'RUNNING FORENSIC SCAN...'
               : isImageOnly
-              ? 'ANALYZE VISUAL POST'
-              : 'CONTINUE TO SOCIAL X-RAY'}
+              ? 'ANALYZE VISUAL POST →'
+              : 'ANALYZE THIS POST →'}
           </Button>
         </div>
       </div>

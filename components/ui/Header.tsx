@@ -61,10 +61,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
             HOW IT WORKS
           </button>
           <button
-            onClick={() => scrollToSection('forensic-breakdown')}
+            onClick={() => scrollToSection('common-reasons')}
             className="hover:text-cyan-300 transition-colors focus:outline-none focus-visible:text-cyan-300 cursor-pointer"
           >
-            ANATOMY OF A DROP
+            COMMON FRICTIONS
           </button>
           <button
             onClick={() => scrollToSection('dimensions')}
@@ -82,24 +82,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
 
         {/* Action Button & Mobile Hamburger */}
         <div className="flex items-center gap-2.5">
-          {onOpenApiKeyModal && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onOpenApiKeyModal}
-              leftIcon={<KeyRound className="w-3.5 h-3.5 text-cyan-400" />}
-              className="hidden sm:inline-flex text-xs font-mono border-carbon-700 hover:border-cyan-500/50"
-            >
-              {hasCustomKey ? 'Key Active' : 'API Key'}
-            </Button>
-          )}
-
           <Button
             variant="primary"
             size="sm"
             onClick={() => scrollToSection('upload-section')}
             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-            className="hidden sm:inline-flex text-xs font-mono"
+            className="hidden sm:inline-flex text-xs font-mono tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.2)]"
           >
             X-Ray My Post
           </Button>
@@ -130,10 +118,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
             HOW IT WORKS
           </button>
           <button
-            onClick={() => scrollToSection('forensic-breakdown')}
+            onClick={() => scrollToSection('common-reasons')}
             className="block w-full text-left py-2 text-carbon-300 hover:text-cyan-400 transition-colors"
           >
-            ANATOMY OF A DROP
+            COMMON FRICTIONS
           </button>
           <button
             onClick={() => scrollToSection('dimensions')}
@@ -145,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApiKeyModal, hasCustomKey 
             onClick={() => scrollToSection('upload-section')}
             className="block w-full text-left py-2 text-cyan-400 font-bold transition-colors"
           >
-            INGEST &amp; X-RAY POST
+            X-RAY MY POST
           </button>
           {onOpenApiKeyModal && (
             <button

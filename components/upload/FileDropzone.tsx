@@ -351,13 +351,13 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
 
             <div className="space-y-1.5">
               <h3 className="font-mono text-base sm:text-lg font-bold text-white tracking-wide">
-                {uploadState === 'DRAGGING' ? 'DROP POST ASSET TO COMMENCE SCAN' : 'DRAG & DROP SOCIAL POST ASSET'}
+                {uploadState === 'DRAGGING' ? 'DROP POST ASSET TO COMMENCE SCAN' : 'Drop your social post here'}
               </h3>
               <p
                 id="file-upload-instructions"
                 className="text-xs sm:text-sm text-carbon-400 leading-relaxed font-sans"
               >
-                Drop your PDF post document or screenshot here, or{' '}
+                Drag & drop a screenshot or PDF document, or{' '}
                 <span className="text-cyan-400 underline underline-offset-4 hover:text-cyan-300 font-semibold">
                   browse files
                 </span>{' '}
@@ -365,22 +365,22 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
               </p>
             </div>
 
-            {/* Supported File Specs Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-1 font-mono">
-              <Badge variant="cyan" size="sm">
-                PDF (.pdf)
-              </Badge>
-              <Badge variant="neutral" size="sm">
-                PNG (.png)
-              </Badge>
-              <Badge variant="neutral" size="sm">
-                JPG / JPEG (.jpg)
-              </Badge>
-              <Badge variant="neutral" size="sm">
-                WEBP (.webp)
-              </Badge>
-              <span className="text-xs text-carbon-400 font-mono ml-1 font-semibold">
-                MAX 10MB
+            {/* Supported File Specs */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1 font-mono text-[11px] text-carbon-400">
+              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+                PDF
+              </span>
+              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+                PNG
+              </span>
+              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+                JPG
+              </span>
+              <span className="px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-carbon-300">
+                WEBP
+              </span>
+              <span className="text-carbon-500 font-mono text-xs font-semibold ml-1">
+                • Max 10MB
               </span>
             </div>
           </div>

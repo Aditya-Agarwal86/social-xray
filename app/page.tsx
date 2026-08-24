@@ -106,7 +106,7 @@ const FORENSIC_DIMENSIONS = [
   },
   {
     icon: <Eye className="w-5 h-5 text-cyan-400" />,
-    name: 'Signal Clarity',
+    name: 'Clarity & Comprehension',
     desc: 'Measures signal-to-noise ratio, eliminating corporate jargon, fluff, and unnecessary throat-clearing.',
   },
   {
@@ -116,8 +116,8 @@ const FORENSIC_DIMENSIONS = [
   },
   {
     icon: <Sparkles className="w-5 h-5 text-amber-400" />,
-    name: 'Emotional Tension',
-    desc: 'Identifies emotional resonance, vulnerable stakes, and intellectual intrigue.',
+    name: 'Emotional Resonance',
+    desc: 'Identifies affective resonance, vulnerable stakes, and intellectual intrigue.',
   },
   {
     icon: <HelpCircle className="w-5 h-5 text-purple-400" />,
@@ -141,13 +141,13 @@ const FORENSIC_DIMENSIONS = [
   },
   {
     icon: <Award className="w-5 h-5 text-amber-400" />,
-    name: 'Audience Utility',
+    name: 'Audience Value',
     desc: 'Evaluates tangible reference value, actionable frameworks, and save-worthy blueprints.',
   },
   {
     icon: <AlertOctagon className="w-5 h-5 text-rose-400" />,
-    name: 'Resistance Resistance',
-    desc: 'Calculates the overall dropoff cliff where reader attention breaks down entirely.',
+    name: 'Attention Resistance',
+    desc: 'Calculates the overall dropoff resistance and attention retention across the post.',
   },
 ];
 
@@ -164,6 +164,7 @@ export default function Home() {
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [isCroppingOcr, setIsCroppingOcr] = useState(false);
   const [clientApiKey, setClientApiKey] = useState('');
+  const [showMoreExamples, setShowMoreExamples] = useState(false);
 
   const workbenchRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -440,7 +441,7 @@ export default function Home() {
       />
 
       <main className="flex-1 space-y-24 pb-20">
-        {/* HERO SECTION */}
+        {/* 1. HERO SECTION */}
         <section
           className="relative pt-12 sm:pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden"
           aria-labelledby="hero-title"
@@ -468,9 +469,9 @@ export default function Home() {
                 </span>
               </h1>
 
-              {/* Required Supporting Text */}
+              {/* Supporting Text */}
               <p className="text-base sm:text-lg text-carbon-300 font-sans max-w-2xl mx-auto leading-relaxed pt-2">
-                Upload a social post and uncover the attention leaks, engagement friction, and conversation opportunities hiding inside it.
+                Upload a social post and discover where attention drops, why engagement stalls, and how to repair it.
               </p>
             </div>
 
@@ -483,7 +484,7 @@ export default function Home() {
                 rightIcon={<ArrowRight className="w-4 h-4" />}
                 className="w-full sm:w-auto font-mono text-sm tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.25)]"
               >
-                X-Ray My Post
+                X-Ray My Post →
               </Button>
 
               <Button
@@ -544,7 +545,7 @@ export default function Home() {
                   <div className="p-3.5 rounded-xl bg-carbon-950 border border-emerald-500/30 space-y-1.5">
                     <div className="text-emerald-400 font-bold uppercase">04. Surgical Repair</div>
                     <p className="text-carbon-300 font-sans leading-relaxed">
-                      Provides side-by-side diff rewrites optimized for LinkedIn, Instagram & TikTok.
+                      Provides side-by-side diff rewrites optimized for LinkedIn, Instagram &amp; TikTok.
                     </p>
                   </div>
                 </div>
@@ -553,18 +554,105 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECTION: THE ANATOMY OF ATTENTION DROP */}
+        {/* 2. QUICK ANALYZER CTA */}
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 relative z-20">
+          <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-900 to-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="space-y-1 text-center sm:text-left">
+              <h3 className="text-sm sm:text-base font-mono font-bold text-white uppercase tracking-wider flex items-center justify-center sm:justify-start gap-2">
+                <Zap className="w-4 h-4 text-cyan-400" />
+                Ready to X-Ray a post?
+              </h3>
+              <p className="text-xs text-carbon-300 font-sans leading-relaxed max-w-xl">
+                Upload a screenshot or PDF, choose your optimization goal, and get your forensic report.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => scrollToSection('upload-section')}
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+              className="w-full sm:w-auto font-mono text-xs tracking-wider shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.25)]"
+            >
+              Analyze My Post →
+            </Button>
+          </div>
+        </section>
+
+        {/* 3. HOW SOCIAL X-RAY WORKS */}
         <section
-          id="forensic-breakdown"
+          id="how-it-works"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10"
+          aria-labelledby="how-title"
+        >
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <Badge variant="cyan" size="sm">
+              FORENSIC PIPELINE
+            </Badge>
+            <h2 id="how-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
+              HOW SOCIAL X-RAY OPERATES
+            </h2>
+            <p className="text-sm text-carbon-400 font-sans">
+              Zero server-side image hoarding. In-browser extraction paired with deep psychological diagnosis.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
+                01
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-mono font-bold text-white">
+                  Ingest &amp; Client-Side OCR
+                </h3>
+                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                  Drop a PDF carousel, screenshot, or graphic. Text is parsed directly in your browser using Tesseract Web Workers and PDF.js—preserving structural line breaks.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
+                02
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-mono font-bold text-white">
+                  Attention Friction Mapping
+                </h3>
+                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                  The forensic engine evaluates the post against your selected optimization objective, identifying exact dropoff sentences, cognitive load spikes, and weak transitions.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
+                03
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-mono font-bold text-white">
+                  Surgical Repairs &amp; Platform Adaptation
+                </h3>
+                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                  Receive line-by-line Before/After diffs with rationale, high-converting opening questions, and adapted versions for LinkedIn, Instagram, and TikTok.
+                </p>
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* 4. 4 COMMON REASONS POSTS LOSE ATTENTION */}
+        <section
+          id="common-reasons"
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
-          aria-labelledby="breakdown-title"
+          aria-labelledby="reasons-title"
         >
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <Badge variant="cyan" size="sm">
               CONTENT AUTOPSY
             </Badge>
-            <h2 id="breakdown-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              THE 4 REASONS POSTS LOSE AUDIENCES
+            <h2 id="reasons-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
+              4 COMMON REASONS POSTS LOSE ATTENTION
             </h2>
             <p className="text-sm text-carbon-400 font-sans">
               Generic metrics tell you how many scrolled past. Social X-Ray explains why.
@@ -622,70 +710,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECTION: HOW IT WORKS */}
-        <section
-          id="how-it-works"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10"
-          aria-labelledby="how-title"
-        >
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <Badge variant="cyan" size="sm">
-              FORENSIC PIPELINE
-            </Badge>
-            <h2 id="how-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              HOW SOCIAL X-RAY OPERATES
-            </h2>
-            <p className="text-sm text-carbon-400 font-sans">
-              Zero server-side image hoarding. In-browser extraction paired with deep psychological diagnosis.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
-                01
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-base font-mono font-bold text-white">
-                  Ingest & Client-Side OCR
-                </h3>
-                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
-                  Drop a PDF carousel, screenshot, or graphic. Text is parsed directly in your browser using Tesseract Web Workers and PDF.js—preserving structural line breaks.
-                </p>
-              </div>
-            </Card>
-
-            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
-                02
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-base font-mono font-bold text-white">
-                  Attention Friction Mapping
-                </h3>
-                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
-                  The forensic engine evaluates the post against your selected optimization objective, identifying exact dropoff sentences, cognitive load spikes, and weak transitions.
-                </p>
-              </div>
-            </Card>
-
-            <Card className="p-6 bg-carbon-900/90 border-carbon-750 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 font-mono text-cyan-400 font-bold flex items-center justify-center text-sm">
-                03
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-base font-mono font-bold text-white">
-                  Surgical Repairs & Platform Adaptation
-                </h3>
-                <p className="text-xs text-carbon-300 font-sans leading-relaxed">
-                  Receive line-by-line Before/After diffs with rationale, high-converting opening questions, and adapted versions for LinkedIn, Instagram, and TikTok.
-                </p>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* SECTION: 10 FORENSIC DIMENSIONS */}
+        {/* 5. 10 EXECUTIVE FORENSIC DIMENSIONS */}
         <section
           id="dimensions"
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
@@ -720,7 +745,68 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECTION: DEDICATED UPLOAD & WORKBENCH */}
+        {/* 6. WHAT YOUR X-RAY REVEALS */}
+        <section
+          id="what-you-get"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
+          aria-labelledby="what-reveals-title"
+        >
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <Badge variant="cyan" size="sm">
+              OUTPUT DOSSIER
+            </Badge>
+            <h2 id="what-reveals-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
+              WHAT YOUR X-RAY REVEALS
+            </h2>
+            <p className="text-sm text-carbon-400 font-sans">
+              Every analysis generates a structured forensic breakdown with actionable repairs.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
+              <div className="flex items-center gap-2 text-rose-400 font-mono text-xs font-bold uppercase">
+                <AlertOctagon className="w-4 h-4" />
+                <span>1. Attention Drop-Off</span>
+              </div>
+              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                Identify where the post loses momentum and why audience interest decays.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
+              <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold uppercase">
+                <BrainCircuit className="w-4 h-4" />
+                <span>2. Forensic Dimensions</span>
+              </div>
+              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                Evaluate the post across the core audience-psychology dimensions.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
+              <div className="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+                <Crosshair className="w-4 h-4" />
+                <span>3. Friction Map</span>
+              </div>
+              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                See the specific text or structural elements creating engagement friction.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-carbon-900/70 border border-carbon-800 space-y-2.5">
+              <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold uppercase">
+                <Wrench className="w-4 h-4" />
+                <span>4. Surgical Repair</span>
+              </div>
+              <p className="text-xs text-carbon-300 font-sans leading-relaxed">
+                Get evidence-grounded recommendations for improving the post.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. DEDICATED UPLOAD & WORKBENCH */}
         <section
           id="upload-section"
           ref={workbenchRef}
@@ -733,10 +819,10 @@ export default function Home() {
               <span>INTERACTIVE FORENSIC WORKBENCH</span>
             </div>
             <h2 id="upload-title" className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              INGEST POST & RUN X-RAY
+              INGEST POST &amp; RUN X-RAY
             </h2>
             <p className="text-sm text-carbon-400 font-sans">
-              Upload your post document/image, or try the built-in Demo Post to test the forensic engine.
+              Choose your optimization objective, upload your post asset, review extracted copy, and generate your diagnosis.
             </p>
           </div>
 
@@ -811,62 +897,63 @@ export default function Home() {
 
           {/* STATE 3: IDLE WORKBENCH (Upload, Goal Selection, Review) */}
           {workflowState !== 'scanning' && workflowState !== 'results' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* FEATURED: Try a Demo Post Banner */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-900 to-amber-950/30 border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-carbon-900 via-carbon-900 to-amber-950/20 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Badge variant="amber" size="sm" className="font-mono">
                       DEMO POST
                     </Badge>
                     <span className="font-mono text-xs font-bold text-white uppercase">
-                      Test with a Realistic Weak Post
+                      Try a Demo Post
                     </span>
                   </div>
                   <p className="text-xs text-carbon-300 font-sans max-w-xl leading-relaxed">
-                    Instantly load an AI launch announcement demonstrating company-first language, weak hook velocity, and inert CTA—no file upload required.
+                    See how Social X-Ray analyzes a realistic weak post before uploading your own.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleLoadDemoPost(false)}
-                    leftIcon={<FileText className="w-3.5 h-3.5 text-amber-400" />}
-                    className="text-xs font-mono text-amber-200 border-amber-700/60 hover:border-amber-400 flex-1 sm:flex-none"
-                  >
-                    Load Demo Post
-                  </Button>
-                  <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => handleLoadDemoPost(true)}
-                    leftIcon={<PlayCircle className="w-3.5 h-3.5 text-cyan-400" />}
-                    className="text-xs font-mono bg-amber-500/10 border-amber-500/50 hover:bg-amber-500/20 text-amber-200 flex-1 sm:flex-none"
+                    leftIcon={<FlaskConical className="w-3.5 h-3.5 text-amber-400" />}
+                    className="text-xs font-mono border-amber-500/40 text-amber-200 hover:border-amber-400 flex-1 sm:flex-none"
                   >
-                    Analyze Demo Now
+                    Try Demo Analysis →
                   </Button>
                 </div>
               </div>
 
-              {/* Step 1: Goal Objective Selector */}
-              <GoalSelector
-                selectedGoal={targetGoal}
-                onSelectGoal={(goal) => {
-                  setTargetGoal(goal);
-                  setExtractionNotification(`Target objective switched to: ${goal.toUpperCase()}`);
-                }}
-              />
-
-              {/* Step 2: Primary File Dropzone (PDF / Image / OCR) */}
-              <div className="space-y-2" id="formats">
+              {/* STEP 1: Goal Objective Selector */}
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-semibold uppercase tracking-wider text-carbon-200">
-                    Step 1: Upload Post Asset (PDF or Image)
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
+                    STEP 1 — CHOOSE YOUR OBJECTIVE
                   </span>
                   <span className="text-[11px] font-mono text-carbon-400">
-                    Client-side PDF parsing & OCR Web Worker
+                    Diagnostics tune to your selected goal
+                  </span>
+                </div>
+                <GoalSelector
+                  selectedGoal={targetGoal}
+                  onSelectGoal={(goal) => {
+                    setTargetGoal(goal);
+                    setExtractionNotification(`Target objective switched to: ${goal.toUpperCase()}`);
+                  }}
+                />
+              </div>
+
+              {/* STEP 2: Primary File Dropzone (PDF / Image / OCR) */}
+              <div className="space-y-3" id="formats">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
+                    STEP 2 — UPLOAD YOUR POST
+                  </span>
+                  <span className="text-[11px] font-mono text-carbon-400">
+                    Client-side PDF &amp; OCR Web Worker
                   </span>
                 </div>
                 <FileDropzone
@@ -880,32 +967,49 @@ export default function Home() {
                 />
               </div>
 
-              {/* Quick Test Benchmark Drafts */}
-              <div className="p-4 rounded-xl bg-carbon-900/60 border border-carbon-800 space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-mono text-carbon-400 font-medium">
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                  <span>MORE TEST BENCHMARK DRAFTS:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {SAMPLE_POSTS.map((sample, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleLoadSample(sample)}
-                      className="px-3 py-1.5 rounded-lg bg-carbon-800 border border-carbon-700 hover:border-cyan-500/50 hover:text-white text-xs font-mono text-carbon-300 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400"
-                    >
-                      <FileCode className="w-3.5 h-3.5 text-cyan-400" />
-                      {sample.title}
-                    </button>
-                  ))}
-                </div>
+              {/* Collapsible Benchmark Examples */}
+              <div className="rounded-xl bg-carbon-900/40 border border-carbon-800/80 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowMoreExamples(!showMoreExamples)}
+                  className="w-full p-3.5 flex items-center justify-between text-xs font-mono text-carbon-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                    <span>MORE BENCHMARK EXAMPLES</span>
+                  </div>
+                  <span className="text-[11px] text-carbon-500 font-mono">
+                    {showMoreExamples ? 'Hide Examples ▴' : 'Explore Examples ▾'}
+                  </span>
+                </button>
+
+                {showMoreExamples && (
+                  <div className="p-3.5 pt-0 border-t border-carbon-800/60 flex flex-wrap gap-2 animate-fade-in">
+                    {SAMPLE_POSTS.map((sample, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleLoadSample(sample)}
+                        className="px-3 py-1.5 rounded-lg bg-carbon-800 border border-carbon-700 hover:border-cyan-500/50 hover:text-white text-xs font-mono text-carbon-300 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer"
+                      >
+                        <FileCode className="w-3.5 h-3.5 text-cyan-400" />
+                        {sample.title} ({sample.goal.toUpperCase()})
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Step 3: Editable Extracted Text Review Panel */}
-              <div className="space-y-2">
-                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-carbon-200">
-                  Step 2: Review & Refine Extracted Post Copy
-                </span>
+              {/* STEP 3 & STEP 4: Review Extracted Copy & Run Analysis */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
+                    STEP 3 &amp; 4 — REVIEW EXTRACTED CONTENT &amp; RUN X-RAY
+                  </span>
+                  <span className="text-[11px] font-mono text-carbon-400">
+                    Edit copy freely before final scan
+                  </span>
+                </div>
                 <ExtractionPreview
                   text={extractedText}
                   onTextChange={(newText) => {
