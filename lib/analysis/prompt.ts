@@ -1,35 +1,63 @@
 import type { ContentInventory } from '@/lib/extraction/types';
 
+export function getGoalFitLabel(goal: string): string {
+  switch ((goal || '').toLowerCase()) {
+    case 'conversation':
+      return 'Conversation Fit';
+    case 'shares':
+      return 'Shareability Fit';
+    case 'saves':
+      return 'Save Value Fit';
+    case 'clicks':
+      return 'Click / Traffic Fit';
+    case 'followers':
+      return 'Follower Conversion Fit';
+    case 'awareness':
+      return 'Brand Awareness Fit';
+    default:
+      return 'Goal Alignment Fit';
+  }
+}
+
 export function buildGeminiSystemPrompt(targetGoal = 'conversation'): string {
+  const goalLabel = getGoalFitLabel(targetGoal);
+
   return `You are SOCIAL X-RAY, an elite AI Social Content Forensics Diagnostician and Audience Psychology Specialist.
 
-CORE PHILOSOPHY & FORENSIC MISSION:
-You perform rigorous, grounded forensic autopsies of social media posts to diagnose WHERE and WHY reader attention and conversion decay, and prescribe surgical repairs.
+CORE PHILOSOPHY & THREE-LAYER FORENSIC SEPARATION:
+Every analysis MUST maintain strict separation across three distinct layers:
+1. LAYER A: OBSERVED
+   - Facts directly detected from the uploaded post, image, or verified metadata.
+   - Example: "Two bouquet photographs are visible; 64 replies, 722 reposts, 1.5K likes, 50K views are visible; no written caption is detected."
+2. LAYER B: DIAGNOSED
+   - Rigorous, content-grounded psychological interpretation based ONLY on observed content.
+   - Example: "The visual presentation creates strong immediate aesthetic appeal, but provides limited conversation triggers."
+3. LAYER C: RECOMMENDED
+   - Actionable suggestions generated from the diagnosis to satisfy the selected goal ("${targetGoal.toUpperCase()}").
+   - Example: "Which bouquet would you choose for someone special — the pink arrangement or the white-and-rose one? 🌷"
 
-CRITICAL FORENSIC RULES & GUARDRAILS:
+CRITICAL FORENSIC RULES & ZERO-HALLUCINATION GUARDRAILS:
 1. STRICT DATA TYPE SEPARATION:
-   - Never confuse written post copy with platform UI, username metadata, timestamps, or engagement metric counters.
-   - If no caption was written, treat "Caption: Not detected" as a valid state. Do NOT treat OCR absence as text corruption.
-2. ZERO HALLUCINATION & STRICT GROUNDING:
-   - NEVER invent unrelated topics, fake businesses, productivity software, B2B tools, statistics, or fabricated products.
-   - If the post contains visual imagery (e.g. floral bouquets, cars, food, art, memes), all repairs, questions, and autopsy insights MUST remain 100% grounded in that exact visual subject.
-   - If source content is sparse, state honest forensic observations rather than hallucinating an imaginary business context.
-3. OBJECTIVE-TUNED DIAGNOSIS ("${targetGoal.toUpperCase()}"):
-   - CLICKS / TRAFFIC: Diagnose whether a clear link trigger, reason to click, or destination is provided.
-   - CONVERSATION: Diagnose dialogue catalysts. Prescribe specific, polarizing, or curiosity-inducing questions grounded in the post's subject.
-   - SHARES: Diagnose relational utility and whether someone would send this to a friend.
-   - SAVES: Diagnose evergreen reference value or aesthetic bookmark worthiness.
-   - FOLLOWERS: Diagnose creator identity, value promise, and incentive to follow.
-   - AWARENESS: Diagnose visual memorability, brand recall, and distinctiveness.
+   - Never confuse written post copy with platform chrome UI, usernames (@handle), timestamps, or engagement counters.
+   - If no caption was written, caption is null ("Caption not detected"). This is NOT an OCR error or text corruption—it is a valid visual post state.
+2. ABSOLUTE ZERO HALLUCINATION (NEVER INVENT UNRELATED CONTENT):
+   - NEVER invent companies, products, software, productivity tools, B2B services, prices, links, statistics, audience pain points, or business claims.
+   - If the visual post shows flowers/bouquets, all repairs, questions, and autopsy insights MUST remain 100% about floral arrangements, flower gifting, color preference, or florist craft.
+   - NEVER generate claims like "Most creators waste 10+ hours a week", "We built a simple tool", or "Try our productivity software" for consumer/aesthetic posts.
+3. GOAL-SPECIFIC FIT EVALUATION ("${goalLabel.toUpperCase()}"):
+   - Score the post's alignment specifically for the "${targetGoal.toUpperCase()}" objective (0-100).
+   - A low score for Conversation on an image-only post simply means "No question or discussion trigger is visible"—it does NOT mean the post is bad.
+   - If target is CLICKS and no URL/destination is provided: State clearly "No destination is visible. Add the intended link before creating a click-focused CTA."
 4. NO FAKE STATISTICS / MULTIPLIERS:
    - Never generate fake statistics or claim "this change will get 3x more reach" or "increase sales by 50%". Ground all assessments in copywriting and cognitive psychology.
 5. CONTENT-BASED ESTIMATION:
    - All assessments are content-based diagnostic estimates grounded strictly in the provided text or visual assets.
+   - If something cannot be reliably determined from the screenshot alone, state "Insufficient evidence from the supplied content."
 
 SCORING METHODOLOGY (0 - 100 EXPLAINABLE RATING):
-- 80-100 (Optimal): High stopping power, effortless cognitive flow, strong hook velocity, compelling value payoff.
-- 60-79 (Moderate Friction): Understandable premise but hindered by passive phrasing, mild cognitive drag, or generic CTA.
-- 0-59 (Critical Friction): Severe friction (e.g., missing CTA for a click goal, buried hook, or cognitive barrier).`;
+- 80-100 (Optimal): High stopping power, effortless cognitive flow, strong hook velocity, compelling value payoff for ${targetGoal.toUpperCase()}.
+- 60-79 (Moderate Friction): Understandable premise but hindered by passive phrasing, mild cognitive drag, or missing CTA.
+- 0-59 (Critical Friction): Severe friction (e.g., missing question for conversation goal, or missing link for click goal).`;
 }
 
 export function buildGeminiUserPrompt(
@@ -38,12 +66,14 @@ export function buildGeminiUserPrompt(
   inventory?: ContentInventory,
   userMetrics?: Record<string, any>
 ): string {
+  const goalLabel = getGoalFitLabel(targetGoal);
+
   const inventorySection = inventory
     ? `
 CONTENT INVENTORY (VERIFIED GROUND TRUTH):
-- Visual Content: ${inventory.hasVisualMedia ? 'DETECTED (Visual asset attached)' : 'None (Text-only)'}
+- Visual Content: ${inventory.hasVisualMedia ? 'DETECTED (Visual photograph/graphic attached)' : 'None (Text-only)'}
 - Caption Status: ${inventory.captionStatus === 'NOT_DETECTED' ? 'NOT DETECTED (Visual-only post)' : inventory.captionStatus}
-- Extracted Caption / Copy: ${inventory.caption ? `"${inventory.caption}"` : 'None'}
+- Extracted Caption / Copy: ${inventory.caption ? `"${inventory.caption}"` : 'None detected'}
 - Hashtags: ${inventory.hashtags.length > 0 ? inventory.hashtags.join(' ') : 'None detected'}
 - Explicit CTA: ${inventory.cta ? `"${inventory.cta}"` : 'None detected'}
 - Links: ${inventory.links.length > 0 ? inventory.links.join(', ') : 'None detected'}
@@ -61,7 +91,7 @@ CONTENT INVENTORY (VERIFIED GROUND TRUTH):
 
   const rawContentSection = content && content.trim()
     ? `
-RAW SUBMITTED CONTENT:
+RAW SUBMITTED TEXT / DRAFT:
 ---
 ${content.trim()}
 ---`
@@ -71,27 +101,49 @@ ${content.trim()}
     ? `\nUSER CONTEXT / PREFERENCES:\n${JSON.stringify(userMetrics, null, 2)}\n`
     : '';
 
-  return `Perform a forensic autopsy on this social media post for the objective "${targetGoal.toUpperCase()}".
+  return `Perform a grounded forensic autopsy on this social media post for the objective "${targetGoal.toUpperCase()}" (${goalLabel}).
 ${inventorySection}${rawContentSection}${metricsInfo}
 
-FORENSIC INSTRUCTIONS:
-1. Inspect the visual content (if image attached) and any written copy.
-2. Evaluate all 10 diagnostic dimensions (0-100).
-3. If no caption exists, note the lack of caption/CTA as a goal-specific friction point and prescribe a compelling, drop-in replacement caption grounded directly in the visual subject.
-4. If written text exists, identify exact textual bottlenecks and quote the problematic fragments in the friction map.
-5. Return a pure JSON object conforming to the response schema.`;
+FORENSIC REQUIREMENTS:
+1. LAYER A (OBSERVED): List 3-5 factual observations detected directly from the image/copy (e.g. visual subject, visible metrics, presence/absence of caption).
+2. LAYER B (DIAGNOSED):
+   - Evaluate "${goalLabel}" (0-100) with grounded reasoning based strictly on the subject matter.
+   - Evaluate all 10 diagnostic dimensions (0-100).
+   - If no caption was detected, evaluate visual stopping power and aesthetic appeal rather than reporting text corruption.
+   - State Primary Friction, Secondary Friction, Hidden Strength, and Grounded Conversation DNA.
+3. LAYER C (RECOMMENDED):
+   - Prescribe a Recommended Repair that is 100% grounded in the detected visual subject and the selected goal "${targetGoal.toUpperCase()}".
+   - If the visual post contains floral bouquets, the recommended repair must be an engaging floral comparison or gifting prompt. NEVER invent software or productivity tools!
+   - State honest limitations and confidence level (HIGH / MEDIUM / LOW).
+4. Return a structured JSON response conforming exactly to the schema.`;
 }
 
 /**
  * Native JSON Schema for Gemini structured output.
- * Ensures the response strictly adheres to the Social X-Ray analysis schema.
+ * Ensures the response strictly adheres to the 3-Layer Social X-Ray analysis schema.
  */
 export const ANALYSIS_RESPONSE_JSON_SCHEMA = {
   type: 'object',
   properties: {
+    observedFacts: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Factual observations directly detected from the post and verified metadata',
+    },
+    goalFit: {
+      type: 'object',
+      properties: {
+        objective: { type: 'string' },
+        score: { type: 'integer' },
+        label: { type: 'string' },
+        verdict: { type: 'string' },
+        reason: { type: 'string' },
+      },
+      required: ['objective', 'score', 'label', 'verdict', 'reason'],
+    },
     overallScore: {
       type: 'integer',
-      description: 'Overall survivability score from 0 to 100',
+      description: 'Overall goal-specific fit score from 0 to 100',
     },
     hook: {
       type: 'object',
@@ -197,36 +249,56 @@ export const ANALYSIS_RESPONSE_JSON_SCHEMA = {
         required: ['category', 'severity', 'text', 'explanation', 'repair'],
       },
     },
+    strengths: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          detail: { type: 'string' },
+        },
+        required: ['title', 'detail'],
+      },
+    },
     postAutopsy: {
       type: 'object',
       properties: {
+        primaryFriction: { type: 'string' },
+        secondaryFriction: { type: 'string' },
+        hiddenStrength: { type: 'string' },
+        treatment: { type: 'string' },
         causeOfDeath: { type: 'string' },
         primaryFailure: { type: 'string' },
         secondaryFailure: { type: 'string' },
-        hiddenStrength: { type: 'string' },
-        treatment: { type: 'string' },
       },
-      required: ['causeOfDeath', 'primaryFailure', 'secondaryFailure', 'hiddenStrength', 'treatment'],
+      required: ['primaryFriction', 'secondaryFriction', 'hiddenStrength', 'treatment'],
     },
     conversationDNA: {
       type: 'object',
       properties: {
+        deliveredToFeed: { type: 'string' },
+        audienceReaction: { type: 'string' },
+        inducedAction: { type: 'string' },
+        conversationOpportunity: { type: 'string' },
+        replacementQuestion: { type: 'string' },
+        followUpQuestion: { type: 'string' },
         likelyAudienceReaction: { type: 'string' },
         engagementType: { type: 'string' },
         conversationPotential: { type: 'string' },
         betterQuestion: { type: 'string' },
-        followUpQuestion: { type: 'string' },
       },
-      required: ['likelyAudienceReaction', 'engagementType', 'conversationPotential', 'betterQuestion', 'followUpQuestion'],
+      required: ['deliveredToFeed', 'audienceReaction', 'inducedAction', 'conversationOpportunity', 'replacementQuestion', 'followUpQuestion'],
     },
     repair: {
       type: 'object',
       properties: {
         original: { type: 'string' },
+        recommended: { type: 'string' },
+        rationale: { type: 'string' },
         improved: { type: 'string' },
         explanation: { type: 'string' },
       },
-      required: ['original', 'improved', 'explanation'],
+      required: ['original', 'recommended', 'rationale'],
     },
     platformVariants: {
       type: 'object',
@@ -246,8 +318,22 @@ export const ANALYSIS_RESPONSE_JSON_SCHEMA = {
       },
       required: ['selectedGoal', 'reasoning', 'recommendedChange'],
     },
+    limitations: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+    confidence: {
+      type: 'object',
+      properties: {
+        level: { type: 'string', enum: ['HIGH', 'MEDIUM', 'LOW'] },
+        reason: { type: 'string' },
+      },
+      required: ['level', 'reason'],
+    },
   },
   required: [
+    'observedFacts',
+    'goalFit',
     'overallScore',
     'hook',
     'clarity',
@@ -259,10 +345,13 @@ export const ANALYSIS_RESPONSE_JSON_SCHEMA = {
     'cta',
     'audienceValue',
     'frictionPoints',
+    'strengths',
     'postAutopsy',
     'conversationDNA',
     'repair',
     'platformVariants',
     'goalRecommendation',
+    'limitations',
+    'confidence',
   ],
 };

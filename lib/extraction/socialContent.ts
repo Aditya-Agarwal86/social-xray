@@ -148,6 +148,10 @@ export function extractSocialPostContent(
       contentRegions.push(region);
       ctaSegments.push(text.trim());
       captionSegments.push(text.trim());
+      const tags = text.match(/#[a-zA-Z0-9_]+/g) || [];
+      tags.forEach((t) => {
+        if (!hashtagsFound.includes(t)) hashtagsFound.push(t);
+      });
       continue;
     }
 

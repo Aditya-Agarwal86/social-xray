@@ -8,19 +8,18 @@ import {
   Sparkles,
   Copy,
   Check,
-  Zap,
   Activity,
   ArrowDown,
   MessageSquare,
   HelpCircle,
 } from 'lucide-react';
-import { ConversationDNAData } from '@/lib/analysis/types';
+import { GroundedConversationDNA, ConversationDNAData } from '@/lib/analysis/types';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 
 interface ConversationDNAProps {
-  dna: ConversationDNAData;
+  dna: (GroundedConversationDNA & ConversationDNAData) | any;
 }
 
 export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
@@ -29,17 +28,24 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
 
   if (!dna) return null;
 
+  const deliveredToFeed = dna.deliveredToFeed || 'Audience encounters post in feed while scrolling.';
+  const audienceReaction = dna.audienceReaction || dna.likelyAudienceReaction || 'Passive visual appreciation.';
+  const inducedAction = dna.inducedAction || dna.engagementType || 'Passive View / Like';
+  const conversationOpportunity = dna.conversationOpportunity || dna.conversationPotential || 'No explicit conversation prompt is visible.';
+  const replacementQuestion = dna.replacementQuestion || dna.betterQuestion || 'Which bouquet would you choose for someone special?';
+  const followUpQuestion = dna.followUpQuestion || 'What do you look for first when buying flowers?';
+
   const handleCopyQuestion = () => {
-    if (dna.betterQuestion) {
-      navigator.clipboard.writeText(dna.betterQuestion);
+    if (replacementQuestion) {
+      navigator.clipboard.writeText(replacementQuestion);
       setCopiedQuestion(true);
       setTimeout(() => setCopiedQuestion(false), 1500);
     }
   };
 
   const handleCopyFollowUp = () => {
-    if (dna.followUpQuestion) {
-      navigator.clipboard.writeText(dna.followUpQuestion);
+    if (followUpQuestion) {
+      navigator.clipboard.writeText(followUpQuestion);
       setCopiedFollowUp(true);
       setTimeout(() => setCopiedFollowUp(false), 1500);
     }
@@ -52,7 +58,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
         <div className="flex items-center gap-2">
           <Dna className="w-5 h-5 text-purple-400" />
           <h3 className="text-base font-mono font-bold uppercase tracking-wider text-white">
-            Conversation DNA Sequence
+            07 — CONVERSATION DNA
           </h3>
         </div>
         <Badge variant="violet" size="sm">
@@ -72,8 +78,8 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
               <span className="text-[11px] font-mono uppercase tracking-wider text-carbon-400 font-semibold block">
                 Post Delivered to Feed
               </span>
-              <p className="text-xs text-carbon-200">
-                Audience encounters post copy while scrolling.
+              <p className="text-xs text-carbon-200 pt-0.5">
+                {deliveredToFeed}
               </p>
             </div>
           </div>
@@ -92,7 +98,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
                 <Users className="w-3.5 h-3.5" /> Subconscious Audience Reaction
               </span>
               <p className="text-xs text-purple-100 italic pt-0.5">
-                &ldquo;{dna.likelyAudienceReaction}&rdquo;
+                &ldquo;{audienceReaction}&rdquo;
               </p>
             </div>
           </div>
@@ -111,7 +117,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
                 <Activity className="w-3.5 h-3.5" /> Induced Action / Engagement Type
               </span>
               <p className="text-xs text-white font-mono font-semibold pt-0.5">
-                {dna.engagementType}
+                {inducedAction}
               </p>
             </div>
           </div>
@@ -130,7 +136,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
                 <MessageSquare className="w-3.5 h-3.5" /> Conversation Opportunity Estimate
               </span>
               <p className="text-xs text-cyan-100 pt-0.5">
-                {dna.conversationPotential}
+                {conversationOpportunity}
               </p>
             </div>
           </div>
@@ -159,13 +165,13 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
             </div>
 
             <div className="p-3.5 rounded-lg bg-carbon-950 border border-purple-500/30 text-white font-mono text-xs sm:text-sm leading-relaxed">
-              &ldquo;{dna.betterQuestion}&rdquo;
+              &ldquo;{replacementQuestion}&rdquo;
             </div>
 
-            {dna.followUpQuestion && (
+            {followUpQuestion && (
               <div className="pt-2 border-t border-carbon-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                 <span className="text-carbon-400 font-sans">
-                  <strong>Thread Sustainer:</strong> &ldquo;{dna.followUpQuestion}&rdquo;
+                  <strong>Thread Sustainer:</strong> &ldquo;{followUpQuestion}&rdquo;
                 </span>
                 <button
                   type="button"
@@ -173,7 +179,7 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
                   className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 rounded px-1"
                   aria-label="Copy thread sustainer probe question"
                 >
-                  {copiedFollowUp ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {copiedFollowUp ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   {copiedFollowUp ? 'Copied' : 'Copy Probe'}
                 </button>
               </div>

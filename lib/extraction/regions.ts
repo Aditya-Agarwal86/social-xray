@@ -99,8 +99,11 @@ export function classifyRegionType(
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
 
-  // 1. Noise check (Spacer dots, single non-alphanumeric glyphs, low confidence short fragments)
-  if (/^[.·•\s\-_~=+|/\\]+$/.test(trimmed)) {
+  // 1. Noise check (Spacer dots, non-alphanumeric noise, low confidence short fragments)
+  if (/^[^a-zA-Z0-9]+$/.test(trimmed) || /^[.·•\s\-_~=+|/\\]+$/.test(trimmed)) {
+    return 'UNKNOWN';
+  }
+  if (confidence < 35 && trimmed.replace(/[^a-zA-Z]/g, '').length < 4) {
     return 'UNKNOWN';
   }
   if (trimmed.length <= 3 && confidence < 50) {
@@ -302,6 +305,21 @@ export function isPlatformUi(lower: string, rawText: string, relY: number): bool
  * Detects explicit Calls to Action.
  */
 export function isCallToAction(lower: string): boolean {
+  if (
+    /tag\s+(?:a|someone|your|a\s+friend|an?\s+\w+)/i.test(lower) ||
+    /share\s+(?:this|with)/i.test(lower) ||
+    /save\s+(?:this|for)/i.test(lower) ||
+    /comment\s+(?:below|down\s+below|with)/i.test(lower) ||
+    /drop\s+(?:a|your)\s+(?:comment|thoughts|reply)/i.test(lower) ||
+    /follow\s+(?:for\s+more|us|me)/i.test(lower) ||
+    /link\s+in\s+bio/i.test(lower) ||
+    /click\s+(?:the\s+link|here|below)/i.test(lower) ||
+    /tap\s+(?:the\s+link|here|below)/i.test(lower) ||
+    /dm\s+(?:me|us)/i.test(lower)
+  ) {
+    return true;
+  }
+
   const ctaPhrases = [
     'link in bio',
     'click the link',
@@ -314,6 +332,7 @@ export function isCallToAction(lower: string): boolean {
     'swipe left',
     'drop a comment',
     'tag someone who',
+    'tag a',
     'leave a follow',
     'like and subscribe',
     'sign up today',

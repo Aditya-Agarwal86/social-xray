@@ -557,12 +557,272 @@ test('generates grounded Content Inventory prompt for image-only bouquet post wi
     extractionWarnings: ['No written post caption was detected.'],
   };
 
-  const userPrompt = buildGeminiUserPrompt('', 'clicks', inventory);
+  const userPrompt = buildGeminiUserPrompt('', 'conversation', inventory);
   assert.ok(userPrompt.includes('CONTENT INVENTORY (VERIFIED GROUND TRUTH)'));
   assert.ok(userPrompt.includes('Visual Content: DETECTED'));
   assert.ok(userPrompt.includes('NOT DETECTED (Visual-only post)'));
   assert.ok(userPrompt.includes('Replies: 64 | Reposts: 722 | Likes: 1.5K | Views: 50K'));
   assert.ok(userPrompt.includes('@guloona (20h)'));
+});
+
+// 29. TEST 1: X/Twitter Bouquet Image-Only Post End-to-End Grounding
+test('TEST 1: X/Twitter bouquet image-only post normalizes 3 layers with 0 productivity software claims', () => {
+  const rawBouquetResponse = {
+    observedFacts: [
+      'Two bouquet photographs are visible in the screenshot',
+      '64 replies, 722 reposts, 1.5K likes, 50K views are visible',
+      'No written post caption is detected',
+    ],
+    goalFit: {
+      objective: 'conversation',
+      score: 40,
+      label: 'Conversation Fit',
+      verdict: 'Limited conversation trigger',
+      reason: 'No explicit question or comparison prompt is visible to spark comments.',
+    },
+    hook: {
+      score: 85,
+      severity: 'optimal',
+      problem: 'None.',
+      explanation: 'High visual stopping power with contrasting floral color palettes.',
+    },
+    clarity: {
+      score: 90,
+      severity: 'optimal',
+      problem: 'None.',
+      explanation: 'Subject matter (two distinct floral arrangements) is immediately recognizable.',
+    },
+    cognitiveLoad: {
+      score: 95,
+      severity: 'optimal',
+      problem: 'None.',
+      explanation: 'Zero cognitive friction; effortless visual presentation.',
+    },
+    emotion: {
+      score: 75,
+      severity: 'moderate',
+      problem: 'Aesthetic pleasure without storytelling context.',
+      explanation: 'Appealing floral visuals but lacking gifting or emotional context.',
+    },
+    curiosity: {
+      score: 45,
+      severity: 'critical',
+      problem: 'No inquiry or choice catalyst.',
+      explanation: 'Without a question comparing the two arrangements, viewers appreciate silently.',
+    },
+    conversation: {
+      score: 40,
+      severity: 'critical',
+      problem: 'Missing conversational hook.',
+      explanation: 'No prompt asking the audience which arrangement they prefer.',
+    },
+    shareability: {
+      score: 78,
+      severity: 'optimal',
+      problem: 'None.',
+      explanation: 'High aesthetic value makes it naturally shareable for floral/gift inspiration.',
+    },
+    cta: {
+      score: 30,
+      severity: 'critical',
+      problem: 'Zero call to action.',
+      explanation: 'No caption, link, or inquiry prompt detected.',
+    },
+    audienceValue: {
+      score: 70,
+      severity: 'moderate',
+      problem: 'Aesthetic value without flower care or ordering details.',
+      explanation: 'Delivers aesthetic enjoyment but missing florist/order details.',
+    },
+    frictionPoints: [
+      {
+        category: 'Missing Conversation Hook',
+        severity: 'critical',
+        text: '[No caption detected in visual asset]',
+        explanation: 'Without a question, viewers admire the bouquets and scroll past.',
+        repair: 'Which bouquet would you choose for someone special — Left or Right? 💐',
+      },
+    ],
+    strengths: [
+      {
+        title: 'Strong Visual Contrast',
+        detail: 'Contrasting floral arrangements create immediate aesthetic stopping power.',
+      },
+      {
+        title: 'High Observed Engagement Baseline',
+        detail: 'Visible metrics indicate 1.5K likes and 50K views on the post.',
+      },
+    ],
+    postAutopsy: {
+      primaryFriction: 'Limited conversation trigger',
+      secondaryFriction: 'No explicit CTA is visible',
+      hiddenStrength: 'Strong visual presentation and color contrast',
+      treatment: 'Add an A/B choice question comparing the two floral arrangements.',
+    },
+    conversationDNA: {
+      deliveredToFeed: 'Audience encounters two bouquet photographs.',
+      audienceReaction: 'Likely visual appreciation / aesthetic interest.',
+      inducedAction: 'Specific action cannot be determined from the screenshot alone.',
+      conversationOpportunity: 'No explicit conversation prompt is visible.',
+      replacementQuestion: 'Which bouquet would you choose for someone special — the pink arrangement or the white-and-rose one?',
+      followUpQuestion: 'What flowers do you always look for when buying a bouquet?',
+    },
+    repair: {
+      original: 'Caption not detected',
+      recommended: 'Which bouquet would you choose for someone special — the pink arrangement or the white-and-rose one? 🌷 Drop 1 or 2 below!',
+      rationale: 'Transforms an image-only post into an interactive choice prompt grounded in the floral imagery.',
+    },
+    platformVariants: {
+      linkedin: 'Design is in the details. Which bouquet color palette aligns best with your visual aesthetic?',
+      instagram: '1 or 2? 🌸 Tag someone who deserves fresh flowers today!',
+      tiktok: 'Would you choose arrangement #1 or #2? Drop your favorite in the comments!',
+    },
+    goalRecommendation: {
+      selectedGoal: 'conversation',
+      reasoning: 'Visual stopping power is high, but conversational conversion requires a choice question.',
+      recommendedChange: 'Add an A/B comparison question to spark comment debates.',
+    },
+    limitations: [
+      'No caption was detected in the screenshot',
+      'Creator intent cannot be determined from the screenshot alone',
+    ],
+    confidence: {
+      level: 'HIGH',
+      reason: 'High diagnostic confidence based on directly detected visual elements and verified content inventory.',
+    },
+  };
+
+  const normalized = validateAndNormalizeAnalysis(rawBouquetResponse, 'Caption not detected', 'conversation');
+
+  assert.strictEqual(normalized.goalFit.label, 'Conversation Fit');
+  assert.strictEqual(normalized.goalFit.score, 40);
+  assert.strictEqual(normalized.observedFacts.length >= 3, true);
+  assert.strictEqual(normalized.strengths.length >= 2, true);
+  assert.strictEqual(normalized.repair.original, 'Caption not detected');
+  assert.strictEqual(normalized.repair.recommended.includes('bouquet'), true);
+  assert.strictEqual(normalized.conversationDNA.replacementQuestion.includes('bouquet'), true);
+
+  // ABSOLUTE ANTI-HALLUCINATION CHECK:
+  const fullSerialized = JSON.stringify(normalized);
+  assert.strictEqual(fullSerialized.includes('productivity'), false);
+  assert.strictEqual(fullSerialized.includes('software'), false);
+  assert.strictEqual(fullSerialized.includes('workflow'), false);
+  assert.strictEqual(fullSerialized.includes('10+ hours'), false);
+});
+
+// 30. TEST 2: Instagram Dog Meme with Caption & CTA
+test('TEST 2: Instagram meme with caption and CTA evaluates both visual and text layers', () => {
+  const memeText = 'When your dog pretends they did not just eat your shoe.\n\nTag a dog owner who knows this look! #dogmemes';
+  const memeRegions = segmentTextRegions([
+    { text: 'When your dog pretends they did not just eat your shoe.', confidence: 95, bbox: { x0: 50, y0: 100, x1: 900, y1: 150 } },
+    { text: 'Tag a dog owner who knows this look! #dogmemes', confidence: 92, bbox: { x0: 50, y0: 600, x1: 850, y1: 650 } },
+  ]);
+  const result = extractSocialPostContent(memeRegions, [], true);
+
+  assert.strictEqual(result.inventory.hasVisualMedia, true);
+  assert.strictEqual(result.inventory.captionStatus, 'DETECTED');
+  assert.ok(result.inventory.caption?.includes('When your dog pretends'));
+  assert.ok(result.inventory.cta?.includes('Tag a dog owner'));
+  assert.ok(result.inventory.hashtags.includes('#dogmemes'));
+});
+
+// 31. TEST 3: Instagram Sunset with Caption + Hashtags (Filters UI)
+test('TEST 3: Instagram sunset post extracts clean caption and hashtags while excluding chrome UI', () => {
+  const sunsetLines = [
+    { text: '@photographer · 2h', confidence: 85, bbox: { x0: 50, y0: 50, x1: 300, y1: 80 } },
+    { text: 'Golden hour hitting the skyline just right today.', confidence: 94, bbox: { x0: 50, y0: 500, x1: 800, y1: 530 } },
+    { text: '#sunset #goldenhour #photography', confidence: 91, bbox: { x0: 50, y0: 540, x1: 600, y1: 570 } },
+    { text: 'View all 24 comments', confidence: 88, bbox: { x0: 50, y0: 900, x1: 400, y1: 930 } },
+  ];
+  const regions = segmentTextRegions(sunsetLines);
+  const result = extractSocialPostContent(regions, sunsetLines, true);
+
+  assert.strictEqual(result.inventory.captionStatus, 'DETECTED');
+  assert.ok(result.cleanedFullText.includes('Golden hour hitting the skyline'));
+  assert.ok(result.cleanedFullText.includes('#sunset'));
+  assert.strictEqual(result.cleanedFullText.includes('View all 24 comments'), false);
+  assert.strictEqual(result.cleanedFullText.includes('@photographer'), false);
+});
+
+// 32. TEST 4: Text-Only LinkedIn Post
+test('TEST 4: Text-only LinkedIn post analyzes textual copy without requiring visual assets', () => {
+  const linkedInPost = `Most engineering leaders optimize for velocity before they optimize for clarity.
+
+When requirements are ambiguous, writing code faster only produces bugs faster.
+
+3 steps to fix requirement ambiguity before sprint planning:
+1. Write acceptance tests first.
+2. Define failure modes explicitly.
+3. Review edge cases with QA beforehand.
+
+How does your engineering team validate requirements before kickoff?`;
+
+  const validated = validateAndNormalizeAnalysis(
+    {
+      overallScore: 82,
+      goalFit: {
+        objective: 'conversation',
+        score: 82,
+        label: 'Conversation Fit',
+        verdict: 'High discussion catalyst',
+        reason: 'Strong counter-intuitive hook and concrete closing question.',
+      },
+      hook: { score: 88, severity: 'optimal', problem: 'None.', explanation: 'Strong paradox opening.' },
+      clarity: { score: 90, severity: 'optimal', problem: 'None.', explanation: 'Clear 3-step breakdown.' },
+      cognitiveLoad: { score: 85, severity: 'optimal', problem: 'None.', explanation: 'Good spacing and bulleted stanzas.' },
+      emotion: { score: 70, severity: 'minor', problem: 'Analytical tone.', explanation: 'Focuses on logic over emotion.' },
+      curiosity: { score: 80, severity: 'optimal', problem: 'None.', explanation: 'Addresses engineering management dilemmas.' },
+      conversation: { score: 85, severity: 'optimal', problem: 'None.', explanation: 'Specific question about team validation.' },
+      shareability: { score: 80, severity: 'optimal', problem: 'None.', explanation: 'High professional badge value for managers.' },
+      cta: { score: 85, severity: 'optimal', problem: 'None.', explanation: 'Low-friction comment prompt.' },
+      audienceValue: { score: 90, severity: 'optimal', problem: 'None.', explanation: 'Actionable 3-step heuristic.' },
+      frictionPoints: [],
+      strengths: [{ title: 'Actionable Framework', detail: 'Provides concrete 3-step tactical advice.' }],
+      postAutopsy: {
+        primaryFriction: 'Analytical tone may slightly limit emotional resonance',
+        secondaryFriction: 'None',
+        hiddenStrength: 'Clear structural clarity and high professional utility',
+        treatment: 'Preserve the current layout and test with tech leads.',
+      },
+      conversationDNA: {
+        deliveredToFeed: 'Leader encounters tactical leadership advice.',
+        audienceReaction: 'Nodding in agreement, mentally reviewing their own team process.',
+        inducedAction: 'Comment / Share',
+        conversationOpportunity: 'High comment potential.',
+        replacementQuestion: 'What is the biggest red flag you look for in requirements before sprint kickoff?',
+        followUpQuestion: 'How many sprints did it take to fix once you noticed it?',
+      },
+      repair: {
+        original: linkedInPost,
+        recommended: linkedInPost,
+        rationale: 'Current draft is already well-optimized for engineering discussion.',
+      },
+      platformVariants: { linkedin: linkedInPost, instagram: linkedInPost, tiktok: linkedInPost },
+      goalRecommendation: { selectedGoal: 'conversation', reasoning: 'Strong alignment', recommendedChange: 'None needed' },
+      limitations: ['Analysis based on text copy.'],
+      confidence: { level: 'HIGH', reason: 'Complete post copy provided.' },
+    },
+    linkedInPost,
+    'conversation'
+  );
+
+  assert.strictEqual(validated.overallScore, 82);
+  assert.strictEqual(validated.goalFit.label, 'Conversation Fit');
+  assert.strictEqual(validated.repair.original, linkedInPost);
+});
+
+// 33. TEST 5: Screenshot with Low-Confidence OCR Noise
+test('TEST 5: Screenshot with severe OCR noise flags extraction warning without claiming post content is poor', () => {
+  const noisyLines = [
+    { text: '%^&*( ~~~', confidence: 15, bbox: { x0: 10, y0: 10, x1: 100, y1: 30 } },
+    { text: '||| ___', confidence: 20, bbox: { x0: 10, y0: 40, x1: 100, y1: 60 } },
+  ];
+  const regions = segmentTextRegions(noisyLines);
+  const result = extractSocialPostContent(regions, noisyLines, true);
+
+  assert.strictEqual(result.captionText, null);
+  assert.strictEqual(result.inventory.captionStatus, 'NOT_DETECTED');
+  assert.ok(result.inventory.extractionWarnings.length > 0);
 });
 
 console.log(`\n📊 RESULTS: ${passed}/${total} test specifications passed successfully.\n`);

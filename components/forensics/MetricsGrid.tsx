@@ -13,17 +13,21 @@ import {
   Award,
   TrendingUp,
   Activity,
+  Target,
 } from 'lucide-react';
-import { DimensionDiagnosis, DiagnosticSeverity } from '@/lib/analysis/types';
+import { DimensionDiagnosis, DiagnosticSeverity, GoalFitDiagnosis } from '@/lib/analysis/types';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { ScoreCountUp } from '../ui/ScoreCountUp';
 import { XRayScanOverlay } from '../ui/XRayScanOverlay';
 import { getScoreColor } from '@/lib/utils/formatters';
+import { getGoalFitLabel } from '@/lib/analysis/prompt';
 import { cn } from '@/lib/utils/cn';
 
 interface MetricsGridProps {
   overallScore: number;
+  targetGoal?: string;
+  goalFit?: GoalFitDiagnosis;
   hook: DimensionDiagnosis;
   clarity: DimensionDiagnosis;
   cognitiveLoad: DimensionDiagnosis;
@@ -37,6 +41,8 @@ interface MetricsGridProps {
 
 export const MetricsGrid: React.FC<MetricsGridProps> = ({
   overallScore,
+  targetGoal = 'conversation',
+  goalFit,
   hook,
   clarity,
   cognitiveLoad,
@@ -48,18 +54,19 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   audienceValue,
 }) => {
   const signalCards = [
-    { key: 'hook', name: 'Hook Velocity', data: hook, icon: Zap },
-    { key: 'clarity', name: 'Clarity', data: clarity, icon: Eye },
+    { key: 'hook', name: 'Hook Stopping Power', data: hook, icon: Zap },
+    { key: 'clarity', name: 'Clarity & Comprehension', data: clarity, icon: Eye },
     { key: 'cognitiveLoad', name: 'Cognitive Ease', data: cognitiveLoad, icon: BrainCircuit },
-    { key: 'emotion', name: 'Emotional Impact', data: emotion, icon: Flame },
-    { key: 'curiosity', name: 'Curiosity Gap', data: curiosity, icon: HelpCircle },
-    { key: 'conversation', name: 'Conversation Potential', data: conversation, icon: MessageSquare },
-    { key: 'shareability', name: 'Shareability', data: shareability, icon: Share2 },
-    { key: 'cta', name: 'Call to Action', data: cta, icon: MousePointerClick },
-    { key: 'audienceValue', name: 'Audience Value', data: audienceValue, icon: Award },
+    { key: 'emotion', name: 'Emotional Resonance', data: emotion, icon: Flame },
+    { key: 'curiosity', name: 'Curiosity Tension', data: curiosity, icon: HelpCircle },
+    { key: 'conversation', name: 'Conversation Trigger', data: conversation, icon: MessageSquare },
+    { key: 'shareability', name: 'Relational Shareability', data: shareability, icon: Share2 },
+    { key: 'cta', name: 'Call to Action Quality', data: cta, icon: MousePointerClick },
+    { key: 'audienceValue', name: 'Audience Payoff & Utility', data: audienceValue, icon: Award },
   ];
 
   const overallStyle = getScoreColor(overallScore);
+  const goalLabel = goalFit?.label || getGoalFitLabel(targetGoal);
 
   const getSeverityBadgeVariant = (severity: DiagnosticSeverity) => {
     switch (severity) {
@@ -77,18 +84,19 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   };
 
   const getInterpretation = (score: number) => {
+    if (goalFit?.reason) return goalFit.reason;
     if (score >= 80) {
-      return 'Exceptional stopping power and cognitive flow. The post captures attention quickly and provides strong debate and sharing incentives.';
+      return `High alignment for ${targetGoal.toUpperCase()}. Captures attention quickly with strong payoff.`;
     }
-    if (score >= 65) {
-      return 'Solid premise with moderate friction points. Minor structural bottlenecks in the opening lines or closing question limit viral velocity.';
+    if (score >= 60) {
+      return `Moderate alignment for ${targetGoal.toUpperCase()}. Contains solid foundational assets but hindered by missing prompt or subtle friction.`;
     }
-    return 'Critical attention dropoff detected. The post suffers from slow hook velocity, cognitive drag, or inert call-to-action mechanics.';
+    return `Limited alignment for ${targetGoal.toUpperCase()}. The content provides insufficient triggers for the selected goal.`;
   };
 
   return (
     <div className="space-y-6">
-      {/* 1. Overall X-Ray Score Card */}
+      {/* 1. Goal-Specific Fit Score Card */}
       <Card variant="accent" className="p-6 sm:p-8 bg-carbon-900/95 border-cyan-500/40 shadow-xl relative overflow-hidden">
         <XRayScanOverlay active={true} showCorners={true} />
 
@@ -96,12 +104,12 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-400">
-                FORENSIC SURVIVABILITY SCORE
+              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-400 flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5" /> 03 — OBJECTIVE FIT EVALUATION
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
-              OVERALL POST HEALTH
+              {goalLabel.toUpperCase()}
             </h2>
             <p className="text-xs sm:text-sm text-carbon-200 font-sans leading-relaxed">
               {getInterpretation(overallScore)}
@@ -110,7 +118,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
 
           <div className="flex items-center gap-4 shrink-0 self-stretch sm:self-auto justify-between sm:justify-start p-4 rounded-2xl bg-carbon-950/90 border border-carbon-700 shadow-inner">
             <div className="text-right font-mono">
-              <div className="text-[11px] text-carbon-400 uppercase">Diagnosis</div>
+              <div className="text-[11px] text-carbon-400 uppercase">Fit Verdict</div>
               <div className={cn('text-sm font-bold uppercase', overallStyle.text)}>
                 {overallStyle.label}
               </div>
@@ -134,7 +142,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-carbon-200 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-cyan-400" />
-            Core Diagnostic Signals
+            04 — Core Diagnostic Signals
           </h3>
           <span className="text-xs font-mono text-carbon-400">9 Core Dimensions</span>
         </div>

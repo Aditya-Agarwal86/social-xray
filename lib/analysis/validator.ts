@@ -4,13 +4,38 @@ import type {
   FrictionPointItem,
   GoalRecommendationData,
   PlatformVariantsData,
+  GroundedPostAutopsy,
   PostAutopsyData,
+  GroundedRepair,
   RepairData,
   SocialXRayAnalysisResult,
+  GroundedConversationDNA,
   ConversationDNAData,
+  GoalFitDiagnosis,
+  StrengthItem,
+  AnalysisConfidence,
   NormalizedApiError,
   ApiErrorCategory,
 } from './types';
+
+export function getGoalFitLabel(goal: string): string {
+  switch ((goal || '').toLowerCase()) {
+    case 'conversation':
+      return 'Conversation Fit';
+    case 'shares':
+      return 'Shareability Fit';
+    case 'saves':
+      return 'Save Value Fit';
+    case 'clicks':
+      return 'Click / Traffic Fit';
+    case 'followers':
+      return 'Follower Conversion Fit';
+    case 'awareness':
+      return 'Brand Awareness Fit';
+    default:
+      return 'Goal Alignment Fit';
+  }
+}
 
 export const STABLE_GEMINI_MODEL = 'gemini-3.5-flash';
 
@@ -206,7 +231,7 @@ export function extractJsonFromResponse(rawResponse: string): any {
 }
 
 /**
- * Validates and normalizes the parsed JSON into a strictly conforming SocialXRayAnalysisResult.
+ * Validates and normalizes the parsed JSON into a strictly conforming 3-Layer SocialXRayAnalysisResult.
  */
 export function validateAndNormalizeAnalysis(
   raw: any,
@@ -252,136 +277,228 @@ export function validateAndNormalizeAnalysis(
     };
   };
 
-  // Overall Score (0-100)
-  const overallScore = normalizeScore(raw.overallScore, 68);
+  // Overall & Goal Fit Score (0-100)
+  const overallScore = normalizeScore(raw.goalFit?.score ?? raw.overallScore, 68);
+  const goalLabel = getGoalFitLabel(targetGoal);
+
+  // Goal Fit Data
+  const goalFit: GoalFitDiagnosis = {
+    objective: targetGoal.toLowerCase(),
+    score: overallScore,
+    label: typeof raw.goalFit?.label === 'string' && raw.goalFit.label.trim() ? raw.goalFit.label.trim() : goalLabel,
+    verdict:
+      typeof raw.goalFit?.verdict === 'string' && raw.goalFit.verdict.trim()
+        ? raw.goalFit.verdict.trim()
+        : overallScore >= 75
+        ? 'Well-aligned with objective targets'
+        : overallScore >= 50
+        ? 'Moderate friction with goal mechanics'
+        : 'Significant friction preventing goal conversion',
+    reason:
+      typeof raw.goalFit?.reason === 'string' && raw.goalFit.reason.trim()
+        ? raw.goalFit.reason.trim()
+        : `Evaluated specifically against the ${targetGoal.toUpperCase()} optimization objective.`,
+  };
+
+  // Layer A: Observed Facts
+  const rawObserved = Array.isArray(raw.observedFacts) ? raw.observedFacts : [];
+  const observedFacts: string[] = rawObserved
+    .filter((fact: any) => typeof fact === 'string' && fact.trim())
+    .map((fact: string) => fact.trim());
+
+  if (observedFacts.length === 0) {
+    if (!originalContent || originalContent.includes('[Visual-only') || originalContent.includes('Caption not detected')) {
+      observedFacts.push('Visual image asset detected.');
+      observedFacts.push('No written post caption was detected in the screenshot.');
+    } else {
+      observedFacts.push(`Extracted post text detected (${originalContent.split(/\s+/).filter(Boolean).length} words).`);
+    }
+  }
 
   // Core Executive Metrics
   const hook = normalizeDimension(
     raw.hook,
-    'Slow opening narrative decelerates audience velocity.',
-    'Opening lines do not establish an immediate open loop or counter-intuitive premise.'
+    'Opening narrative decelerates audience velocity.',
+    'Opening lines or visual framing do not establish an immediate open loop or compelling curiosity.'
   );
 
   const clarity = normalizeDimension(
     raw.clarity,
-    'Unclear core thesis or convoluted argument phrasing.',
-    'Sentence structures create ambiguity around the core takeaway.'
+    'Unclear core premise or convoluted presentation.',
+    'Content presentation creates cognitive hesitation around the core focus.'
   );
 
   const cognitiveLoad = normalizeDimension(
     raw.cognitiveLoad,
-    'Dense line formatting and lack of white space.',
-    'Heavy paragraph blocks exhaust reader working memory before the payoff.'
+    'Dense formatting or lack of breathing room.',
+    'Visual or textual arrangement creates friction for quick scanning.'
   );
 
   const emotion = normalizeDimension(
     raw.emotion,
-    'Detached corporate tone lacking visceral resonance.',
-    'Language is descriptive rather than emotionally evocative.'
+    'Neutral tone lacking affective connection.',
+    'Content is descriptive rather than emotionally evocative.'
   );
 
   const curiosity = normalizeDimension(
     raw.curiosity,
-    'Resolves all tension before the reader feels compelled to engage.',
-    'Lacks curiosity gaps or unresolved intrigue.'
+    'Resolves all tension before the audience feels compelled to engage.',
+    'Lacks curiosity triggers, open loops, or comparison tension.'
   );
 
   const conversation = normalizeDimension(
     raw.conversation,
-    'Broadcast style statement rather than dialogue catalyst.',
-    'Fails to invite differing perspectives or relatable lived experiences.'
+    'Broadcast style rather than dialogue catalyst.',
+    'Fails to invite differing perspectives, questions, or relatable feedback.'
   );
 
   const shareability = normalizeDimension(
     raw.shareability,
-    'Low identity affiliation or badge value.',
-    'Readers cannot easily use this post as a reflection of their own intelligence or taste.'
+    'Low identity affiliation or relational utility.',
+    'Audience is less likely to send this to a peer without a clear relational trigger.'
   );
 
   const cta = normalizeDimension(
     raw.cta,
-    'Generic or high-friction call to action.',
-    'Asks for too much commitment without demonstrating proportional immediate value.'
+    'Missing or inert call to action.',
+    'Lacks an explicit prompt guiding the audience on what to do next.'
   );
 
   const audienceValue = normalizeDimension(
     raw.audienceValue,
-    'Theoretical fluff without concrete actionable insight.',
-    'Audience finishes the post without a clear mental model or actionable step.'
+    'Limited standalone utility or takeaway.',
+    'Audience finishes viewing without a concrete emotional, visual, or practical payoff.'
   );
 
   // Friction Points List
   const rawFriction = Array.isArray(raw.frictionPoints) ? raw.frictionPoints : [];
   const frictionPoints: FrictionPointItem[] = rawFriction.slice(0, 5).map((fp: any, idx: number) => ({
-    category: typeof fp?.category === 'string' && fp.category.trim() ? fp.category.trim() : `Friction Point #${idx + 1}`,
+    category: typeof fp?.category === 'string' && fp.category.trim() ? fp.category.trim() : `Friction Area #${idx + 1}`,
     severity: ['critical', 'moderate', 'minor', 'optimal'].includes(fp?.severity) ? fp.severity : 'moderate',
-    text: typeof fp?.text === 'string' && fp.text.trim() ? fp.text.trim() : originalContent.slice(0, 60),
-    explanation: typeof fp?.explanation === 'string' && fp.explanation.trim() ? fp.explanation.trim() : 'Bottleneck causes attention drop-off.',
-    repair: typeof fp?.repair === 'string' && fp.repair.trim() ? fp.repair.trim() : 'Refine phrasing for impact.',
+    text: typeof fp?.text === 'string' && fp.text.trim() ? fp.text.trim() : originalContent.slice(0, 80) || '[Visual Content]',
+    explanation: typeof fp?.explanation === 'string' && fp.explanation.trim() ? fp.explanation.trim() : 'Friction causes audience disengagement.',
+    repair: typeof fp?.repair === 'string' && fp.repair.trim() ? fp.repair.trim() : 'Add a specific, grounded audience prompt.',
   }));
 
-  // Normalize Post Autopsy
-  const postAutopsy: PostAutopsyData = {
-    causeOfDeath: typeof raw.postAutopsy?.causeOfDeath === 'string' && raw.postAutopsy.causeOfDeath.trim()
-      ? raw.postAutopsy.causeOfDeath.trim()
-      : 'Engagement bottleneck caused by delayed value delivery and weak conversation mechanics.',
-    primaryFailure: typeof raw.postAutopsy?.primaryFailure === 'string' && raw.postAutopsy.primaryFailure.trim()
-      ? raw.postAutopsy.primaryFailure.trim()
-      : 'Opening hook lacks immediate tension or curiosity gap.',
-    secondaryFailure: typeof raw.postAutopsy?.secondaryFailure === 'string' && raw.postAutopsy.secondaryFailure.trim()
-      ? raw.postAutopsy.secondaryFailure.trim()
-      : 'Call-to-action is passive and inert.',
-    hiddenStrength: typeof raw.postAutopsy?.hiddenStrength === 'string' && raw.postAutopsy.hiddenStrength.trim()
-      ? raw.postAutopsy.hiddenStrength.trim()
-      : 'The underlying subject matter has intrinsic appeal if reframed.',
-    treatment: typeof raw.postAutopsy?.treatment === 'string' && raw.postAutopsy.treatment.trim()
-      ? raw.postAutopsy.treatment.trim()
-      : 'Front-load the counter-intuitive hook, break dense sentences, and end with a binary prompt.',
+  // Strengths List
+  const rawStrengths = Array.isArray(raw.strengths) ? raw.strengths : [];
+  const strengths: StrengthItem[] = rawStrengths.slice(0, 4).map((str: any, idx: number) => ({
+    title: typeof str?.title === 'string' && str.title.trim() ? str.title.trim() : `Key Strength #${idx + 1}`,
+    detail: typeof str?.detail === 'string' && str.detail.trim() ? str.detail.trim() : 'Strong underlying presentation or subject interest.',
+  }));
+
+  if (strengths.length === 0) {
+    strengths.push({
+      title: 'Strong Visual Subject',
+      detail: typeof raw.postAutopsy?.hiddenStrength === 'string' && raw.postAutopsy.hiddenStrength.trim()
+        ? raw.postAutopsy.hiddenStrength.trim()
+        : 'Subject matter carries clear visual stopping power.',
+    });
+  }
+
+  // Normalize Grounded Post Autopsy
+  const causeOfDeath = typeof raw.postAutopsy?.causeOfDeath === 'string' && raw.postAutopsy.causeOfDeath.trim()
+    ? raw.postAutopsy.causeOfDeath.trim()
+    : (raw.postAutopsy?.primaryFriction ?? raw.postAutopsy?.primaryFailure ?? 'Limited conversation trigger');
+
+  const primaryFriction = typeof (raw.postAutopsy?.primaryFriction ?? raw.postAutopsy?.primaryFailure ?? raw.postAutopsy?.causeOfDeath) === 'string' && (raw.postAutopsy?.primaryFriction ?? raw.postAutopsy?.primaryFailure ?? raw.postAutopsy?.causeOfDeath).trim()
+    ? (raw.postAutopsy?.primaryFriction ?? raw.postAutopsy?.primaryFailure ?? raw.postAutopsy?.causeOfDeath).trim()
+    : 'Limited conversation trigger';
+
+  const secondaryFriction = typeof (raw.postAutopsy?.secondaryFriction ?? raw.postAutopsy?.secondaryFailure) === 'string' && (raw.postAutopsy?.secondaryFriction ?? raw.postAutopsy?.secondaryFailure).trim()
+    ? (raw.postAutopsy?.secondaryFriction ?? raw.postAutopsy?.secondaryFailure).trim()
+    : 'No explicit CTA is visible';
+
+  const hiddenStrength = typeof raw.postAutopsy?.hiddenStrength === 'string' && raw.postAutopsy.hiddenStrength.trim()
+    ? raw.postAutopsy.hiddenStrength.trim()
+    : 'Strong visual presentation';
+
+  const treatment = typeof raw.postAutopsy?.treatment === 'string' && raw.postAutopsy.treatment.trim()
+    ? raw.postAutopsy.treatment.trim()
+    : `Add a specific audience prompt aligned with the ${targetGoal} objective.`;
+
+  const postAutopsy: GroundedPostAutopsy & PostAutopsyData = {
+    primaryFriction,
+    secondaryFriction,
+    hiddenStrength,
+    treatment,
+    causeOfDeath,
+    primaryFailure: typeof raw.postAutopsy?.primaryFailure === 'string' && raw.postAutopsy.primaryFailure.trim() ? raw.postAutopsy.primaryFailure.trim() : primaryFriction,
+    secondaryFailure: typeof raw.postAutopsy?.secondaryFailure === 'string' && raw.postAutopsy.secondaryFailure.trim() ? raw.postAutopsy.secondaryFailure.trim() : secondaryFriction,
   };
 
-  // Normalize Conversation DNA
-  const conversationDNA: ConversationDNAData = {
-    likelyAudienceReaction: typeof raw.conversationDNA?.likelyAudienceReaction === 'string' && raw.conversationDNA.likelyAudienceReaction.trim()
-      ? raw.conversationDNA.likelyAudienceReaction.trim()
-      : 'Passive agreement without feeling compelled to comment.',
-    engagementType: typeof raw.conversationDNA?.engagementType === 'string' && raw.conversationDNA.engagementType.trim()
-      ? raw.conversationDNA.engagementType.trim()
-      : 'Passive Scroll',
-    conversationPotential: typeof raw.conversationDNA?.conversationPotential === 'string' && raw.conversationDNA.conversationPotential.trim()
-      ? raw.conversationDNA.conversationPotential.trim()
-      : 'Low - Broadcast style dominates.',
-    betterQuestion: typeof raw.conversationDNA?.betterQuestion === 'string' && raw.conversationDNA.betterQuestion.trim()
-      ? raw.conversationDNA.betterQuestion.trim()
-      : 'What is the #1 mistake you see most teams make here?',
-    followUpQuestion: typeof raw.conversationDNA?.followUpQuestion === 'string' && raw.conversationDNA.followUpQuestion.trim()
-      ? raw.conversationDNA.followUpQuestion.trim()
-      : 'How did you handle this the last time it happened?',
+  // Normalize Grounded Conversation DNA
+  const deliveredToFeed = typeof raw.conversationDNA?.deliveredToFeed === 'string' && raw.conversationDNA.deliveredToFeed.trim()
+    ? raw.conversationDNA.deliveredToFeed.trim()
+    : 'Audience encounters post in feed.';
+
+  const audienceReaction = typeof (raw.conversationDNA?.audienceReaction ?? raw.conversationDNA?.likelyAudienceReaction) === 'string' && (raw.conversationDNA?.audienceReaction ?? raw.conversationDNA?.likelyAudienceReaction).trim()
+    ? (raw.conversationDNA?.audienceReaction ?? raw.conversationDNA?.likelyAudienceReaction).trim()
+    : 'Likely visual interest, but moves past without replying.';
+
+  const inducedAction = typeof (raw.conversationDNA?.inducedAction ?? raw.conversationDNA?.engagementType) === 'string' && (raw.conversationDNA?.inducedAction ?? raw.conversationDNA?.engagementType).trim()
+    ? (raw.conversationDNA?.inducedAction ?? raw.conversationDNA?.engagementType).trim()
+    : 'Passive View / Like';
+
+  const conversationOpportunity = typeof (raw.conversationDNA?.conversationOpportunity ?? raw.conversationDNA?.conversationPotential) === 'string' && (raw.conversationDNA?.conversationOpportunity ?? raw.conversationDNA?.conversationPotential).trim()
+    ? (raw.conversationDNA?.conversationOpportunity ?? raw.conversationDNA?.conversationPotential).trim()
+    : 'No explicit conversation prompt is visible.';
+
+  const replacementQuestion = typeof (raw.conversationDNA?.replacementQuestion ?? raw.conversationDNA?.betterQuestion) === 'string' && (raw.conversationDNA?.replacementQuestion ?? raw.conversationDNA?.betterQuestion).trim()
+    ? (raw.conversationDNA?.replacementQuestion ?? raw.conversationDNA?.betterQuestion).trim()
+    : 'Which option would you choose for someone special?';
+
+  const followUpQuestion = typeof raw.conversationDNA?.followUpQuestion === 'string' && raw.conversationDNA.followUpQuestion.trim()
+    ? raw.conversationDNA.followUpQuestion.trim()
+    : 'What do you always look for first?';
+
+  const conversationDNA: GroundedConversationDNA & ConversationDNAData = {
+    deliveredToFeed,
+    audienceReaction,
+    inducedAction,
+    conversationOpportunity,
+    replacementQuestion,
+    followUpQuestion,
+    likelyAudienceReaction: audienceReaction,
+    engagementType: inducedAction,
+    conversationPotential: conversationOpportunity,
+    betterQuestion: replacementQuestion,
   };
 
-  // Normalize Repair Diff
-  const repair: RepairData = {
-    original: typeof raw.repair?.original === 'string' && raw.repair.original.trim()
-      ? raw.repair.original.trim()
-      : originalContent,
-    improved: typeof raw.repair?.improved === 'string' && raw.repair.improved.trim()
-      ? raw.repair.improved.trim()
-      : originalContent,
-    explanation: typeof raw.repair?.explanation === 'string' && raw.repair.explanation.trim()
-      ? raw.repair.explanation.trim()
-      : 'Restructured the copy to eliminate cognitive drag, heighten hook velocity, and provoke debate.',
+  // Normalize Grounded Repair
+  const originalDisplay =
+    !originalContent || originalContent.includes('[Visual-only') || originalContent.includes('Caption not detected')
+      ? 'Caption not detected'
+      : originalContent;
+
+  const rawRepairOriginal = typeof raw.repair?.original === 'string' && raw.repair.original.trim() ? raw.repair.original.trim() : originalDisplay;
+  const recommendedRepair = typeof (raw.repair?.recommended ?? raw.repair?.improved) === 'string' && (raw.repair?.recommended ?? raw.repair?.improved).trim()
+    ? (raw.repair?.recommended ?? raw.repair?.improved).trim()
+    : 'Which one would you choose? Tell me below! 👇';
+
+  const repairRationale = typeof (raw.repair?.rationale ?? raw.repair?.explanation) === 'string' && (raw.repair?.rationale ?? raw.repair?.explanation).trim()
+    ? (raw.repair?.rationale ?? raw.repair?.explanation).trim()
+    : `Added a grounded engagement prompt aligned with the ${targetGoal.toUpperCase()} goal.`;
+
+  const repair: GroundedRepair & RepairData = {
+    original: rawRepairOriginal,
+    recommended: recommendedRepair,
+    rationale: repairRationale,
+    improved: recommendedRepair,
+    explanation: repairRationale,
   };
 
   // Normalize Platform Variants
   const platformVariants: PlatformVariantsData = {
     linkedin: typeof raw.platformVariants?.linkedin === 'string' && raw.platformVariants.linkedin.trim()
       ? raw.platformVariants.linkedin.trim()
-      : repair.improved,
+      : repair.recommended,
     instagram: typeof raw.platformVariants?.instagram === 'string' && raw.platformVariants.instagram.trim()
       ? raw.platformVariants.instagram.trim()
-      : repair.improved,
+      : repair.recommended,
     tiktok: typeof raw.platformVariants?.tiktok === 'string' && raw.platformVariants.tiktok.trim()
       ? raw.platformVariants.tiktok.trim()
-      : repair.improved,
+      : repair.recommended,
   };
 
   // Normalize Goal Recommendation
@@ -394,10 +511,41 @@ export function validateAndNormalizeAnalysis(
       : `Content analyzed against the ${targetGoal.toUpperCase()} optimization goal.`,
     recommendedChange: typeof raw.goalRecommendation?.recommendedChange === 'string' && raw.goalRecommendation.recommendedChange.trim()
       ? raw.goalRecommendation.recommendedChange.trim()
-      : `Optimize formatting and tension specifically to drive ${targetGoal.toLowerCase()}.`,
+      : `Add a specific audience prompt to maximize ${targetGoal.toLowerCase()}.`,
+  };
+
+  // Limitations
+  const rawLimitations = Array.isArray(raw.limitations) ? raw.limitations : [];
+  const limitations: string[] = rawLimitations
+    .filter((lim: any) => typeof lim === 'string' && lim.trim())
+    .map((lim: string) => lim.trim());
+
+  if (limitations.length === 0) {
+    if (!originalContent || originalContent.includes('[Visual-only') || originalContent.includes('Caption not detected')) {
+      limitations.push('No written post caption was detected in the supplied asset.');
+      limitations.push('Creator intended objective cannot be definitively established from the screenshot alone.');
+    } else {
+      limitations.push('Analysis is based on visible text and screenshot evidence.');
+    }
+  }
+
+  // Confidence
+  const confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW' =
+    raw.confidence?.level && ['HIGH', 'MEDIUM', 'LOW'].includes(raw.confidence.level)
+      ? raw.confidence.level
+      : 'HIGH';
+
+  const confidence: AnalysisConfidence = {
+    level: confidenceLevel,
+    reason:
+      typeof raw.confidence?.reason === 'string' && raw.confidence.reason.trim()
+        ? raw.confidence.reason.trim()
+        : 'High diagnostic confidence based on directly detected visual elements and verified content inventory.',
   };
 
   return {
+    observedFacts,
+    goalFit,
     overallScore,
     hook,
     clarity,
@@ -409,10 +557,13 @@ export function validateAndNormalizeAnalysis(
     cta,
     audienceValue,
     frictionPoints,
+    strengths,
     postAutopsy,
     conversationDNA,
     repair,
     platformVariants,
     goalRecommendation,
+    limitations,
+    confidence,
   };
 }

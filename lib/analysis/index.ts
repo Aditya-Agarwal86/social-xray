@@ -1,4 +1,8 @@
 export * from './types';
-export * from './prompt';
+export {
+  buildGeminiSystemPrompt,
+  buildGeminiUserPrompt,
+  ANALYSIS_RESPONSE_JSON_SCHEMA,
+} from './prompt';
 export * from './validator';
 export * from './geminiService';

@@ -88,10 +88,10 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
         <div className="flex items-center gap-2">
           <AlertOctagon className="w-5 h-5 text-rose-400" />
           <h3 className="text-base font-mono font-bold uppercase tracking-wider text-white">
-            Engagement Friction Map
+            05 — PRIMARY FRICTION MAP
           </h3>
           <Badge variant="red" size="sm">
-            {frictionPoints.length} DROPOFF POINTS
+            {frictionPoints.length} FRICTION POINTS
           </Badge>
         </div>
         <span className="text-xs font-mono text-carbon-400">

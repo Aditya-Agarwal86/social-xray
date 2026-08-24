@@ -22,34 +22,59 @@ export interface DimensionDiagnosis {
 }
 
 export interface FrictionPointItem {
-  category: string; // e.g., "Hook Deceleration", "Cognitive Drag", "Tone Barrier", "Missing Call-to-Action", "Inert Question"
+  category: string; // e.g., "Missing Conversation Hook", "Inert CTA", "Cognitive Drag", "Tone Barrier"
   severity: DiagnosticSeverity;
   text: string; // Concrete problematic excerpt or visual description
   explanation: string; // Why readers bounce or disengage at this exact point
   repair: string; // Surgical replacement text or proposed visual caption
 }
 
-export interface PostAutopsyData {
-  causeOfDeath: string; // Core reason for attention loss
-  primaryFailure: string; // Primary structural/psychological issue
-  secondaryFailure: string; // Secondary friction point
-  hiddenStrength: string; // Element that worked well (e.g. visual composition, stopping power)
+export interface GroundedPostAutopsy {
+  primaryFriction: string; // e.g. "Limited conversation trigger"
+  secondaryFriction: string; // e.g. "No explicit CTA is visible"
+  hiddenStrength: string; // Element that worked well (e.g. "Strong visual presentation")
   treatment: string; // Concrete clinical remediation advice
 }
 
-export interface ConversationDNAData {
-  likelyAudienceReaction: string; // Unspoken reader internal reaction
-  engagementType: string; // e.g. "Passive Nod", "Debate Catalyst", "Silent Bookmark", "Passive Like"
-  conversationPotential: string; // Content-based estimate of dialogue probability
-  betterQuestion: string; // High-conversion replacement question grounded in content
-  followUpQuestion: string; // Deep-dive question to sustain comment threads
+// Backwards compatibility alias
+export type PostAutopsyData = {
+  causeOfDeath: string;
+  primaryFailure: string;
+  secondaryFailure: string;
+  hiddenStrength: string;
+  treatment: string;
+};
+
+export interface GroundedConversationDNA {
+  deliveredToFeed: string; // e.g. "Audience encounters two bouquet photographs."
+  audienceReaction: string; // e.g. "Likely visual appreciation / aesthetic interest."
+  inducedAction: string; // e.g. "Specific action cannot be determined from screenshot alone."
+  conversationOpportunity: string; // e.g. "No explicit conversation prompt is visible."
+  replacementQuestion: string; // e.g. "Which bouquet would you choose for someone special?"
+  followUpQuestion: string; // e.g. "What flowers do you always look for when buying a bouquet?"
 }
 
-export interface RepairData {
-  original: string; // High-friction original post (or "[No caption detected in visual asset]")
-  improved: string; // Repaired high-retention version grounded in subject
-  explanation: string; // Grounded rationale explaining why the rewrite reduces friction
+// Backwards compatibility alias
+export type ConversationDNAData = {
+  likelyAudienceReaction: string;
+  engagementType: string;
+  conversationPotential: string;
+  betterQuestion: string;
+  followUpQuestion: string;
+};
+
+export interface GroundedRepair {
+  original: string; // e.g. "Caption not detected" (or original copy)
+  recommended: string; // Grounded suggestion based on detected content
+  rationale: string; // Short evidence-based explanation
 }
+
+// Backwards compatibility alias
+export type RepairData = {
+  original: string;
+  improved: string;
+  explanation: string;
+};
 
 export interface PlatformVariantsData {
   linkedin: string; // Professional storytelling with line-breaks and executive framing
@@ -63,8 +88,33 @@ export interface GoalRecommendationData {
   recommendedChange: string; // Concrete strategic modification to maximize goal alignment
 }
 
+export interface GoalFitDiagnosis {
+  objective: string; // e.g. "conversation", "shares", "saves", "clicks", "followers", "awareness"
+  score: number; // 0 - 100
+  label: string; // e.g. "Conversation Fit", "Shareability Fit", "Click / Traffic Fit"
+  verdict: string; // Grounded verdict summary
+  reason: string; // Grounded reason for the score
+}
+
+export interface StrengthItem {
+  title: string;
+  detail: string;
+}
+
+export interface AnalysisConfidence {
+  level: 'HIGH' | 'MEDIUM' | 'LOW';
+  reason: string;
+}
+
 export interface SocialXRayAnalysisResult {
-  overallScore: number; // 0 - 100 composite survivability index
+  // LAYER A: OBSERVED (Directly detected facts)
+  observedFacts: string[];
+  contentInventory?: ContentInventory;
+  observedMetrics?: ObservedEngagementMetrics;
+
+  // LAYER B: DIAGNOSED (Grounded forensic interpretations)
+  goalFit: GoalFitDiagnosis;
+  overallScore: number; // Goal-specific composite score (0 - 100)
   hook: DimensionDiagnosis;
   clarity: DimensionDiagnosis;
   cognitiveLoad: DimensionDiagnosis;
@@ -75,13 +125,16 @@ export interface SocialXRayAnalysisResult {
   cta: DimensionDiagnosis;
   audienceValue: DimensionDiagnosis;
   frictionPoints: FrictionPointItem[];
-  postAutopsy: PostAutopsyData;
-  conversationDNA: ConversationDNAData;
-  repair: RepairData;
+  strengths: StrengthItem[];
+  postAutopsy: GroundedPostAutopsy & PostAutopsyData;
+  conversationDNA: GroundedConversationDNA & ConversationDNAData;
+
+  // LAYER C: RECOMMENDED (Actionable suggestions)
+  repair: GroundedRepair & RepairData;
   platformVariants: PlatformVariantsData;
   goalRecommendation: GoalRecommendationData;
-  contentInventory?: ContentInventory;
-  observedMetrics?: ObservedEngagementMetrics;
+  limitations: string[];
+  confidence: AnalysisConfidence;
 }
 
 export interface AnalysisRequestPayload {

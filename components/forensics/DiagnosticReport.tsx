@@ -21,11 +21,16 @@ import {
   Eye,
   Bookmark,
   Image as ImageIcon,
+  CheckCircle2,
+  AlertCircle,
+  ShieldCheck,
+  Info,
 } from 'lucide-react';
 import { SocialXRayAnalysisResult } from '@/lib/analysis/types';
 import { UploadedFileState } from '@/types/analysis';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { Card } from '../ui/Card';
 import { MetricsGrid } from './MetricsGrid';
 import { FrictionMap } from './FrictionMap';
 import { PostAutopsy } from './PostAutopsy';
@@ -74,7 +79,6 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    downloadAnchor.remove();
 
     setDownloadSuccess(true);
     setTimeout(() => setDownloadSuccess(false), 2000);
@@ -90,8 +94,10 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
   const metrics = report.observedMetrics || report.contentInventory?.engagementMetrics;
   const hasObservedMetrics = Boolean(
     metrics &&
-    (metrics.replies || metrics.reposts || metrics.likes || metrics.views || metrics.saves)
+    (metrics.replies !== null || metrics.reposts !== null || metrics.likes !== null || metrics.views !== null || metrics.saves !== null)
   );
+
+  const observedFacts = report.observedFacts || [];
 
   return (
     <div className="space-y-10 animate-fade-in print:space-y-6">
@@ -105,7 +111,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             </span>
             <span className="text-carbon-600 font-mono text-xs">•</span>
             <span className="font-mono text-xs text-white font-bold uppercase tracking-wider">
-              POST ANALYSIS
+              FORENSIC DOSSIER
             </span>
             <Badge variant="cyan" size="sm" className="font-mono">
               {targetGoal.toUpperCase()} GOAL
@@ -127,7 +133,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
           </div>
 
           <h1 className="text-xl sm:text-2xl font-mono font-bold text-white tracking-tight">
-            CONTENT FORENSIC AUDIT
+            GROUNDED FORENSIC AUDIT REPORT
           </h1>
 
           {/* Telemetry metadata chips */}
@@ -145,7 +151,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             )}
             <span className="flex items-center gap-1">
               <AlignLeft className="w-3.5 h-3.5 text-carbon-500" />
-              {wordCount > 0 ? `${wordCount} words` : 'Visual-only post'}
+              {wordCount > 0 ? `${wordCount} words` : 'Visual-only post (0 caption words)'}
             </span>
             {wordCount > 0 && (
               <>
@@ -207,53 +213,74 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
       </div>
 
-      {/* Observed Performance Baseline Card (if available from screenshot) */}
+      {/* 01 — CONTENT SNAPSHOT (Observed Facts & Ground Truth) */}
+      <div className="p-5 bg-carbon-900 border border-carbon-750 rounded-2xl font-mono text-xs space-y-3 shadow-lg">
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-cyan-400" /> 01 — CONTENT SNAPSHOT (OBSERVED FACTS)
+          </span>
+          <Badge variant="cyan" size="sm" className="font-mono">
+            VERIFIED FACTS
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+          {observedFacts.map((fact, idx) => (
+            <div key={idx} className="p-3 rounded-xl bg-carbon-950/80 border border-carbon-800 flex items-start gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
+              <span className="text-carbon-200 font-sans leading-relaxed text-xs">{fact}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 02 — OBSERVED SCREENSHOT PERFORMANCE (Baseline counters) */}
       {hasObservedMetrics && metrics && (
-        <div className="p-4 bg-carbon-900 border border-cyan-900/50 rounded-2xl font-mono text-xs space-y-3 shadow-lg">
+        <div className="p-5 bg-carbon-900 border border-cyan-900/50 rounded-2xl font-mono text-xs space-y-3 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-cyan-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <Eye className="w-4 h-4 text-cyan-400" /> OBSERVED SCREENSHOT PERFORMANCE (BASELINE)
+            <span className="font-bold text-cyan-300 uppercase tracking-wider text-xs flex items-center gap-2">
+              <Eye className="w-4 h-4 text-cyan-400" /> 02 — OBSERVED PERFORMANCE (SCREENSHOT BASELINE)
             </span>
-            <span className="text-[10px] text-carbon-400">Directly extracted from interface counters</span>
+            <span className="text-[11px] text-carbon-400 font-mono">Facts directly extracted from interface counters</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
             {metrics.replies !== null && (
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <MessageSquare className="w-4 h-4 text-carbon-400" />
                 <div>
                   <span className="text-[10px] text-carbon-400 block uppercase">Replies</span>
-                  <span className="font-bold text-white text-base">{metrics.replies}</span>
+                  <span className="font-bold text-white text-lg">{metrics.replies}</span>
                 </div>
               </div>
             )}
 
             {metrics.reposts !== null && (
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <Repeat2 className="w-4 h-4 text-emerald-400" />
                 <div>
                   <span className="text-[10px] text-carbon-400 block uppercase">Reposts</span>
-                  <span className="font-bold text-white text-base">{metrics.reposts}</span>
+                  <span className="font-bold text-white text-lg">{metrics.reposts}</span>
                 </div>
               </div>
             )}
 
             {metrics.likes !== null && (
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <Heart className="w-4 h-4 text-rose-400" />
                 <div>
                   <span className="text-[10px] text-carbon-400 block uppercase">Likes</span>
-                  <span className="font-bold text-white text-base">{metrics.likes}</span>
+                  <span className="font-bold text-white text-lg">{metrics.likes}</span>
                 </div>
               </div>
             )}
 
             {metrics.views !== null && (
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <Eye className="w-4 h-4 text-cyan-400" />
                 <div>
                   <span className="text-[10px] text-carbon-400 block uppercase">Views</span>
-                  <span className="font-bold text-white text-base">{metrics.views}</span>
+                  <span className="font-bold text-white text-lg">{metrics.views}</span>
                 </div>
               </div>
             )}
@@ -261,9 +288,11 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
       )}
 
-      {/* 2. Overall X-Ray Score & Signal Cards */}
+      {/* 03 & 04 — GOAL FIT & CORE DIAGNOSTIC SIGNALS */}
       <MetricsGrid
         overallScore={report.overallScore}
+        targetGoal={targetGoal}
+        goalFit={report.goalFit}
         hook={report.hook}
         clarity={report.clarity}
         cognitiveLoad={report.cognitiveLoad}
@@ -275,31 +304,66 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         audienceValue={report.audienceValue}
       />
 
-      {/* 3. Engagement Friction Map */}
+      {/* 05 — PRIMARY FRICTION MAP */}
       <FrictionMap
         frictionPoints={report.frictionPoints}
         fullPostText={originalText || report.repair.original || '[Visual-only post]'}
       />
 
-      {/* 4. Post Autopsy */}
-      <PostAutopsy autopsy={report.postAutopsy} />
+      {/* 06 — STRENGTHS & POST AUTOPSY */}
+      <PostAutopsy autopsy={report.postAutopsy} strengths={report.strengths} />
 
-      {/* 5. Conversation DNA Sequence */}
+      {/* 07 — CONVERSATION DNA SEQUENCE */}
       <ConversationDNA dna={report.conversationDNA} />
 
-      {/* 6. Surgical Repair (Original vs Improved) */}
+      {/* 08 — RECOMMENDED REPAIR (Before vs After) */}
       <RepairDiff repair={report.repair} />
 
-      {/* 7. Platform Variants (LinkedIn, Instagram, TikTok) */}
+      {/* Platform Variants (LinkedIn, Instagram, TikTok) */}
       <PlatformVariants variants={report.platformVariants} />
 
-      {/* 8. Goal-Based Recommendation */}
+      {/* Goal-Based Adaptive Strategy */}
       <GoalAdaptiveCard recommendation={report.goalRecommendation} />
+
+      {/* 09 — LIMITATIONS & CONFIDENCE */}
+      <div className="p-5 rounded-2xl bg-carbon-950 border border-carbon-800 space-y-3 font-mono text-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <span className="font-bold text-carbon-300 uppercase tracking-wider flex items-center gap-2">
+            <Info className="w-4 h-4 text-cyan-400" /> 09 — LIMITATIONS &amp; DIAGNOSTIC CONFIDENCE
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-carbon-400">Confidence:</span>
+            <Badge
+              variant={report.confidence?.level === 'HIGH' ? 'emerald' : report.confidence?.level === 'MEDIUM' ? 'amber' : 'red'}
+              size="sm"
+            >
+              {report.confidence?.level || 'HIGH'}
+            </Badge>
+          </div>
+        </div>
+
+        <p className="text-carbon-400 text-[11px] font-sans">
+          {report.confidence?.reason || 'Diagnostics based directly on detected visual elements and verified content inventory.'}
+        </p>
+
+        {report.limitations && report.limitations.length > 0 && (
+          <div className="pt-2 border-t border-carbon-800/80 space-y-1">
+            <span className="text-[10px] text-carbon-500 uppercase tracking-wider block">
+              Forensic Boundary Notes:
+            </span>
+            <ul className="space-y-1 text-[11px] text-carbon-400 font-sans list-disc list-inside">
+              {report.limitations.map((lim, idx) => (
+                <li key={idx}>{lim}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {/* Bottom Re-scan Bar */}
       <div className="pt-6 border-t border-carbon-800 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
         <div className="text-xs font-mono text-carbon-500">
-          SOCIAL X-RAY LAB • HIGH-PRECISION AUDIENCE FORENSICS
+          SOCIAL X-RAY LAB • GROUNDED AUDIENCE PSYCHOLOGY FORENSICS
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Button
