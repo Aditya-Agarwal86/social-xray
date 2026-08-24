@@ -16,9 +16,8 @@ import {
   Repeat2,
   Heart,
   Eye,
-  Bookmark,
-  CheckCircle2,
   X,
+  Info,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -82,32 +81,32 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
   );
 
   return (
-    <div className="space-y-3 font-sans text-slate-900 dark:text-slate-100">
+    <div className="space-y-3.5 font-sans text-slate-900 dark:text-slate-100">
       {/* Header bar with content summary */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs shadow-sm">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-slate-900 dark:text-white">
-            Step 3: Content Review
+            Step 3: Content Review &amp; Edit
           </span>
           {sourceType === 'demo' ? (
             <Badge variant="amber" size="sm">
-              DEMO POST
+              Demo Post
             </Badge>
           ) : isImageOnly ? (
             <Badge variant="cyan" size="sm">
-              VISUAL CONTENT DETECTED
+              Visual Media Detected
             </Badge>
           ) : inventory?.captionStatus === 'DETECTED' ? (
             <Badge variant="emerald" size="sm">
-              CAPTION DETECTED
+              Caption Detected
             </Badge>
           ) : typeof confidence === 'number' ? (
             <Badge variant={confidence >= 80 ? 'emerald' : confidence >= 60 ? 'amber' : 'red'} size="sm">
-              CONFIDENCE: {confidence >= 80 ? 'HIGH' : confidence >= 60 ? 'MEDIUM' : 'LOW'}
+              Extraction Confidence: {confidence >= 80 ? 'High' : confidence >= 60 ? 'Medium' : 'Low'}
             </Badge>
           ) : (
             <Badge variant={quality === 'HIGH' ? 'emerald' : 'amber'} size="sm">
-              {quality === 'HIGH' ? 'READY' : 'REVIEW RECOMMENDED'}
+              {quality === 'HIGH' ? 'Ready' : 'Review Recommended'}
             </Badge>
           )}
         </div>
@@ -136,8 +135,8 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
 
       {/* CONTENT INVENTORY HUD */}
       {inventory && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-xs">
-          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-xs">
+          <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
               <ImageIcon className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Visual Media
             </span>
@@ -146,9 +145,9 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             </span>
           </div>
 
-          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+          <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
-              <Type className="w-3 h-3 text-slate-500" /> Caption Text
+              <Type className="w-3 h-3 text-slate-500" /> Caption Status
             </span>
             <span className={`text-xs font-semibold ${
               inventory.captionStatus === 'DETECTED'
@@ -163,7 +162,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             </span>
           </div>
 
-          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+          <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
               # Hashtags
             </span>
@@ -172,7 +171,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             </span>
           </div>
 
-          <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
+          <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-medium flex items-center gap-1">
               CTA / Action
             </span>
@@ -183,19 +182,19 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
         </div>
       )}
 
-      {/* OBSERVED PERFORMANCE METRICS */}
+      {/* OBSERVED PERFORMANCE METRICS (BASELINE) */}
       {hasObservedMetrics && inventory?.engagementMetrics && (
-        <div className="p-3.5 rounded-xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200/80 dark:border-sky-900/40 text-xs space-y-2">
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-sky-800 dark:text-sky-300 text-xs flex items-center gap-1.5">
-              <Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> Observed Performance Counters (Baseline)
+            <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
+              <Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> Observed Performance Counters (Historical Baseline)
             </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Extracted from interface counters</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Extracted from visible interface counters</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-0.5">
             {inventory.engagementMetrics.replies !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
                 <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
                 <div>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Replies</span>
@@ -205,7 +204,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             )}
 
             {inventory.engagementMetrics.reposts !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
                 <Repeat2 className="w-3.5 h-3.5 text-emerald-500" />
                 <div>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Reposts</span>
@@ -215,7 +214,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             )}
 
             {inventory.engagementMetrics.likes !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
                 <Heart className="w-3.5 h-3.5 text-rose-500" />
                 <div>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Likes</span>
@@ -225,7 +224,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             )}
 
             {inventory.engagementMetrics.views !== null && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
                 <Eye className="w-3.5 h-3.5 text-sky-500" />
                 <div>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Views</span>
@@ -239,7 +238,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
 
       {/* ONE Primary Extraction Status Block */}
       {isImageOnly ? (
-        <div className="p-3.5 rounded-xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/50 text-sky-900 dark:text-sky-200 text-xs flex items-start gap-2.5">
+        <div className="p-3.5 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/50 text-sky-900 dark:text-sky-200 text-xs flex items-start gap-2.5">
           <ImageIcon className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <span className="font-semibold text-sky-900 dark:text-sky-300 block">Visual-Only Post Detected</span>
@@ -249,7 +248,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
           </div>
         </div>
       ) : isReviewRecommended && words > 0 ? (
-        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
+        <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
           <div className="flex items-start gap-2.5">
             <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
@@ -257,7 +256,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
                 Extraction Confidence: {typeof confidence === 'number' && confidence < 60 ? 'Low' : 'Medium'}
               </span>
               <p className="leading-relaxed text-amber-800 dark:text-amber-100">
-                Some characters may have been misread. Review and refine the extracted copy before analysis.
+                Text extracted from the uploaded asset. OCR may contain recognition errors. Review and edit the draft below before running analysis.
               </p>
             </div>
           </div>
@@ -272,11 +271,12 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
       {/* Editable Textarea Section */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span className="font-semibold text-slate-700 dark:text-slate-300">
-            {isImageOnly ? 'Optional Draft Caption (or proceed with visual scan)' : 'Extracted Post Copy'}
+          <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+            {isImageOnly ? 'Optional Draft Caption' : 'Raw Extracted Text / Analysis Input'}
           </span>
           <span className="text-[11px]">
-            {isImageOnly ? 'Leave blank to analyze visual asset alone, or add text below.' : 'Detected from your uploaded asset. Edit freely before analysis.'}
+            {isImageOnly ? 'Leave blank for visual analysis or type draft copy.' : 'Text extracted from asset. OCR may contain recognition errors. Review before analysis.'}
           </span>
         </div>
 
@@ -331,7 +331,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
               leftIcon={<Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />}
               className="text-xs"
             >
-              View Original
+              View Original Asset
             </Button>
           )}
 
@@ -383,7 +383,7 @@ export const ExtractionPreview: React.FC<ExtractionPreviewProps> = ({
             disabled={(isEmpty && !isImageOnly) || (isTooShort && !isImageOnly) || isAnalyzing}
             isLoading={isAnalyzing}
             leftIcon={<Zap className="w-4 h-4 text-white dark:text-slate-950 fill-current" />}
-            className="w-full sm:w-auto text-xs"
+            className="w-full sm:w-auto text-xs font-semibold"
           >
             {isAnalyzing
               ? 'RUNNING FORENSIC SCAN...'

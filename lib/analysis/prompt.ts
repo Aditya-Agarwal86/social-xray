@@ -28,80 +28,55 @@ CORE PHILOSOPHY & THREE-LAYER FORENSIC SEPARATION:
 Every analysis MUST maintain strict, unambiguous separation across three distinct layers:
 1. LAYER A: OBSERVED FACTS (GROUND TRUTH)
    - Facts directly detected from the uploaded post, screenshot, or verified metadata.
-   - Example: "Outer post: 'Truth is better than fiction' by @elonmusk; Nested quote post: 'Preorder Roll the Calls ⬇️' by @AriEmanuel with Amazon shortlink a.co/d/0gaDvahC; Book cover image for 'Roll the Calls / Ari Emanuel: A Memoir'; 935 replies, 1K reposts, 5K likes, 5.2M views."
-   - Never add unsupported creator intent or assumed background facts.
+   - Examples of legitimate observed facts: visible likes, visible replies, visible dates, visible captions, presence of an image/carousel, visible account tags, presence/absence of explicit questions, visible CTA links.
+   - Never present inferred audience behavior, assumed creator intent, or psychological motivations as observed facts.
+   - Example: "Observed: The post displays 290K likes and no explicit conversational question in the caption."
+
 2. LAYER B: INFERENCES & DIAGNOSIS
-   - Rigorous, content-grounded interpretation based ONLY on observed content.
-   - Distinctly label inferences and assign confidence levels:
-     * HIGH: Directly visible or detectable elements (visual composition, conversation weakness, presence of nested CTA/link).
-     * MEDIUM: Reasonable interpretation from visible content (audience emotional response, visual processing ease).
-     * LOW: Requires information not available in screenshot (creator intent, why reposts occurred).
-   - Example: "Likely audience response: visual appreciation without a strong conversation trigger (Confidence: Medium)."
-   - Never present inferred audience behavior as observed fact.
-3. LAYER C: RECOMMENDATION (AI-GENERATED SUGGESTION)
-   - Actionable suggestions generated from the diagnosis to satisfy the selected goal ("${targetGoal.toUpperCase()}").
-   - Clearly understand this is an AI recommendation not present in the original post.
-   - Example: "Do you think truth really is better than fiction? Why?"
+   - Rigorous, content-grounded interpretation based ONLY on observed evidence.
+   - Soften and measure all speculative claims: use "suggests", "likely", "may reduce", "could create", "the visible evidence indicates".
+   - Assign clear confidence levels across distinct domains:
+     * EXTRACTION CONFIDENCE: How accurately text was extracted from the asset.
+     * VISUAL ANALYSIS CONFIDENCE: How confidently visible visual elements are interpreted.
+     * DIAGNOSTIC CONFIDENCE: How confidently the overall conclusions are supported by the evidence.
+   - Note: Imperfect OCR text extraction does not invalidate high diagnostic confidence if the visual and structural content is clear.
+   - Example: "Inference: The high like count suggests strong passive audience appreciation, though the screenshot cannot reveal underlying audience motivations."
+
+3. LAYER C: RECOMMENDATIONS (EVIDENCE-GROUNDED SUGGESTIONS)
+   - Actionable improvements generated to satisfy the selected goal ("${targetGoal.toUpperCase()}").
+   - Clearly understand these are AI-generated suggestions not present in the original post.
+   - Preserve the author's original authentic voice, creative intent, and factual claims while repairing engagement dropoffs.
+
+OBJECTIVE-SPECIFIC FORENSIC PRIORITIES FOR "${targetGoal.toUpperCase()}":
+- IF GOAL IS "CONVERSATION":
+  Prioritize comment triggers, open-ended debate questions, discussion loops, and personal response anchors.
+- IF GOAL IS "SHARES":
+  Prioritize relational sharing, social identity reinforcement, "Send this to..." mechanisms, and peer relevance.
+- IF GOAL IS "SAVES":
+  Prioritize utility, reference frameworks, actionable checklists, educational blueprints, and future usefulness.
+- IF GOAL IS "CLICKS":
+  Prioritize click motivation, CTA clarity, destination value payoff, curiosity gaps, and reducing link friction.
+- IF GOAL IS "FOLLOWERS":
+  Prioritize profile conversion, authority signaling, creator identity, and a clear reason to follow for ongoing value.
+- IF GOAL IS "AWARENESS":
+  Prioritize visual distinctiveness, memorability, brand association, and core message clarity.
 
 CRITICAL FORENSIC RULES & SCIENTIFIC GROUNDING:
 1. NESTED / QUOTED POST AWARENESS (MULTI-LAYER CONTENT):
-   - A screenshot may contain multiple content layers:
-     * OUTER POST (e.g. "Truth is better than fiction" by @elonmusk)
-     * NESTED / QUOTED POST (e.g. "Preorder Roll the Calls ⬇️" with shortlink a.co/d/0gaDvahC by @AriEmanuel)
-     * IMAGE / GRAPHIC (e.g. Book cover for "Roll the Calls / Ari Emanuel: A Memoir")
-     * PLATFORM METRICS & UI (e.g. 935 replies, 1K reposts, 5K likes, 5.2M views)
-   - Analyze each content layer separately; do NOT collapse them into one ambiguous quote.
+   - Analyze each content layer separately (Outer Post vs Nested/Quoted Post vs Visual Media vs Platform UI). Do NOT collapse them into one ambiguous quote.
 2. CTA DETECTION ACROSS NESTED POSTS:
-   - If the nested post contains a call to action (e.g. "Preorder Roll the Calls ⬇️") and a visible link ("a.co/d/0gaDvahC"), then CTA DETECTED = TRUE.
-   - Do NOT say "No CTA exists".
-   - Report:
-     * Outer CTA: Not detected
-     * Nested CTA: Detected ("Preorder Roll the Calls ⬇️")
-     * CTA Type: Purchase / preorder
-     * CTA Visibility: Secondary / nested
-     * Visible Link: "a.co/d/0gaDvahC"
-   - In CTA Quality scoring, acknowledge the presence of the nested CTA and link, but note that the outer post does not explicitly reinforce it.
-3. FRICTION TERMINOLOGY (NEVER LABEL ORDINARY COPY AS "PROBLEMATIC"):
-   - Never label ordinary, well-written copy as a "PROBLEMATIC TEXT FRAGMENT" unless the text is actually malformed, contradictory, or misleading.
-   - For a closed statement like "Truth is better than fiction", categorize as:
-     * Category: "Conversation Friction" or "Missing Question Anchor"
-     * Text: "Truth is better than fiction"
-     * Rationale: "The statement expresses a viewpoint but does not explicitly invite the audience to respond."
-     * Repair: "Do you think truth really is better than fiction? Why?"
-   - For image-only posts with no text, label as MISSING ENGAGEMENT ELEMENT with detected state: "No caption or conversation prompt detected."
+   - If a nested post contains a call to action (e.g. "Preorder Roll the Calls ⬇️") and a visible link, CTA DETECTED = TRUE. Report outer vs nested CTA accurately.
+3. FRICTION TERMINOLOGY:
+   - Never label ordinary copy as "problematic" unless it is malformed or contradictory. Categorize as "Conversation Friction", "Missing Question Anchor", or "Cognitive Friction".
 4. CAUSALITY GUARDRAIL (NEVER CLAIM SINGLE FACTOR CAUSED METRIC):
-   - Never claim that a single factor caused an observed engagement metric.
-   - BAD: "The lack of a question caused the low reply rate."
-   - GOOD: "The post has 935 visible replies against 5.2M visible views, indicating a relatively low reply-to-view rate (~0.018%). The absence of an explicit conversation prompt is one plausible friction factor, but the screenshot alone cannot establish causation."
-   - Use measured phrases: "may contribute", "plausible factor", "potential friction", "cannot establish causation from this screenshot".
-5. PERFORMANCE EVIDENCE & DESCRIPTIVE RATIOS:
-   - When visible metrics exist, calculate useful descriptive ratios (e.g. 935 replies / 5.2M views = ~0.018% reply/view rate; 5K likes / 5.2M views = ~0.096% like/view rate).
-   - Clearly label: "OBSERVED DESCRIPTIVE METRIC", not AI prediction.
-6. GROUNDED REPLACEMENT QUESTIONS (ZERO RUMORS / GOSSIP):
-   - Never invent rumors, secrets, revelations, or unsupported claims (e.g. avoid "What is the wildest true Hollywood story...").
-   - Prefer grounded questions derived from actual content:
-     * "Do you think truth really is better than fiction? Why?"
-     * or "What part of Ari Emanuel's memoir are you most curious to read?"
-     * Thread sustainer: "Have you ever read a real-life memoir that was crazier than any fiction story?"
-7. CONVERSATION DNA STRUCTURE:
-   - OBSERVED FACT: "The outer post says 'Truth is better than fiction.'"
-   - INFERENCE — MEDIUM: "The statement expresses a clear viewpoint but does not directly invite response."
-   - LIKELY ENGAGEMENT PATH (INFERENCE): "Agreement/disagreement, like, repost, or passive consumption."
-   - CONVERSATION OPPORTUNITY (OBSERVED / INFERRED): "Convert the existing viewpoint into an explicit opinion prompt."
-   - RECOMMENDATION: "Do you think truth really is better than fiction? Why?"
-8. EVALUATE "VISUAL PROCESSING EASE":
-   - Evaluate visual processing separately: elements, composition, hierarchy, contrast, scanability, and ambiguity of meaning.
-9. NO FAKE STATISTICS / MULTIPLIERS & CONTENT-BASED ESTIMATION:
-   - Never generate fake statistics or claim "this change will get 3x more reach" or "increase sales by 50%". Ground all assessments in copywriting and cognitive psychology.
+   - Never claim a single factor caused an observed metric. State that the absence of a prompt is a plausible factor, but the screenshot alone cannot establish causation.
+5. NO FAKE STATISTICS / MULTIPLIERS & CONTENT-BASED ESTIMATION:
+   - Never claim "this will get 3x more reach" or guarantee exact percentage increases. Ground all assessments in copywriting principles and cognitive psychology.
    - All assessments are content-based diagnostic estimates grounded strictly in the provided text or visual assets.
-   - Use evidence-grounded phrasing ("may increase the likelihood of active comments", "creates a clearer opportunity for audience participation", "can make the CTA easier to respond to") rather than absolute guarantees.
-10. GOAL FIT EVALUATION ("${goalLabel.toUpperCase()}"):
-   - Score represents: "How well does this post currently support the selected objective (${targetGoal.toUpperCase()})?"
-   - For conversation goal on quote tweet: ~42/100, interpretation: "Moderate-to-high conversation friction despite strong visibility and a clear promotional context." Do not describe the entire post as bad.
-11. ABSOLUTE ZERO HALLUCINATION (NEVER INVENT UNRELATED TOPICS):
-   - All repairs, questions, and insights MUST remain 100% grounded in the detected content.
-12. CROSS-PLATFORM ADAPTATION RULE:
-   - Preserve the original factual claims, voice, subject, and core narrative while adapting structure, hook, pacing, and CTA for LinkedIn, Instagram, and TikTok.
+6. ZERO HALLUCINATIONS & RESPECT ORIGINAL POST:
+   - Keep all recommendations 100% grounded in the detected post content. Never invent unrelated rumors, gossip, or fictional topics.
+7. CROSS-PLATFORM ADAPTATION:
+   - Provide platform-adapted variants for LinkedIn (line breaks & thought leadership), Instagram (visual hook & carousel direction), and TikTok/Reels (spoken script & visual cues).
 
 SCORING METHODOLOGY (10 CORE FORENSIC DIMENSIONS, 0 - 100 EXPLAINABLE RATING):
 - 10 Core Dimensions: Hook Velocity (hook), Clarity & Comprehension (clarity), Cognitive Ease (cognitiveLoad), Emotional Resonance (emotion), Curiosity Gap (curiosity), Conversation Catalyst (conversation), Social Currency (shareability), CTA Friction (cta), Audience Value (audienceValue), and Attention Resistance (attentionResistance).
@@ -121,7 +96,7 @@ export function buildGeminiUserPrompt(
   const inventorySection = inventory
     ? `
 CONTENT INVENTORY (VERIFIED GROUND TRUTH):
-- Visual Content: ${inventory.hasVisualMedia ? 'DETECTED (Visual photograph/graphic/book cover attached)' : 'None (Text-only)'}
+- Visual Content: ${inventory.hasVisualMedia ? 'DETECTED (Visual photograph/graphic/media attached)' : 'None (Text-only)'}
 - Caption Status: ${inventory.captionStatus === 'NOT_DETECTED' ? 'NOT DETECTED (Visual-only post)' : inventory.captionStatus}
 - Extracted Outer Caption / Copy: ${inventory.caption ? `"${inventory.caption}"` : 'None detected'}
 - Nested / Quoted Post: ${
@@ -168,16 +143,16 @@ ${inventorySection}${rawContentSection}${metricsInfo}
 FORENSIC REQUIREMENTS:
 1. LAYER A (OBSERVED FACTS):
    - List 3-5 factual observations detected directly from the screenshot (separate outer post, nested post, image, and metrics).
-   - If a nested post exists with a preorder CTA and link, explicitly list it as an observed fact.
+   - Only include visible elements (numbers, dates, caption presence, media, tags, CTA presence).
 2. LAYER B (DIAGNOSED INFERENCES):
    - Evaluate "${goalLabel}" (0-100) representing how well this post supports the selected goal.
-   - For CTA Quality, recognize the presence of the nested preorder CTA and link; do NOT claim "No CTA exists".
-   - In Friction Map, analyze the closed statement (e.g. "Truth is better than fiction") as "Conversation Friction" with rationale "The statement expresses a viewpoint but does not explicitly invite the audience to respond."
-   - Causality Guardrail: Never claim a single factor caused an observed metric. Note that the absence of a conversation prompt is a plausible factor, but screenshot alone cannot establish causation.
-   - In Conversation DNA, follow the strict grounded sequence (Observed Fact → Inference → Likely Engagement Path → Conversation Opportunity → Recommendation).
+   - For CTA Quality, recognize the presence of any nested CTA and link; do NOT claim "No CTA exists" if visible.
+   - In Friction Map, analyze the dropoff element with evidence-grounded rationale.
+   - Causality Guardrail: Never claim a single factor caused an observed metric.
+   - In Conversation DNA, follow the strict grounded sequence (Observed Fact → Inferred Audience Reaction → Likely Engagement Path → Conversation Mechanism & Opportunity → High-Conversion Recommendation).
 3. LAYER C (RECOMMENDED):
-   - Prescribe a Recommended Repair grounded 100% in the supplied post content (e.g. "Do you think truth really is better than fiction? Why?").
-   - Never invent Hollywood rumors, secrets, or gossip.
+   - Prescribe a Recommended Repair grounded 100% in the supplied post content.
+   - Address the primary friction for "${targetGoal.toUpperCase()}" while preserving the original creative intent.
    - Provide an evidence-grounded rationale.
 4. Return a structured JSON response conforming exactly to the schema.`;
 }

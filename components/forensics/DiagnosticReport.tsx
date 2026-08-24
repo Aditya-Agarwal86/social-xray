@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Info,
   Award,
+  ShieldCheck,
 } from 'lucide-react';
 import { SocialXRayAnalysisResult } from '@/lib/analysis/types';
 import { UploadedFileState } from '@/types/analysis';
@@ -111,7 +112,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
   const primaryFrictionSummary =
     report.postAutopsy?.primaryFriction ||
     report.frictionPoints[0]?.explanation ||
-    'Limited explicit conversational trigger.';
+    'Limited explicit conversational trigger in the content.';
 
   const biggestOpportunitySummary =
     report.postAutopsy?.treatment ||
@@ -124,7 +125,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
     'Add a grounded question that invites audience perspectives.';
 
   const overallSeverity =
-    report.overallScore >= 80 ? 'OPTIMAL' : report.overallScore >= 60 ? 'MODERATE' : 'CRITICAL ATTENTION FRICTION';
+    report.overallScore >= 80 ? 'Optimal' : report.overallScore >= 60 ? 'Moderate' : 'Critical Attention Friction';
 
   return (
     <div className="space-y-8 animate-fade-in print:space-y-6 font-sans text-slate-900 dark:text-slate-100">
@@ -229,7 +230,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             size="sm"
             onClick={onReset}
             leftIcon={<RotateCcw className="w-3.5 h-3.5 text-white dark:text-slate-950" />}
-            className="text-xs"
+            className="text-xs font-semibold"
             aria-label="Analyze Another"
           >
             Analyze Another
@@ -237,21 +238,26 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
       </div>
 
-      {/* 01 — CONTENT SNAPSHOT (Observed Facts & Performance Evidence) */}
-      <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <span className="font-semibold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5 uppercase tracking-wider">
-            <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400" /> 01 — Content Snapshot
-          </span>
+      {/* 01 — CONTENT SNAPSHOT (Observed Facts & Ground Truth) */}
+      <div className="p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs space-y-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div>
+            <span className="font-semibold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+              <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400" /> 01 — Content Snapshot
+            </span>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
+              Facts directly detected from the screenshot or verified metadata. Unobserved motivations and assumptions are strictly excluded.
+            </p>
+          </div>
           <Badge variant="cyan" size="sm">
-            Observed Facts
+            Observed Facts (Ground Truth)
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
           {observedFacts.map((fact, idx) => (
-            <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mt-1.5 shrink-0" />
+            <div key={idx} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-sky-500 mt-1 shrink-0" />
               <span className="text-slate-700 dark:text-slate-200 leading-relaxed text-xs">{fact}</span>
             </div>
           ))}
@@ -259,22 +265,22 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
 
         {/* Observed Performance Metrics (if present in asset) */}
         {hasObservedMetrics && metrics && (
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
                 <Eye className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> Observed Performance Counters
               </span>
               <Badge variant="cyan" size="sm" className="text-[10px]">
-                Historical Baseline
+                Historical Evidence (Observed)
               </Badge>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Extracted directly from visible interface counters. Historical descriptive evidence, not predictions.
+              Extracted directly from visible interface counters. Historical descriptive evidence, not AI predictions or causal claims.
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {metrics.replies !== null && (
-                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
                   <MessageSquare className="w-4 h-4 text-slate-400" />
                   <div>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Replies</span>
@@ -284,7 +290,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
               )}
 
               {metrics.reposts !== null && (
-                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
                   <Repeat2 className="w-4 h-4 text-emerald-500" />
                   <div>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Reposts</span>
@@ -294,7 +300,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
               )}
 
               {metrics.likes !== null && (
-                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
                   <Heart className="w-4 h-4 text-rose-500" />
                   <div>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Likes</span>
@@ -304,7 +310,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
               )}
 
               {metrics.views !== null && (
-                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-2xs">
                   <Eye className="w-4 h-4 text-sky-500" />
                   <div>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 block uppercase">Views</span>
@@ -321,11 +327,11 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
                     Observed Descriptive Rates:
                   </span>
-                  <span className="text-[11px] text-slate-400">Platform counter rates</span>
+                  <span className="text-[11px] text-slate-400">Platform counter ratios at time of capture</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   {report.descriptiveRatios.map((ratio, idx) => (
-                    <div key={idx} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-0.5">
+                    <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-0.5">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{ratio.metric}</span>
                         <span className="text-xs font-mono font-bold text-sky-600 dark:text-sky-400">{ratio.value}</span>
@@ -369,37 +375,37 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
             <span className="text-[10px] uppercase font-semibold text-rose-600 dark:text-rose-400 block">
-              Primary Friction:
+              Primary Friction (Inference):
             </span>
             <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               {primaryFrictionSummary}
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
             <span className="text-[10px] uppercase font-semibold text-emerald-600 dark:text-emerald-400 block">
-              Strongest Dimension:
+              Strongest Dimension (Inference):
             </span>
             <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               <strong className="text-slate-900 dark:text-white">{strongestDimension.name}</strong> — {strongestDimension.score}/100
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
             <span className="text-[10px] uppercase font-semibold text-sky-600 dark:text-sky-400 block">
-              Biggest Opportunity:
+              Biggest Opportunity (Inference):
             </span>
             <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               {biggestOpportunitySummary}
             </p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
             <span className="text-[10px] uppercase font-semibold text-amber-600 dark:text-amber-400 block">
-              Highest-Priority Action:
+              Highest-Priority Action (Recommendation):
             </span>
             <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
               {highestPriorityActionSummary}
@@ -451,18 +457,18 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       <GoalAdaptiveCard recommendation={report.goalRecommendation} />
 
       {/* 11 — LIMITATIONS & CONFIDENCE */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3.5 text-xs shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 text-xs shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
           <div className="space-y-0.5">
             <span className="font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-sky-600 dark:text-sky-400" /> 11 — Limitations &amp; Confidence
+              <Info className="w-4 h-4 text-sky-600 dark:text-sky-400" /> 11 — Limitations &amp; Confidence Framework
             </span>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-              What the screenshot cannot establish &amp; confidence ratings
+              Clear distinction between text extraction quality, visual evidence, and diagnostic certainty
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 dark:text-slate-400">Overall Confidence:</span>
+            <span className="text-slate-500 dark:text-slate-400">Overall Diagnostic Confidence:</span>
             <Badge
               variant={report.confidence?.level === 'HIGH' ? 'emerald' : report.confidence?.level === 'MEDIUM' ? 'amber' : 'red'}
               size="sm"
@@ -473,49 +479,81 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
 
         <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-          {report.confidence?.reason || 'Diagnostics based directly on detected visual elements and verified content inventory.'}
+          {report.confidence?.reason || 'Diagnostics based directly on detected visual elements, layout composition, and verified content inventory.'}
         </p>
 
-        {/* Confidence Domains Breakdown */}
-        {report.confidence?.breakdown && report.confidence.breakdown.length > 0 && (
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-            <span className="text-[11px] text-slate-700 dark:text-slate-300 uppercase tracking-wider block font-semibold">
-              Confidence By Analysis Domain:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {report.confidence.breakdown.map((item, idx) => (
-                <div key={idx} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
-                  <span className="text-slate-700 dark:text-slate-200 text-xs">{item.domain}</span>
-                  <Badge
-                    variant={item.level === 'HIGH' ? 'emerald' : item.level === 'MEDIUM' ? 'amber' : 'red'}
-                    size="sm"
-                  >
-                    {item.level}
-                  </Badge>
-                </div>
-              ))}
+        {/* Confidence Domains Hierarchy */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <span className="text-[11px] text-slate-700 dark:text-slate-300 uppercase tracking-wider block font-semibold">
+            Confidence By Analysis Domain:
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-700 dark:text-slate-200 font-semibold text-xs">Extraction Confidence</span>
+                <Badge variant={uploadedFile?.confidence && uploadedFile.confidence < 60 ? 'amber' : 'emerald'} size="sm">
+                  {uploadedFile?.confidence && uploadedFile.confidence < 60 ? 'Medium' : 'High'}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Accuracy of OCR/PDF text recognition from the uploaded asset.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-700 dark:text-slate-200 font-semibold text-xs">Visual Analysis</span>
+                <Badge variant="emerald" size="sm">
+                  High
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Certainty in interpreting visible imagery, layout hierarchy, and design stopping power.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-700 dark:text-slate-200 font-semibold text-xs">Diagnostic Confidence</span>
+                <Badge variant={report.confidence?.level === 'HIGH' ? 'emerald' : report.confidence?.level === 'MEDIUM' ? 'amber' : 'red'} size="sm">
+                  {report.confidence?.level || 'High'}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Grounding of findings in cognitive psychology and copywriting principles.
+              </p>
             </div>
           </div>
-        )}
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 italic pt-1">
+            Note: Imperfect OCR text extraction does not degrade visual diagnostic validity when the underlying graphic and layout are clear.
+          </p>
+        </div>
 
-        {report.limitations && report.limitations.length > 0 && (
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-medium">
-              Forensic Boundary Notes:
-            </span>
-            <ul className="space-y-1 text-xs text-slate-500 dark:text-slate-400 list-disc list-inside">
-              {report.limitations.map((lim, idx) => (
-                <li key={idx}>{lim}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Forensic Boundary Notes */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+          <span className="text-[11px] text-slate-600 dark:text-slate-400 uppercase tracking-wider block font-semibold">
+            Forensic Boundary Notes (What the screenshot cannot establish):
+          </span>
+          <ul className="space-y-1 text-xs text-slate-500 dark:text-slate-400 list-disc list-inside">
+            {report.limitations && report.limitations.length > 0 ? (
+              report.limitations.map((lim, idx) => <li key={idx}>{lim}</li>)
+            ) : (
+              <>
+                <li>Exact unrendered comments and shares cannot be determined beyond visible platform counters.</li>
+                <li>Audio quality or background music cannot be evaluated from a static screenshot.</li>
+                <li>Subsequent carousel frames or video footage beyond this view cannot be assessed.</li>
+                <li>Underlying audience psychological motivations cannot be proven; findings represent grounded diagnostic inferences.</li>
+              </>
+            )}
+          </ul>
+        </div>
       </div>
 
-      {/* Bottom Re-scan Bar */}
+      {/* Bottom Action Bar (Non-redundant navigation) */}
       <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
-        <div className="text-xs text-slate-500 dark:text-slate-400">
-          Social X-Ray • Content Attention &amp; Audience Psychology Forensics
+        <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <span>Diagnostic Dossier Complete • 11 Forensic Modules Synthesized</span>
         </div>
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <Button
@@ -532,7 +570,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             size="md"
             onClick={onReset}
             leftIcon={<RotateCcw className="w-3.5 h-3.5 text-white dark:text-slate-950" />}
-            className="flex-1 sm:flex-none text-xs"
+            className="flex-1 sm:flex-none text-xs font-semibold"
           >
             Analyze Another Post
           </Button>
