@@ -180,7 +180,7 @@ export function extractJsonFromResponse(rawResponse: string): any {
     cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
   }
 
-  // Find first '{' and last '}'
+  // Find outermost '{' and '}'
   const firstOpen = cleaned.indexOf('{');
   const lastClose = cleaned.lastIndexOf('}');
 
@@ -188,15 +188,19 @@ export function extractJsonFromResponse(rawResponse: string): any {
     cleaned = cleaned.substring(firstOpen, lastClose + 1);
   }
 
+  // Direct parse attempt
   try {
     return JSON.parse(cleaned);
-  } catch (err: any) {
-    // Attempt basic trailing comma cleanup
+  } catch {
+    // Advanced recovery attempt for messy LLM strings
     try {
-      const sanitized = cleaned.replace(/,\s*([}\]])/g, '$1');
+      const sanitized = cleaned
+        .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '') // remove comments
+        .replace(/,\s*([}\]])/g, '$1') // remove trailing commas
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); // remove non-printable control characters
       return JSON.parse(sanitized);
-    } catch {
-      throw new Error(`Failed to parse AI JSON response: ${err.message}`);
+    } catch (secondErr: any) {
+      throw new Error(`Failed to parse AI JSON response: ${secondErr.message}`);
     }
   }
 }

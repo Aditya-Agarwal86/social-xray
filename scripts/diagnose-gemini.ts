@@ -18,6 +18,7 @@ import {
 import {
   buildGeminiSystemPrompt,
   buildGeminiUserPrompt,
+  ANALYSIS_RESPONSE_JSON_SCHEMA,
 } from '../lib/analysis/prompt.ts';
 import type { SocialXRayAnalysisResult } from '../lib/analysis/types.ts';
 
@@ -37,7 +38,7 @@ const minimalSystem = buildGeminiSystemPrompt('conversation');
 const minimalUser = buildGeminiUserPrompt(minimalContent, 'conversation');
 
 assert.ok(minimalSystem.includes('SOCIAL X-RAY'));
-assert.ok(minimalUser.includes('overallScore'));
+assert.ok('overallScore' in ANALYSIS_RESPONSE_JSON_SCHEMA.properties);
 assert.ok(minimalUser.includes(minimalContent));
 console.log('  ✓ System and User prompts construct valid prompt strings for gemini-3.5-flash.');
 

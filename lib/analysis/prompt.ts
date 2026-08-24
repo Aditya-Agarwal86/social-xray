@@ -6,9 +6,9 @@ You perform rigorous, content-grounded forensic autopsies of social media posts 
 
 CRITICAL INSTRUCTIONS & GUARDRAILS:
 1. NO FAKE STATISTICS: Never generate arbitrary multipliers or fake metrics (e.g., NEVER claim "this post will get 3x more engagement" or "will increase reach by 45%").
-2. CONTENT-BASED ESTIMATION: Because actual distribution metrics are not provided, all assessments are content-based diagnostic estimates grounded strictly in the provided text. Use phrases like "this change is likely to improve conversation potential because..." rather than making absolute guarantees.
+2. CONTENT-BASED ESTIMATION: All assessments are content-based diagnostic estimates grounded strictly in the provided text.
 3. CONCRETE TEXTUAL EVIDENCE: For every weakness, quote the exact problematic text fragment from the post.
-4. ACTIONABLE PRESCRIPTIONS: Never output vague platitudes (e.g., do NOT say "make the CTA stronger" or "improve clarity"). Explain precisely what causes the cognitive friction and provide a concrete, drop-in replacement rewrite.
+4. ACTIONABLE PRESCRIPTIONS: Never output vague platitudes. Explain precisely what causes the cognitive friction and provide a concrete, drop-in replacement rewrite.
 5. OBJECTIVE TUNING: Evaluate the content against the creator's target objective ("${targetGoal.toUpperCase()}").
 
 SCORING METHODOLOGY (0 - 100 EXPLAINABLE RATING):
@@ -30,100 +30,190 @@ ${content}
 ---
 ${metricsInfo}
 
-You MUST return a pure, valid JSON object matching this exact schema:
-{
-  "overallScore": number (0-100 explainable composite score),
-  "hook": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string (specific textual bottleneck in opening lines),
-    "explanation": string (why this hook causes feed swipe-away)
-  },
-  "clarity": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "cognitiveLoad": {
-    "score": number (0-100, higher means lower mental strain to read),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "emotion": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "curiosity": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "conversation": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "shareability": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "cta": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "audienceValue": {
-    "score": number (0-100),
-    "severity": "optimal" | "minor" | "moderate" | "critical",
-    "problem": string,
-    "explanation": string
-  },
-  "frictionPoints": [
-    {
-      "category": string (e.g. "Opening Throat-Clearing", "Mid-Post Cognitive Drag", "Inert Closing Question"),
-      "severity": "critical" | "moderate" | "minor",
-      "text": string (exact problematic text excerpt from post),
-      "explanation": string (why readers disengage at this exact sentence),
-      "repair": string (concrete replacement sentence or paragraph)
-    }
-  ],
-  "postAutopsy": {
-    "causeOfDeath": string (the core fatal flaw causing reader bounce),
-    "primaryFailure": string,
-    "secondaryFailure": string,
-    "hiddenStrength": string (the strongest salvageable premise),
-    "treatment": string (step-by-step clinical repair advice)
-  },
-  "conversationDNA": {
-    "likelyAudienceReaction": string (predicted internal thought of reader),
-    "engagementType": string (e.g. "Passive Nod", "Debate Catalyst", "Silent Bookmark"),
-    "conversationPotential": string (content-based estimation of reply rate),
-    "betterQuestion": string (high-conversion replacement question),
-    "followUpQuestion": string (secondary probe question to sustain comment thread)
-  },
-  "repair": {
-    "original": string (the original high-friction copy),
-    "improved": string (complete high-velocity rewritten post),
-    "explanation": string (grounded rationale explaining why the rewrite removes friction)
-  },
-  "platformVariants": {
-    "linkedin": string (adapted version with executive storytelling & line-breaks),
-    "instagram": string (adapted carousel/caption with strong visual hook),
-    "tiktok": string (adapted spoken script with visual cue directions)
-  },
-  "goalRecommendation": {
-    "selectedGoal": "${targetGoal}",
-    "reasoning": string (content-grounded reasoning regarding goal alignment),
-    "recommendedChange": string (strategic adjustment to maximize target objective)
-  }
-}`;
+Diagnose all cognitive bottlenecks, rate executive dimensions (0-100), identify concrete friction points, and provide drop-in surgical repairs. Return a clean JSON object according to the response schema.`;
 }
+
+/**
+ * Native JSON Schema for Gemini structured output.
+ * Ensures the response strictly adheres to the Social X-Ray analysis schema.
+ */
+export const ANALYSIS_RESPONSE_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    overallScore: {
+      type: 'integer',
+      description: 'Overall survivability score from 0 to 100',
+    },
+    hook: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    clarity: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    cognitiveLoad: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    emotion: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    curiosity: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    conversation: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    shareability: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    cta: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    audienceValue: {
+      type: 'object',
+      properties: {
+        score: { type: 'integer' },
+        severity: { type: 'string', enum: ['optimal', 'minor', 'moderate', 'critical'] },
+        problem: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['score', 'severity', 'problem', 'explanation'],
+    },
+    frictionPoints: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          category: { type: 'string' },
+          severity: { type: 'string', enum: ['critical', 'moderate', 'minor', 'optimal'] },
+          text: { type: 'string' },
+          explanation: { type: 'string' },
+          repair: { type: 'string' },
+        },
+        required: ['category', 'severity', 'text', 'explanation', 'repair'],
+      },
+    },
+    postAutopsy: {
+      type: 'object',
+      properties: {
+        causeOfDeath: { type: 'string' },
+        primaryFailure: { type: 'string' },
+        secondaryFailure: { type: 'string' },
+        hiddenStrength: { type: 'string' },
+        treatment: { type: 'string' },
+      },
+      required: ['causeOfDeath', 'primaryFailure', 'secondaryFailure', 'hiddenStrength', 'treatment'],
+    },
+    conversationDNA: {
+      type: 'object',
+      properties: {
+        likelyAudienceReaction: { type: 'string' },
+        engagementType: { type: 'string' },
+        conversationPotential: { type: 'string' },
+        betterQuestion: { type: 'string' },
+        followUpQuestion: { type: 'string' },
+      },
+      required: ['likelyAudienceReaction', 'engagementType', 'conversationPotential', 'betterQuestion', 'followUpQuestion'],
+    },
+    repair: {
+      type: 'object',
+      properties: {
+        original: { type: 'string' },
+        improved: { type: 'string' },
+        explanation: { type: 'string' },
+      },
+      required: ['original', 'improved', 'explanation'],
+    },
+    platformVariants: {
+      type: 'object',
+      properties: {
+        linkedin: { type: 'string' },
+        instagram: { type: 'string' },
+        tiktok: { type: 'string' },
+      },
+      required: ['linkedin', 'instagram', 'tiktok'],
+    },
+    goalRecommendation: {
+      type: 'object',
+      properties: {
+        selectedGoal: { type: 'string' },
+        reasoning: { type: 'string' },
+        recommendedChange: { type: 'string' },
+      },
+      required: ['selectedGoal', 'reasoning', 'recommendedChange'],
+    },
+  },
+  required: [
+    'overallScore',
+    'hook',
+    'clarity',
+    'cognitiveLoad',
+    'emotion',
+    'curiosity',
+    'conversation',
+    'shareability',
+    'cta',
+    'audienceValue',
+    'frictionPoints',
+    'postAutopsy',
+    'conversationDNA',
+    'repair',
+    'platformVariants',
+    'goalRecommendation',
+  ],
+};

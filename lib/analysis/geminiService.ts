@@ -4,7 +4,11 @@ import type {
   SocialXRayAnalysisResult,
   NormalizedApiError,
 } from './types';
-import { buildGeminiSystemPrompt, buildGeminiUserPrompt } from './prompt';
+import {
+  buildGeminiSystemPrompt,
+  buildGeminiUserPrompt,
+  ANALYSIS_RESPONSE_JSON_SCHEMA,
+} from './prompt';
 import {
   extractJsonFromResponse,
   validateAndNormalizeAnalysis,
@@ -121,14 +125,18 @@ export async function runGeminiForensicAnalysis(
         config: {
           systemInstruction,
           responseMimeType: 'application/json',
+          responseSchema: ANALYSIS_RESPONSE_JSON_SCHEMA,
           temperature: 0.2, // Low temperature for high precision & reproducibility
         },
       });
 
       const durationMs = Date.now() - startTime;
-      console.log(`[Social X-Ray] Gemini API request succeeded with model "${model}" in ${durationMs}ms (attempt ${attempt}/${maxRetries})`);
-
       responseText = response.text || '';
+
+      console.log(
+        `[Social X-Ray] Gemini API request succeeded with model "${model}" in ${durationMs}ms (attempt ${attempt}/${maxRetries}), response length: ${responseText.length} chars`
+      );
+
       if (responseText) {
         break; // Successfully received response
       }
@@ -177,8 +185,10 @@ export async function runGeminiForensicAnalysis(
   let rawJson: any;
   try {
     rawJson = extractJsonFromResponse(responseText);
+    console.log('[Social X-Ray] JSON parse success. Top-level keys:', Object.keys(rawJson || {}));
   } catch (parseErr: any) {
     console.error('[Social X-Ray] Response JSON extraction failure:', parseErr?.message);
+    console.error('[Social X-Ray] Raw preview (first 200 chars):', responseText.slice(0, 200));
     throw new ForensicAnalysisError({
       category: 'MALFORMED_OUTPUT',
       status: 502,
@@ -192,6 +202,7 @@ export async function runGeminiForensicAnalysis(
   // 7. Validate and normalize structure according to analysis schema
   try {
     const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
+    console.log('[Social X-Ray] Schema validation & normalization success. Overall score:', validatedResult.overallScore);
     return validatedResult;
   } catch (valErr: any) {
     console.error('[Social X-Ray] Response schema normalization failure:', valErr?.message);
