@@ -1,11 +1,18 @@
 /**
  * Layout Analysis & Multi-Region Classification Engine
  *
- * Segments raw OCR lines into structured spatial clusters and classifies them into
- * CONTENT, POSSIBLE_CONTENT, UI, and NOISE without hardcoded brittle strings.
+ * Segments raw OCR lines into structured spatial clusters and classifies them into:
+ * POST_TEXT, IMAGE_TEXT, PROFILE_METADATA, PLATFORM_UI, ENGAGEMENT_METRIC,
+ * HASHTAG, CTA, LINK, and UNKNOWN.
  */
 
-import type { OcrLineData, BoundingBox, TextRegion, RegionClassification } from './types';
+import type {
+  OcrLineData,
+  BoundingBox,
+  TextRegion,
+  RegionClassification,
+  OcrRegionType,
+} from './types';
 
 export interface LayoutDimensions {
   width: number;
@@ -54,7 +61,7 @@ export function segmentTextRegions(
     clusters.push(currentCluster);
   }
 
-  // 3. Classify each region into CONTENT, POSSIBLE_CONTENT, UI, or NOISE
+  // 3. Classify each cluster into fine-grained region types
   return clusters.map((clusterLines, index) => {
     const regionText = clusterLines.map((l) => l.text).join('\n');
     const totalConf = clusterLines.reduce((acc, l) => acc + (l.confidence || 0), 0);
@@ -64,7 +71,8 @@ export function segmentTextRegions(
     const relY = bbox.y0 / height;
 
     const trimmed = regionText.trim();
-    const classification = classifyRegion(trimmed, avgConf, relY, clusterLines.length);
+    const regionType = classifyRegionType(trimmed, avgConf, relY, clusterLines.length);
+    const classification = mapRegionTypeToClassification(regionType, avgConf);
 
     return {
       id: `region-${index + 1}`,
@@ -72,72 +80,246 @@ export function segmentTextRegions(
       confidence: avgConf,
       bbox,
       classification,
+      regionType,
       lines: clusterLines,
-      normalizedScore: computeContentSignificance(trimmed, avgConf, clusterLines.length, classification),
+      normalizedScore: computeContentSignificance(trimmed, avgConf, clusterLines.length, regionType),
     };
   });
 }
 
 /**
- * Classifies a text cluster into CONTENT, POSSIBLE_CONTENT, UI, or NOISE.
+ * Classifies a text cluster into one of 9 discrete OCR region types.
  */
-function classifyRegion(
+export function classifyRegionType(
   text: string,
   confidence: number,
   relY: number,
   lineCount: number
-): RegionClassification {
+): OcrRegionType {
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
 
-  // 1. NOISE Checks
-  // Spacer dots e.g. ". . . ." or single glyph noise
+  // 1. Noise check (Spacer dots, single non-alphanumeric glyphs, low confidence short fragments)
   if (/^[.·•\s\-_~=+|/\\]+$/.test(trimmed)) {
-    return 'NOISE';
+    return 'UNKNOWN';
   }
-  // Short low-confidence gibberish (e.g. "— TI" or "FRR" with confidence < 50)
-  if (trimmed.length <= 4 && confidence < 50) {
-    return 'NOISE';
-  }
-  // Single-character or double-character non-alphanumeric noise
-  if (trimmed.length <= 2 && !/[a-zA-Z0-9]/.test(trimmed)) {
-    return 'NOISE';
+  if (trimmed.length <= 3 && confidence < 50) {
+    return 'UNKNOWN';
   }
 
-  // 2. UI Checks (Profile headers, action bars, metadata, comment boxes)
-  const isTopZone = relY < 0.22;
-  const isBottomZone = relY > 0.72;
-
-  if (containsUiOrInteractionCues(lower)) {
-    return 'UI';
+  // 2. Engagement Metrics Check (e.g. "64 722 1.5K 50K", "12.4K likes", "50K Views", "64 replies")
+  if (isEngagementMetric(trimmed)) {
+    return 'ENGAGEMENT_METRIC';
   }
 
-  // Short handles / location tags at the very top of the image
-  if (isTopZone && lineCount <= 2 && isShortProfileHeader(trimmed)) {
-    return 'UI';
+  // 3. Profile Metadata Check (e.g. "@guloona der - 20h", "@username", "name · 2h", "20h ago")
+  if (isProfileMetadata(trimmed, relY, lineCount)) {
+    return 'PROFILE_METADATA';
+  }
+
+  // 4. Platform UI Check (Navigation, buttons, comment chrome)
+  if (isPlatformUi(lower, trimmed, relY)) {
+    return 'PLATFORM_UI';
+  }
+
+  // 5. Link Check
+  if (/https?:\/\/[^\s]+|bit\.ly\/[^\s]+|t\.co\/[^\s]+/i.test(trimmed)) {
+    return 'LINK';
+  }
+
+  // 6. Explicit CTA Check
+  if (isCallToAction(lower)) {
+    return 'CTA';
+  }
+
+  // 7. Hashtag Check
+  const hashtagCount = (trimmed.match(/#[a-zA-Z0-9_]+/g) || []).length;
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (hashtagCount >= 1 && (hashtagCount >= words.length * 0.5 || trimmed.startsWith('#'))) {
+    return 'HASHTAG';
+  }
+
+  // 8. Image-Embedded Text Check (Bracketed alt text or graphic captions)
+  if (/^\[.*\]$/s.test(trimmed) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+    return 'IMAGE_TEXT';
+  }
+
+  // 9. Post Copy Check (Sentences, paragraphs, narrative, questions)
+  if (words.length >= 3 || /[?.!]/.test(trimmed) || lineCount >= 2) {
+    return 'POST_TEXT';
+  }
+
+  return confidence >= 70 ? 'POST_TEXT' : 'UNKNOWN';
+}
+
+function mapRegionTypeToClassification(
+  regionType: OcrRegionType,
+  confidence: number
+): RegionClassification {
+  switch (regionType) {
+    case 'POST_TEXT':
+    case 'CTA':
+      return 'CONTENT';
+    case 'HASHTAG':
+    case 'IMAGE_TEXT':
+    case 'LINK':
+      return 'POSSIBLE_CONTENT';
+    case 'PROFILE_METADATA':
+    case 'PLATFORM_UI':
+    case 'ENGAGEMENT_METRIC':
+      return 'UI';
+    case 'UNKNOWN':
+    default:
+      return confidence < 60 ? 'NOISE' : 'POSSIBLE_CONTENT';
+  }
+}
+
+/**
+ * Detects engagement metric patterns like:
+ * "64 722 1.5K 50K", "1.5K", "50K Views", "64 replies 722 reposts"
+ */
+export function isEngagementMetric(text: string): boolean {
+  const trimmed = text.trim();
+
+  // Sequence of counts: e.g. "64 722 1.5K 50K" or "64 | 722 | 1.5K"
+  const metricSequenceRegex = /^(\d+(\.\d+)?[KkMmBb]?\s*[·|/•-]?\s*){2,}$/;
+  if (metricSequenceRegex.test(trimmed)) {
+    return true;
+  }
+
+  // Single metric with label: e.g. "1.5K likes", "50K Views", "64 replies", "722 reposts", "12 bookmarks"
+  if (
+    /^\d+(\.\d+)?[KkMmBb]?\s*(?:replies|reposts|retweets|likes|views|shares|comments|bookmarks|quotes)$/i.test(
+      trimmed
+    )
+  ) {
+    return true;
+  }
+
+  // Standalone metric token e.g. "1.5K" or "50K" or "1.2M"
+  if (/^\d+(\.\d+)?[KkMmBb]$/.test(trimmed)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Detects profile headers & timestamps:
+ * "@guloona der - 20h", "Aditya Agarwal @aditya_86 · 2h", "20h", "5m"
+ */
+export function isProfileMetadata(text: string, relY: number, lineCount: number): boolean {
+  const trimmed = text.trim();
+
+  // Header handle with timestamp: e.g. "2) ¥% © @guloona der - 20h" or "@guloona · 20h"
+  if (/@\w+.*(?:\d+[hdwmy]|\bago\b)/i.test(trimmed)) {
+    return true;
+  }
+
+  // Handle alone e.g. "@username"
+  if (/^@[a-zA-Z0-9._]{2,30}$/.test(trimmed)) {
+    return true;
+  }
+
+  // Top header zone with handle or short name + timestamp
+  if (relY < 0.25 && lineCount <= 2) {
+    if (/(?:^|\s)@?[a-zA-Z0-9._]{3,30}\s*[-·•]\s*\d+\s*(?:h|m|s|d|w|mo|y|hours?|days?|ago)\b/i.test(trimmed)) {
+      return true;
+    }
+    // Short author name alone at the top (1-3 words, no sentence punctuation)
+    const words = trimmed.split(/\s+/).filter(Boolean);
+    if (words.length <= 3 && !/[?.!]/.test(trimmed) && !trimmed.includes('#') && relY < 0.15) {
+      if (/(?:verified|follow|following|subscribe)/i.test(trimmed) || /^[a-zA-Z0-9._\s-]+$/.test(trimmed)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Detects platform chrome UI (buttons, navigation, comment input prompts).
+ */
+export function isPlatformUi(lower: string, rawText: string, relY: number): boolean {
+  if (
+    /view\s+all(?:\s+\d+)?\s+comments/i.test(lower) ||
+    /add\s+a\s+comment/i.test(lower) ||
+    /liked\s+by/i.test(lower) ||
+    /and\s+\d+\s+others/i.test(lower) ||
+    /see\s+translation/i.test(lower) ||
+    /translate\s+post/i.test(lower) ||
+    /original\s+audio/i.test(lower) ||
+    /post\s+your\s+reply/i.test(lower) ||
+    /show\s+this\s+thread/i.test(lower)
+  ) {
+    return true;
+  }
+
+  const uiPhrases = [
+    'liked by',
+    'and others',
+    'add a comment',
+    'view all comments',
+    'view comments',
+    'see translation',
+    'translate post',
+    'original audio',
+    'post your reply',
+    'show this thread',
+    'follow',
+    'following',
+    'ai content',
+    'explore',
+    'notifications',
+    'messages',
+    'bookmarks',
+    'verified orgs',
+    'subscribe to premium',
+    'who to follow',
+  ];
+
+  if (uiPhrases.some((phrase) => lower.includes(phrase))) {
+    return true;
+  }
+
+  // Standalone single action verbs
+  const trimmed = rawText.trim();
+  if (/^(?:post|share|reply|send|comment|retweet|repost|like|bookmark)$/i.test(trimmed)) {
+    return true;
   }
 
   // Bottom action bar items or standalone timestamps
-  if (isBottomZone && isBottomChromeMetadata(trimmed)) {
-    return 'UI';
+  if (relY > 0.75) {
+    if (/^\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(trimmed)) return true;
+    if (/^\d+\s*(?:h|m|s|d|w|mo|y|hours?|days?|minutes?)\s*ago/i.test(trimmed)) return true;
   }
 
-  // 3. POSSIBLE_CONTENT Checks (Hashtags, bracketed descriptions/alt text)
-  const isHashtagDense = (trimmed.match(/#/g) || []).length >= 1;
-  const isBracketedAltText = (/^\[.*\]$/s.test(trimmed) || (trimmed.startsWith('[') && trimmed.endsWith(']')));
+  return false;
+}
 
-  if (isHashtagDense || isBracketedAltText) {
-    return 'POSSIBLE_CONTENT';
-  }
+/**
+ * Detects explicit Calls to Action.
+ */
+export function isCallToAction(lower: string): boolean {
+  const ctaPhrases = [
+    'link in bio',
+    'click the link',
+    'tap the link',
+    'comment below',
+    'save this post',
+    'share this with',
+    'follow for more',
+    'dm me',
+    'swipe left',
+    'drop a comment',
+    'tag someone who',
+    'leave a follow',
+    'like and subscribe',
+    'sign up today',
+  ];
 
-  // 4. CONTENT Checks (Multi-word sentences, questions, narrative paragraphs)
-  const words = trimmed.split(/\s+/).filter(Boolean);
-  if (words.length >= 4 || /[?.!]/.test(trimmed) || lineCount >= 2) {
-    return 'CONTENT';
-  }
-
-  // Fallback for short ambiguous lines
-  return confidence >= 70 ? 'POSSIBLE_CONTENT' : 'NOISE';
+  return ctaPhrases.some((phrase) => lower.includes(phrase));
 }
 
 function shouldGroupLines(
@@ -193,56 +375,24 @@ function computeClusterBoundingBox(
   return { x0: minX, y0: minY, x1: maxX, y1: maxY };
 }
 
-function containsUiOrInteractionCues(lower: string): boolean {
-  const uiCues = [
-    'liked by',
-    'and others',
-    'add a comment',
-    'view all comments',
-    'view comments',
-    'see translation',
-    'original audio',
-    'follow',
-    'following',
-    'ai content',
-  ];
-
-  return uiCues.some((cue) => lower.includes(cue));
-}
-
-function isShortProfileHeader(text: string): boolean {
-  const words = text.split(/\s+/).filter(Boolean);
-  // Matches e.g. "a._n._v._a._y" or "Kothrud, Pune"
-  if (words.length <= 3 && !/[?.!]/.test(text) && !text.includes('#')) {
-    return true;
-  }
-  return false;
-}
-
-function isBottomChromeMetadata(text: string): boolean {
-  // Matches dates (e.g. "24 June", "2 hours ago"), single action words
-  if (/^\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(text)) return true;
-  if (/^\d+\s*(?:h|m|s|d|w|mo|y|hours?|days?|minutes?)\s*ago/i.test(text)) return true;
-  if (/^(?:post|share|reply|send|comment)$/i.test(text.trim())) return true;
-  return false;
-}
-
 function computeContentSignificance(
   text: string,
   conf: number,
   lineCount: number,
-  classification: RegionClassification
+  regionType: OcrRegionType
 ): number {
-  if (classification === 'NOISE') return 5;
-  if (classification === 'UI') return 10;
+  if (regionType === 'UNKNOWN') return 5;
+  if (regionType === 'PLATFORM_UI' || regionType === 'ENGAGEMENT_METRIC' || regionType === 'PROFILE_METADATA') {
+    return 10;
+  }
 
   let score = conf * 0.4;
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   if (wordCount >= 5) score += 30;
   if (lineCount >= 2) score += 20;
   if (/[?.!]$/.test(text.trim())) score += 15;
-  if (text.includes('#')) score += 10;
-  if (classification === 'CONTENT') score += 20;
+  if (regionType === 'HASHTAG') score += 10;
+  if (regionType === 'POST_TEXT' || regionType === 'CTA') score += 25;
 
   return Math.min(100, Math.round(score));
 }

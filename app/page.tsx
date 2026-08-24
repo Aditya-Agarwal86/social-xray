@@ -47,6 +47,19 @@ import { GoalType, UploadedFileState } from '@/types/analysis';
 import { SocialXRayAnalysisResult, NormalizedApiError } from '@/lib/analysis/types';
 import { extractImageText } from '@/lib/extraction/ocr';
 
+function fileToBase64(file: File | Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
 // Built-in realistic weak post for 1-click instant demo
 const DEMO_POST = {
   title: 'AI Product Launch Announcement',
@@ -175,9 +188,15 @@ export default function Home() {
     setExtractedText(text);
     setErrorMessage(null);
     setErrorDetails(null);
-    setExtractionNotification(
-      `Extracted ${fileState.source.toUpperCase()} content (${text.split(/\s+/).filter(Boolean).length} words). You can review and refine the text below.`
-    );
+    if (fileState.inventory?.captionStatus === 'NOT_DETECTED') {
+      setExtractionNotification(
+        'Visual asset loaded. No post caption detected in screenshot. You can analyze visual stopping power directly or enter a draft caption below.'
+      );
+    } else {
+      setExtractionNotification(
+        `Extracted ${fileState.source.toUpperCase()} content (${text.split(/\s+/).filter(Boolean).length} words). You can review and refine the text below.`
+      );
+    }
   };
 
   const handleCropAndExtract = async (croppedBlob: Blob, croppedFileName: string) => {
@@ -201,6 +220,7 @@ export default function Home() {
           confidenceLabel: result.confidenceLabel,
           warnings: result.processingWarnings,
           telemetry: result.socialContent?.telemetry,
+          inventory: result.inventory,
         });
       }
     } catch (err: any) {
@@ -231,6 +251,7 @@ export default function Home() {
         confidenceLabel: result.confidenceLabel,
         warnings: result.processingWarnings,
         telemetry: result.socialContent?.telemetry,
+        inventory: result.inventory,
       });
     } catch (err: any) {
       setErrorMessage(`Re-run OCR failed: ${err?.message || 'Unknown recognition error'}`);
@@ -295,7 +316,14 @@ export default function Home() {
   };
 
   const executeAnalysisWithText = async (textToAnalyze: string, goal: GoalType) => {
-    if (!textToAnalyze.trim()) {
+    const hasText = Boolean(textToAnalyze && textToAnalyze.trim());
+    const isImage = Boolean(
+      uploadedFile?.file &&
+      (uploadedFile.type.startsWith('image/') || uploadedFile.source === 'image')
+    );
+    const hasVisualInventory = Boolean(uploadedFile?.inventory?.hasVisualMedia);
+
+    if (!hasText && !isImage && !hasVisualInventory) {
       setErrorMessage('Cannot proceed with empty text. Please upload a file or enter copy.');
       return;
     }
@@ -307,7 +335,7 @@ export default function Home() {
     workbenchRef.current?.scrollIntoView({ behavior: 'smooth' });
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     try {
       const headers: Record<string, string> = {
@@ -318,6 +346,17 @@ export default function Home() {
         headers['x-gemini-key'] = clientApiKey;
       }
 
+      let imageData: { mimeType: string; base64: string } | undefined;
+      if (isImage && uploadedFile?.file) {
+        try {
+          const b64 = await fileToBase64(uploadedFile.file);
+          const mimeType = uploadedFile.file.type || 'image/png';
+          imageData = { mimeType, base64: b64 };
+        } catch (e) {
+          console.warn('Could not read image as base64 for multimodal analysis:', e);
+        }
+      }
+
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers,
@@ -325,6 +364,8 @@ export default function Home() {
         body: JSON.stringify({
           content: textToAnalyze.trim(),
           targetGoal: goal,
+          inventory: uploadedFile?.inventory,
+          imageData,
         }),
       });
 
@@ -357,11 +398,11 @@ export default function Home() {
           category: 'TIMEOUT',
           status: 408,
           title: 'Request timed out',
-          message: 'The AI diagnostic analysis timed out after 45 seconds. Please verify your connection and try again.',
+          message: 'The AI diagnostic analysis timed out after 60 seconds. Please verify your connection and try again.',
           retryable: true,
           requiresKeyConfig: false,
         });
-        setErrorMessage('The AI diagnostic analysis timed out after 45 seconds.');
+        setErrorMessage('The AI diagnostic analysis timed out.');
       } else {
         setErrorMessage(err.message || 'An unexpected network error occurred.');
       }
@@ -878,6 +919,7 @@ export default function Home() {
                   isAnalyzing={false}
                   sourceType={uploadedFile?.source || 'text'}
                   telemetry={uploadedFile?.telemetry}
+                  inventory={uploadedFile?.inventory}
                   warnings={uploadedFile?.warnings}
                   confidence={uploadedFile?.confidence}
                 />

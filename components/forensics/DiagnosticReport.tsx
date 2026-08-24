@@ -15,6 +15,12 @@ import {
   FileText,
   RefreshCw,
   Layers,
+  MessageSquare,
+  Repeat2,
+  Heart,
+  Eye,
+  Bookmark,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { SocialXRayAnalysisResult } from '@/lib/analysis/types';
 import { UploadedFileState } from '@/types/analysis';
@@ -68,6 +74,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+    downloadAnchor.remove();
 
     setDownloadSuccess(true);
     setTimeout(() => setDownloadSuccess(false), 2000);
@@ -77,8 +84,14 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
     window.print();
   };
 
-  const wordCount = originalText.split(/\s+/).filter(Boolean).length;
+  const wordCount = originalText ? originalText.split(/\s+/).filter(Boolean).length : 0;
   const readingTimeSeconds = Math.max(5, Math.ceil((wordCount / 200) * 60));
+
+  const metrics = report.observedMetrics || report.contentInventory?.engagementMetrics;
+  const hasObservedMetrics = Boolean(
+    metrics &&
+    (metrics.replies || metrics.reposts || metrics.likes || metrics.views || metrics.saves)
+  );
 
   return (
     <div className="space-y-10 animate-fade-in print:space-y-6">
@@ -106,6 +119,11 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
                 {uploadedFile.source === 'demo' ? 'DEMO POST' : uploadedFile.source.toUpperCase()}
               </Badge>
             )}
+            {report.contentInventory?.captionStatus === 'NOT_DETECTED' && (
+              <Badge variant="cyan" size="sm" className="font-mono">
+                VISUAL POST
+              </Badge>
+            )}
           </div>
 
           <h1 className="text-xl sm:text-2xl font-mono font-bold text-white tracking-tight">
@@ -127,13 +145,17 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
             )}
             <span className="flex items-center gap-1">
               <AlignLeft className="w-3.5 h-3.5 text-carbon-500" />
-              {wordCount} words
+              {wordCount > 0 ? `${wordCount} words` : 'Visual-only post'}
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-carbon-500" />
-              ~{readingTimeSeconds}s read time
-            </span>
+            {wordCount > 0 && (
+              <>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-carbon-500" />
+                  ~{readingTimeSeconds}s read time
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -185,6 +207,60 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
       </div>
 
+      {/* Observed Performance Baseline Card (if available from screenshot) */}
+      {hasObservedMetrics && metrics && (
+        <div className="p-4 bg-carbon-900 border border-cyan-900/50 rounded-2xl font-mono text-xs space-y-3 shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-cyan-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <Eye className="w-4 h-4 text-cyan-400" /> OBSERVED SCREENSHOT PERFORMANCE (BASELINE)
+            </span>
+            <span className="text-[10px] text-carbon-400">Directly extracted from interface counters</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            {metrics.replies !== null && (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+                <MessageSquare className="w-4 h-4 text-carbon-400" />
+                <div>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Replies</span>
+                  <span className="font-bold text-white text-base">{metrics.replies}</span>
+                </div>
+              </div>
+            )}
+
+            {metrics.reposts !== null && (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+                <Repeat2 className="w-4 h-4 text-emerald-400" />
+                <div>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Reposts</span>
+                  <span className="font-bold text-white text-base">{metrics.reposts}</span>
+                </div>
+              </div>
+            )}
+
+            {metrics.likes !== null && (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+                <Heart className="w-4 h-4 text-rose-400" />
+                <div>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Likes</span>
+                  <span className="font-bold text-white text-base">{metrics.likes}</span>
+                </div>
+              </div>
+            )}
+
+            {metrics.views !== null && (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-carbon-950/80 border border-carbon-800">
+                <Eye className="w-4 h-4 text-cyan-400" />
+                <div>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Views</span>
+                  <span className="font-bold text-white text-base">{metrics.views}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 2. Overall X-Ray Score & Signal Cards */}
       <MetricsGrid
         overallScore={report.overallScore}
@@ -200,7 +276,10 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       />
 
       {/* 3. Engagement Friction Map */}
-      <FrictionMap frictionPoints={report.frictionPoints} fullPostText={originalText} />
+      <FrictionMap
+        frictionPoints={report.frictionPoints}
+        fullPostText={originalText || report.repair.original || '[Visual-only post]'}
+      />
 
       {/* 4. Post Autopsy */}
       <PostAutopsy autopsy={report.postAutopsy} />

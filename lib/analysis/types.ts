@@ -1,46 +1,60 @@
+import type {
+  ContentInventory,
+  ObservedEngagementMetrics,
+  ProfileMetadata,
+  CaptionStatus,
+} from '@/lib/extraction/types';
+
+export type {
+  ContentInventory,
+  ObservedEngagementMetrics,
+  ProfileMetadata,
+  CaptionStatus,
+};
+
 export type DiagnosticSeverity = 'critical' | 'moderate' | 'minor' | 'optimal';
 
 export interface DimensionDiagnosis {
   score: number; // 0 - 100 explainable rating
   severity: DiagnosticSeverity;
-  problem: string; // Specific textual bottleneck identified
+  problem: string; // Specific textual or visual bottleneck identified
   explanation: string; // Grounded content-based explanation
 }
 
 export interface FrictionPointItem {
-  category: string; // e.g., "Hook Deceleration", "Cognitive Drag", "Tone Barrier", "Weak Payoff"
+  category: string; // e.g., "Hook Deceleration", "Cognitive Drag", "Tone Barrier", "Missing Call-to-Action", "Inert Question"
   severity: DiagnosticSeverity;
-  text: string; // Concrete problematic excerpt from the post
+  text: string; // Concrete problematic excerpt or visual description
   explanation: string; // Why readers bounce or disengage at this exact point
-  repair: string; // Surgical replacement text
+  repair: string; // Surgical replacement text or proposed visual caption
 }
 
 export interface PostAutopsyData {
   causeOfDeath: string; // Core reason for attention loss
   primaryFailure: string; // Primary structural/psychological issue
   secondaryFailure: string; // Secondary friction point
-  hiddenStrength: string; // Element that worked well
+  hiddenStrength: string; // Element that worked well (e.g. visual composition, stopping power)
   treatment: string; // Concrete clinical remediation advice
 }
 
 export interface ConversationDNAData {
   likelyAudienceReaction: string; // Unspoken reader internal reaction
-  engagementType: string; // e.g. "Passive Nod", "Debate Catalyst", "Silent Bookmark"
+  engagementType: string; // e.g. "Passive Nod", "Debate Catalyst", "Silent Bookmark", "Passive Like"
   conversationPotential: string; // Content-based estimate of dialogue probability
-  betterQuestion: string; // High-conversion replacement question
+  betterQuestion: string; // High-conversion replacement question grounded in content
   followUpQuestion: string; // Deep-dive question to sustain comment threads
 }
 
 export interface RepairData {
-  original: string; // High-friction original post
-  improved: string; // Repaired high-retention version
+  original: string; // High-friction original post (or "[No caption detected in visual asset]")
+  improved: string; // Repaired high-retention version grounded in subject
   explanation: string; // Grounded rationale explaining why the rewrite reduces friction
 }
 
 export interface PlatformVariantsData {
   linkedin: string; // Professional storytelling with line-breaks and executive framing
-  instagram: string; // Carousel caption with strong visual hook and swipe indicators
-  tiktok: string; // Spoken script with audio hooks and on-screen visual directions
+  instagram: string; // Carousel/photo caption with strong visual hook and engagement prompt
+  tiktok: string; // Spoken script with visual cue directions
 }
 
 export interface GoalRecommendationData {
@@ -66,15 +80,22 @@ export interface SocialXRayAnalysisResult {
   repair: RepairData;
   platformVariants: PlatformVariantsData;
   goalRecommendation: GoalRecommendationData;
+  contentInventory?: ContentInventory;
+  observedMetrics?: ObservedEngagementMetrics;
 }
 
 export interface AnalysisRequestPayload {
-  content: string;
+  content?: string;
   targetGoal?: string;
   userMetrics?: {
     platform?: string;
     targetAudience?: string;
     contentType?: string;
+  };
+  inventory?: ContentInventory;
+  imageData?: {
+    mimeType: string;
+    base64: string;
   };
 }
 
@@ -97,4 +118,3 @@ export interface NormalizedApiError {
   retryable: boolean;
   requiresKeyConfig: boolean;
 }
-

@@ -4,6 +4,7 @@ import {
   NormalizedOcrResult,
   OcrLineData,
   OcrWordData,
+  ContentInventory,
 } from './types';
 import { preprocessImageForOcr } from './preprocessing';
 import { segmentTextRegions } from './regions';
@@ -160,22 +161,14 @@ export async function extractImageText(
       }
     }
 
-    if (parsedLines.length === 0) {
-      throw new ExtractionError(
-        'Forensic OCR could not detect any readable text in this image.',
-        'OCR_NO_TEXT',
-        'Please ensure the screenshot contains clear typography.'
-      );
-    }
-
     onProgress?.(94, 'Extracting social post caption & hashtags...', 'social_extraction');
 
     // 4. Perform Layout Segmentation & Social Content Filtering
     const regions = segmentTextRegions(parsedLines, dimensions);
-    const socialExtraction = extractSocialPostContent(regions, parsedLines);
+    const socialExtraction = extractSocialPostContent(regions, parsedLines, true);
 
-    const finalExtractedText = enableSocialScreenshotMode && socialExtraction.cleanedFullText
-      ? socialExtraction.cleanedFullText
+    const finalExtractedText = enableSocialScreenshotMode
+      ? (socialExtraction.cleanedFullText || '')
       : parsedLines.map((l) => l.text).join('\n');
 
     const words = finalExtractedText.split(/\s+/).filter(Boolean).length;
@@ -184,7 +177,9 @@ export async function extractImageText(
 
     // 5. Build defensible confidence label and actionable warnings
     const confidenceLabel =
-      overallConfidence >= 80
+      socialExtraction.inventory.captionStatus === 'NOT_DETECTED'
+        ? 'Visual content detected (No written caption)'
+        : overallConfidence >= 80
         ? `Text detection confidence: ${overallConfidence}% (Optimal)`
         : overallConfidence >= 60
         ? `Text detection confidence: ${overallConfidence}% (Moderate)`
@@ -192,13 +187,17 @@ export async function extractImageText(
 
     const processingWarnings: string[] = [];
 
-    if (overallConfidence < 70) {
+    if (socialExtraction.inventory.captionStatus === 'NOT_DETECTED') {
+      processingWarnings.push(
+        'No post caption was detected in this screenshot. The AI engine will analyze visual stopping power and layout directly.'
+      );
+    } else if (overallConfidence < 70) {
       processingWarnings.push(
         `Low detection confidence (${overallConfidence}%). Review recommended — this screenshot contains interface text or low-contrast typography.`
       );
     }
 
-    if (socialExtraction.hasUncertainClassifications) {
+    if (socialExtraction.hasUncertainClassifications && socialExtraction.inventory.captionStatus !== 'NOT_DETECTED') {
       processingWarnings.push(
         'Some text in this screenshot could not be confidently classified. Please review and refine the extracted draft below.'
       );
@@ -206,7 +205,7 @@ export async function extractImageText(
 
     if (socialExtraction.filteredNoiseCount > 0) {
       processingWarnings.push(
-        `Filtered ${socialExtraction.filteredNoiseCount} peripheral UI items (profile, buttons, or navigation).`
+        `Filtered ${socialExtraction.filteredNoiseCount} peripheral UI / metric items (profile, buttons, or counters).`
       );
     }
 
@@ -225,8 +224,9 @@ export async function extractImageText(
       readingTimeSeconds,
       lines: parsedLines,
       socialContent: socialExtraction,
+      inventory: socialExtraction.inventory,
       processingWarnings,
-      hasText: words > 0,
+      hasText: words > 0 || socialExtraction.inventory.captionStatus !== 'NOT_DETECTED',
     };
   } catch (err: any) {
     if (err instanceof ExtractionError) {

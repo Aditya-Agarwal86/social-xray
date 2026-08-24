@@ -21,6 +21,18 @@ export interface OcrLineData {
 }
 
 export type RegionClassification = 'CONTENT' | 'POSSIBLE_CONTENT' | 'UI' | 'NOISE';
+
+export type OcrRegionType =
+  | 'POST_TEXT'          // Genuine author post copy / paragraphs
+  | 'IMAGE_TEXT'         // Text embedded inside meme/graphic/infographic
+  | 'PROFILE_METADATA'   // Handles, display names, timestamps (@username, 20h)
+  | 'PLATFORM_UI'        // Buttons, tabs, follow chips, interface text
+  | 'ENGAGEMENT_METRIC'  // Like/comment/share/view counters (64, 722, 1.5K, 50K)
+  | 'HASHTAG'            // #tags
+  | 'CTA'                // Explicit call to action phrases
+  | 'LINK'               // URLs or link chips
+  | 'UNKNOWN';           // Low-confidence or unclassified fragments
+
 export type ExtractionQuality = 'HIGH' | 'MEDIUM' | 'LOW';
 
 export interface TextRegion {
@@ -29,8 +41,38 @@ export interface TextRegion {
   confidence: number;
   bbox: BoundingBox;
   classification: RegionClassification;
+  regionType: OcrRegionType;
   lines: OcrLineData[];
   normalizedScore: number;
+}
+
+export interface ObservedEngagementMetrics {
+  replies: number | string | null;
+  reposts: number | string | null;
+  likes: number | string | null;
+  views: number | string | null;
+  saves: number | string | null;
+}
+
+export interface ProfileMetadata {
+  username: string | null;
+  displayName: string | null;
+  timestamp: string | null;
+}
+
+export type CaptionStatus = 'DETECTED' | 'UNCERTAIN' | 'NOT_DETECTED';
+
+export interface ContentInventory {
+  hasVisualMedia: boolean;
+  visualSummary?: string;
+  caption: string | null;
+  captionStatus: CaptionStatus;
+  hashtags: string[];
+  cta: string | null;
+  links: string[];
+  engagementMetrics: ObservedEngagementMetrics;
+  profileMetadata: ProfileMetadata;
+  extractionWarnings: string[];
 }
 
 export interface ExtractionTelemetry {
@@ -44,7 +86,7 @@ export interface ExtractionTelemetry {
 }
 
 export interface SocialPostExtractionResult {
-  captionText: string;
+  captionText: string | null;
   hashtags: string[];
   postContextText: string;
   authorHandle?: string;
@@ -55,6 +97,7 @@ export interface SocialPostExtractionResult {
   uncertainRegions: TextRegion[];
   filteredRegions: TextRegion[];
   telemetry: ExtractionTelemetry;
+  inventory: ContentInventory;
   classificationNote?: string;
 }
 
@@ -77,6 +120,7 @@ export interface NormalizedExtractionResult {
   pages: PageExtractionData[];
   extractionWarnings: string[];
   hasText: boolean;
+  inventory?: ContentInventory;
 }
 
 export interface NormalizedOcrResult {
@@ -92,6 +136,7 @@ export interface NormalizedOcrResult {
   readingTimeSeconds: number;
   lines: OcrLineData[];
   socialContent?: SocialPostExtractionResult;
+  inventory?: ContentInventory;
   processingWarnings: string[];
   hasText: boolean;
 }

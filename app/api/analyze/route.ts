@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   runGeminiForensicAnalysis,
-  MAX_CONTENT_LENGTH,
   classifyGeminiError,
   ForensicAnalysisError,
 } from '@/lib/analysis';
@@ -31,7 +30,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { content, targetGoal = 'conversation', userMetrics } = body || {};
+    const {
+      content,
+      targetGoal = 'conversation',
+      userMetrics,
+      inventory,
+      imageData,
+    } = body || {};
 
     const clientKey = req.headers.get('x-gemini-key')?.trim();
     const apiKey = clientKey || process.env.GEMINI_API_KEY;
@@ -42,6 +47,8 @@ export async function POST(req: NextRequest) {
         content,
         targetGoal,
         userMetrics,
+        inventory,
+        imageData,
       },
       {
         apiKey: apiKey || undefined,

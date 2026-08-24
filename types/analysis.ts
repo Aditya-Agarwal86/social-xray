@@ -1,4 +1,5 @@
 export * from '@/lib/analysis/types';
+import type { ContentInventory, ObservedEngagementMetrics } from '@/lib/analysis/types';
 
 export type GoalType =
   | 'conversation'
@@ -123,6 +124,8 @@ export interface AnalysisResult {
   repairDiff: RepairDiffItem[];
   platformVariants: PlatformVariants;
   goalAdaptiveInsights: GoalAdaptiveInsights;
+  contentInventory?: ContentInventory;
+  observedMetrics?: ObservedEngagementMetrics;
 }
 
 export interface ExtractionProgress {
@@ -154,4 +157,9 @@ export interface UploadedFileState {
   confidenceLabel?: string;
   warnings?: string[];
   telemetry?: any;
+  inventory?: ContentInventory;
+  imageData?: {
+    mimeType: string;
+    base64: string;
+  };
 }

@@ -24,7 +24,17 @@ import {
 import {
   buildGeminiSystemPrompt,
   buildGeminiUserPrompt,
+  ANALYSIS_RESPONSE_JSON_SCHEMA,
 } from '../lib/analysis/prompt.ts';
+import {
+  segmentTextRegions,
+  classifyRegionType,
+} from '../lib/extraction/regions.ts';
+import {
+  extractSocialPostContent,
+  parseEngagementMetrics,
+  parseProfileMetadata,
+} from '../lib/extraction/socialContent.ts';
 
 console.log('🧪 RUNNING SOCIAL X-RAY TEST SUITE (VALIDATION, PDF, OCR & AI SCHEMAS)...\n');
 
@@ -309,9 +319,6 @@ test('constructs system and user prompts with non-predictive guardrails', () => 
 });
 
 // 14. Layout Segmentation Test
-import { segmentTextRegions } from '../lib/extraction/regions.ts';
-import { extractSocialPostContent } from '../lib/extraction/socialContent.ts';
-
 test('segments lines into spatial text regions with layout hierarchy', () => {
   const mockLines = [
     { text: 'a._n._v._a._y', confidence: 85, bbox: { x0: 450, y0: 60, x1: 580, y1: 85 } },
@@ -470,6 +477,92 @@ test('correctly normalizes timeout/abort into TIMEOUT', () => {
   assert.strictEqual(classified.status, 408);
   assert.strictEqual(classified.title, 'Request timed out');
   assert.strictEqual(classified.retryable, true);
+});
+
+// 24. X/Twitter Bouquet Image-Only Post Regression Test
+test('correctly isolates image-only post without corrupting caption or dumping metrics into copy', () => {
+  const bouquetScreenshotLines = [
+    { text: '2) ¥% © @guloona der - 20h', confidence: 60, bbox: { x0: 20, y0: 50, x1: 300, y1: 80 } },
+    { text: '64 722 1.5K 50K', confidence: 85, bbox: { x0: 20, y0: 850, x1: 400, y1: 880 } },
+  ];
+
+  const regions = segmentTextRegions(bouquetScreenshotLines);
+  const result = extractSocialPostContent(regions, bouquetScreenshotLines, true);
+
+  // Verifies NO text dumped into caption
+  assert.strictEqual(result.captionText, null);
+  assert.strictEqual(result.cleanedFullText, '');
+  assert.strictEqual(result.inventory.hasVisualMedia, true);
+  assert.strictEqual(result.inventory.captionStatus, 'NOT_DETECTED');
+
+  // Verifies metadata parsed cleanly into inventory
+  assert.strictEqual(result.inventory.profileMetadata.username, 'guloona');
+  assert.strictEqual(result.inventory.profileMetadata.timestamp, '20h');
+
+  // Verifies metrics parsed into observed metrics
+  assert.strictEqual(result.inventory.engagementMetrics.replies, 64);
+  assert.strictEqual(result.inventory.engagementMetrics.reposts, 722);
+  assert.strictEqual(result.inventory.engagementMetrics.likes, '1.5K');
+  assert.strictEqual(result.inventory.engagementMetrics.views, '50K');
+});
+
+// 25. Engagement Metric Parser Unit Test
+test('parses labeled engagement metrics correctly', () => {
+  const labeled = '64 replies 722 reposts 1.5K likes 50K views';
+  const metrics = parseEngagementMetrics(labeled);
+  assert.strictEqual(metrics.replies, 64);
+  assert.strictEqual(metrics.reposts, 722);
+  assert.strictEqual(metrics.likes, '1.5K');
+  assert.strictEqual(metrics.views, '50K');
+});
+
+// 26. Profile Metadata Parser Unit Test
+test('extracts username and timestamp from noisy OCR header line', () => {
+  const meta = parseProfileMetadata('2) ¥% © @guloona der - 20h');
+  assert.strictEqual(meta.username, 'guloona');
+  assert.strictEqual(meta.timestamp, '20h');
+});
+
+// 27. 9-Way Region Type Classifier Test
+test('classifies diverse social regions accurately', () => {
+  assert.strictEqual(classifyRegionType('64 722 1.5K 50K', 90, 0.85, 1), 'ENGAGEMENT_METRIC');
+  assert.strictEqual(classifyRegionType('@guloona · 20h', 85, 0.05, 1), 'PROFILE_METADATA');
+  assert.strictEqual(classifyRegionType('View all 14 comments', 90, 0.8, 1), 'PLATFORM_UI');
+  assert.strictEqual(classifyRegionType('Click the link in bio to order now', 95, 0.5, 1), 'CTA');
+  assert.strictEqual(classifyRegionType('#flowers #bouquets #giftideas', 92, 0.6, 1), 'HASHTAG');
+  assert.strictEqual(classifyRegionType('Which bouquet would you choose for your best friend?', 95, 0.4, 1), 'POST_TEXT');
+});
+
+// 28. Grounded Image-Only Autopsy Prompt Generation Test
+test('generates grounded Content Inventory prompt for image-only bouquet post without hallucinating business SaaS', () => {
+  const inventory = {
+    hasVisualMedia: true,
+    caption: null,
+    captionStatus: 'NOT_DETECTED' as const,
+    hashtags: [],
+    cta: null,
+    links: [],
+    engagementMetrics: {
+      replies: 64,
+      reposts: 722,
+      likes: '1.5K',
+      views: '50K',
+      saves: null,
+    },
+    profileMetadata: {
+      username: 'guloona',
+      displayName: null,
+      timestamp: '20h',
+    },
+    extractionWarnings: ['No written post caption was detected.'],
+  };
+
+  const userPrompt = buildGeminiUserPrompt('', 'clicks', inventory);
+  assert.ok(userPrompt.includes('CONTENT INVENTORY (VERIFIED GROUND TRUTH)'));
+  assert.ok(userPrompt.includes('Visual Content: DETECTED'));
+  assert.ok(userPrompt.includes('NOT DETECTED (Visual-only post)'));
+  assert.ok(userPrompt.includes('Replies: 64 | Reposts: 722 | Likes: 1.5K | Views: 50K'));
+  assert.ok(userPrompt.includes('@guloona (20h)'));
 });
 
 console.log(`\n📊 RESULTS: ${passed}/${total} test specifications passed successfully.\n`);

@@ -19,7 +19,6 @@ import {
 export { classifyGeminiError, STABLE_GEMINI_MODEL };
 
 export const MAX_CONTENT_LENGTH = 50000; // 50k characters safe request size cap
-export const MIN_CONTENT_WORDS = 3;
 
 export interface GeminiAnalysisOptions {
   apiKey?: string;
@@ -42,27 +41,31 @@ export class ForensicAnalysisError extends Error {
 
 /**
  * Executes forensic analysis using Google Gemini gemini-3.5-flash
- * with exponential backoff retries for transient service errors.
+ * with multimodal visual asset support and Content Inventory grounding.
  */
 export async function runGeminiForensicAnalysis(
   payload: AnalysisRequestPayload,
   options: GeminiAnalysisOptions = {}
 ): Promise<SocialXRayAnalysisResult> {
-  const { content, targetGoal = 'conversation', userMetrics } = payload;
+  const { content, targetGoal = 'conversation', userMetrics, inventory, imageData } = payload;
+
+  const hasText = Boolean(content && typeof content === 'string' && content.trim().length > 0);
+  const hasImage = Boolean(imageData?.base64 && imageData?.mimeType);
+  const hasVisualInventory = Boolean(inventory?.hasVisualMedia);
 
   // 1. Content validation
-  if (!content || typeof content !== 'string' || !content.trim()) {
+  if (!hasText && !hasImage && !hasVisualInventory) {
     throw new ForensicAnalysisError({
       category: 'INVALID_REQUEST',
       status: 400,
       title: 'Invalid request',
-      message: 'The AI analysis request was rejected. Content cannot be empty.',
+      message: 'The AI analysis request was rejected. Please provide post text or upload an image/document.',
       retryable: false,
       requiresKeyConfig: false,
     });
   }
 
-  const trimmedContent = content.trim();
+  const trimmedContent = (content || '').trim();
 
   if (trimmedContent.length > MAX_CONTENT_LENGTH) {
     throw new ForensicAnalysisError({
@@ -75,20 +78,7 @@ export async function runGeminiForensicAnalysis(
     });
   }
 
-  const wordCount = trimmedContent.split(/\s+/).filter(Boolean).length;
-  if (wordCount < MIN_CONTENT_WORDS) {
-    throw new ForensicAnalysisError({
-      category: 'INVALID_REQUEST',
-      status: 400,
-      title: 'Invalid request',
-      message: 'The AI analysis request was rejected. Please provide at least 1-2 complete sentences for forensic mapping.',
-      retryable: false,
-      requiresKeyConfig: false,
-    });
-  }
-
   // 2. API Key Resolution (Server Env > Option override)
-  // NEVER exposed to client-side code
   const apiKey = options.apiKey || process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -110,18 +100,30 @@ export async function runGeminiForensicAnalysis(
   const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = buildGeminiSystemPrompt(targetGoal);
-  const userPrompt = buildGeminiUserPrompt(trimmedContent, targetGoal, userMetrics);
+  const userPrompt = buildGeminiUserPrompt(trimmedContent, targetGoal, inventory, userMetrics);
+
+  // 5. Construct multimodal payload
+  const contentsPayload: any[] = [];
+  if (hasImage && imageData) {
+    contentsPayload.push({
+      inlineData: {
+        mimeType: imageData.mimeType,
+        data: imageData.base64,
+      },
+    });
+  }
+  contentsPayload.push(userPrompt);
 
   let responseText = '';
   let lastClassifiedError: NormalizedApiError | null = null;
 
-  // 5. Execution with Exponential Backoff Retry Waterfall
+  // 6. Execution with Exponential Backoff Retry Waterfall
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const startTime = Date.now();
     try {
       const response = await ai.models.generateContent({
         model,
-        contents: userPrompt,
+        contents: contentsPayload,
         config: {
           systemInstruction,
           responseMimeType: 'application/json',
@@ -134,7 +136,7 @@ export async function runGeminiForensicAnalysis(
       responseText = response.text || '';
 
       console.log(
-        `[Social X-Ray] Gemini API request succeeded with model "${model}" in ${durationMs}ms (attempt ${attempt}/${maxRetries}), response length: ${responseText.length} chars`
+        `[Social X-Ray] Gemini API request succeeded with model "${model}" in ${durationMs}ms (attempt ${attempt}/${maxRetries}), response length: ${responseText.length} chars (multimodal: ${hasImage})`
       );
 
       if (responseText) {
@@ -145,14 +147,11 @@ export async function runGeminiForensicAnalysis(
       const classified = classifyGeminiError(err);
       lastClassifiedError = classified;
 
-      // Safe server logging without leaking secrets or payload
       console.error(
         `[Social X-Ray] Gemini API failure (attempt ${attempt}/${maxRetries}): status=${classified.status}, category=${classified.category}, duration=${durationMs}ms`
       );
 
-      // If error is transient & retryable (503, 500, 408) and attempts remain:
       if (classified.retryable && attempt < maxRetries) {
-        // Exponential backoff: ~1s on 1st, ~2s on 2nd, ~4s on 3rd with random jitter
         const baseDelay = Math.pow(2, attempt - 1) * 1000;
         const jitter = Math.random() * 400;
         const totalDelay = Math.round(baseDelay + jitter);
@@ -162,7 +161,6 @@ export async function runGeminiForensicAnalysis(
         continue;
       }
 
-      // Non-retryable errors (401, 403, 404, 400) or final attempt exhausted
       throw new ForensicAnalysisError(classified);
     }
   }
@@ -181,7 +179,7 @@ export async function runGeminiForensicAnalysis(
     });
   }
 
-  // 6. Parse JSON safely
+  // 7. Parse JSON safely
   let rawJson: any;
   try {
     rawJson = extractJsonFromResponse(responseText);
@@ -199,9 +197,17 @@ export async function runGeminiForensicAnalysis(
     });
   }
 
-  // 7. Validate and normalize structure according to analysis schema
+  // 8. Validate and normalize structure according to analysis schema
   try {
-    const validatedResult = validateAndNormalizeAnalysis(rawJson, trimmedContent, targetGoal);
+    const fallbackText = trimmedContent || (inventory?.caption ? inventory.caption : '[No written caption detected]');
+    const validatedResult = validateAndNormalizeAnalysis(rawJson, fallbackText, targetGoal);
+    
+    // Attach inventory & observed metrics for frontend display
+    if (inventory) {
+      validatedResult.contentInventory = inventory;
+      validatedResult.observedMetrics = inventory.engagementMetrics;
+    }
+
     console.log('[Social X-Ray] Schema validation & normalization success. Overall score:', validatedResult.overallScore);
     return validatedResult;
   } catch (valErr: any) {
