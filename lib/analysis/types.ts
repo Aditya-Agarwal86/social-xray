@@ -101,9 +101,16 @@ export interface StrengthItem {
   detail: string;
 }
 
+export interface ConfidenceItem {
+  domain: string; // e.g. "Visual composition", "Conversation weakness", "Audience emotional response", "Creator intent"
+  level: 'HIGH' | 'MEDIUM' | 'LOW';
+  reason?: string;
+}
+
 export interface AnalysisConfidence {
   level: 'HIGH' | 'MEDIUM' | 'LOW';
   reason: string;
+  breakdown?: ConfidenceItem[];
 }
 
 export interface SocialXRayAnalysisResult {
@@ -117,7 +124,7 @@ export interface SocialXRayAnalysisResult {
   overallScore: number; // Goal-specific composite score (0 - 100)
   hook: DimensionDiagnosis;
   clarity: DimensionDiagnosis;
-  cognitiveLoad: DimensionDiagnosis;
+  cognitiveLoad: DimensionDiagnosis; // Visual Processing Ease (or Reading Cognitive Load for text)
   emotion: DimensionDiagnosis;
   curiosity: DimensionDiagnosis;
   conversation: DimensionDiagnosis;

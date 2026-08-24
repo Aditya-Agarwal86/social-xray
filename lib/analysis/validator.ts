@@ -328,10 +328,12 @@ export function validateAndNormalizeAnalysis(
     'Content presentation creates cognitive hesitation around the core focus.'
   );
 
+  const isVisualPost = !originalContent || originalContent.includes('[Visual-only') || originalContent.includes('Caption not detected');
+
   const cognitiveLoad = normalizeDimension(
     raw.cognitiveLoad,
-    'Dense formatting or lack of breathing room.',
-    'Visual or textual arrangement creates friction for quick scanning.'
+    isVisualPost ? 'Limited contextual framing for the visual composition.' : 'Dense formatting or lack of breathing room.',
+    isVisualPost ? 'Visually easy to scan, but context is limited.' : 'Visual or textual arrangement creates friction for quick scanning.'
   );
 
   const emotion = normalizeDimension(
@@ -348,20 +350,20 @@ export function validateAndNormalizeAnalysis(
 
   const conversation = normalizeDimension(
     raw.conversation,
-    'Broadcast style rather than dialogue catalyst.',
-    'Fails to invite differing perspectives, questions, or relatable feedback.'
+    'No question, opinion prompt, or explicit response mechanism is visible.',
+    'No question, opinion prompt, or explicit response mechanism is visible.'
   );
 
   const shareability = normalizeDimension(
     raw.shareability,
-    'Low identity affiliation or relational utility.',
-    'Audience is less likely to send this to a peer without a clear relational trigger.'
+    'The visual format appears compatible with peer-to-peer sharing, but lacks a relational catalyst.',
+    'The visual format appears compatible with peer-to-peer sharing.'
   );
 
   const cta = normalizeDimension(
     raw.cta,
-    'Missing or inert call to action.',
-    'Lacks an explicit prompt guiding the audience on what to do next.'
+    'No CTA or destination instruction is visible.',
+    'No CTA or destination instruction is visible.'
   );
 
   const audienceValue = normalizeDimension(
@@ -370,15 +372,22 @@ export function validateAndNormalizeAnalysis(
     'Audience finishes viewing without a concrete emotional, visual, or practical payoff.'
   );
 
-  // Friction Points List
+  // Friction Points List (Never present absence of text as a "problematic text fragment")
   const rawFriction = Array.isArray(raw.frictionPoints) ? raw.frictionPoints : [];
-  const frictionPoints: FrictionPointItem[] = rawFriction.slice(0, 5).map((fp: any, idx: number) => ({
-    category: typeof fp?.category === 'string' && fp.category.trim() ? fp.category.trim() : `Friction Area #${idx + 1}`,
-    severity: ['critical', 'moderate', 'minor', 'optimal'].includes(fp?.severity) ? fp.severity : 'moderate',
-    text: typeof fp?.text === 'string' && fp.text.trim() ? fp.text.trim() : originalContent.slice(0, 80) || '[Visual Content]',
-    explanation: typeof fp?.explanation === 'string' && fp.explanation.trim() ? fp.explanation.trim() : 'Friction causes audience disengagement.',
-    repair: typeof fp?.repair === 'string' && fp.repair.trim() ? fp.repair.trim() : 'Add a specific, grounded audience prompt.',
-  }));
+  const frictionPoints: FrictionPointItem[] = rawFriction.slice(0, 5).map((fp: any, idx: number) => {
+    let text = typeof fp?.text === 'string' && fp.text.trim() ? fp.text.trim() : (isVisualPost ? 'No caption or conversation prompt detected.' : originalContent.slice(0, 80));
+    if (/^\[.*(?:no\s+text|no\s+caption|missing|not\s+detected).*\]$/i.test(text) || text.toLowerCase() === 'no text detected' || text.toLowerCase() === '[no text detected]') {
+      text = 'No caption or conversation prompt detected.';
+    }
+
+    return {
+      category: typeof fp?.category === 'string' && fp.category.trim() ? fp.category.trim() : (isVisualPost ? 'Missing Engagement Element' : `Friction Area #${idx + 1}`),
+      severity: ['critical', 'moderate', 'minor', 'optimal'].includes(fp?.severity) ? fp.severity : 'moderate',
+      text,
+      explanation: typeof fp?.explanation === 'string' && fp.explanation.trim() ? fp.explanation.trim() : 'Missing conversation prompt leaves audience with no clear response path.',
+      repair: typeof fp?.repair === 'string' && fp.repair.trim() ? fp.repair.trim() : 'Add a specific, grounded audience prompt.',
+    };
+  });
 
   // Strengths List
   const rawStrengths = Array.isArray(raw.strengths) ? raw.strengths : [];
@@ -529,11 +538,27 @@ export function validateAndNormalizeAnalysis(
     }
   }
 
-  // Confidence
+  // Confidence with domain breakdown
   const confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW' =
     raw.confidence?.level && ['HIGH', 'MEDIUM', 'LOW'].includes(raw.confidence.level)
       ? raw.confidence.level
       : 'HIGH';
+
+  const defaultBreakdown = [
+    { domain: 'Visual composition', level: 'HIGH' as const, reason: 'Directly visible in uploaded asset' },
+    { domain: 'Conversation weakness', level: 'HIGH' as const, reason: 'Absence of question/prompt is directly verifiable' },
+    { domain: 'Audience emotional response', level: 'MEDIUM' as const, reason: 'Inferred based on content aesthetics' },
+    { domain: 'Visual processing ease', level: 'MEDIUM' as const, reason: 'Inferred layout and hierarchy' },
+    { domain: 'Creator intent', level: 'LOW' as const, reason: 'Requires information not available in screenshot' },
+    { domain: 'Why reposts occurred', level: 'LOW' as const, reason: 'Historical context not in image' },
+  ];
+
+  const rawBreakdown = Array.isArray(raw.confidence?.breakdown) ? raw.confidence.breakdown : defaultBreakdown;
+  const breakdown = rawBreakdown.map((item: any) => ({
+    domain: typeof item?.domain === 'string' ? item.domain : 'General Analysis',
+    level: ['HIGH', 'MEDIUM', 'LOW'].includes(item?.level) ? item.level : ('MEDIUM' as const),
+    reason: typeof item?.reason === 'string' ? item.reason : undefined,
+  }));
 
   const confidence: AnalysisConfidence = {
     level: confidenceLevel,
@@ -541,6 +566,7 @@ export function validateAndNormalizeAnalysis(
       typeof raw.confidence?.reason === 'string' && raw.confidence.reason.trim()
         ? raw.confidence.reason.trim()
         : 'High diagnostic confidence based on directly detected visual elements and verified content inventory.',
+    breakdown,
   };
 
   return {

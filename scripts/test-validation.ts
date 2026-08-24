@@ -702,6 +702,15 @@ test('TEST 1: X/Twitter bouquet image-only post normalizes 3 layers with 0 produ
   assert.strictEqual(normalized.repair.recommended.includes('bouquet'), true);
   assert.strictEqual(normalized.conversationDNA.replacementQuestion.includes('bouquet'), true);
 
+  // Verifies friction points do not use "[No text detected]" as a problematic text fragment
+  assert.strictEqual(normalized.frictionPoints[0].text, 'No caption or conversation prompt detected.');
+  assert.strictEqual(normalized.frictionPoints[0].category, 'Missing Conversation Hook');
+
+  // Verifies confidence breakdown domains exist
+  assert.ok(normalized.confidence.breakdown && normalized.confidence.breakdown.length >= 4);
+  const visualComp = normalized.confidence.breakdown?.find(b => b.domain === 'Visual composition');
+  assert.strictEqual(visualComp?.level, 'HIGH');
+
   // ABSOLUTE ANTI-HALLUCINATION CHECK:
   const fullSerialized = JSON.stringify(normalized);
   assert.strictEqual(fullSerialized.includes('productivity'), false);

@@ -213,14 +213,14 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
       </div>
 
-      {/* 01 — CONTENT SNAPSHOT (Observed Facts & Ground Truth) */}
+      {/* 01 — CONTENT SNAPSHOT (Observed Facts) */}
       <div className="p-5 bg-carbon-900 border border-carbon-750 rounded-2xl font-mono text-xs space-y-3 shadow-lg">
         <div className="flex items-center justify-between">
           <span className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-cyan-400" /> 01 — CONTENT SNAPSHOT (OBSERVED FACTS)
+            <CheckCircle2 className="w-4 h-4 text-cyan-400" /> 01 — CONTENT SNAPSHOT
           </span>
           <Badge variant="cyan" size="sm" className="font-mono">
-            VERIFIED FACTS
+            OBSERVED FACTS
           </Badge>
         </div>
 
@@ -234,22 +234,27 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
       </div>
 
-      {/* 02 — OBSERVED SCREENSHOT PERFORMANCE (Baseline counters) */}
+      {/* 02 — PERFORMANCE EVIDENCE (Observed Metrics) */}
       {hasObservedMetrics && metrics && (
         <div className="p-5 bg-carbon-900 border border-cyan-900/50 rounded-2xl font-mono text-xs space-y-3 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="font-bold text-cyan-300 uppercase tracking-wider text-xs flex items-center gap-2">
-              <Eye className="w-4 h-4 text-cyan-400" /> 02 — OBSERVED PERFORMANCE (SCREENSHOT BASELINE)
+              <Eye className="w-4 h-4 text-cyan-400" /> 02 — PERFORMANCE EVIDENCE
             </span>
-            <span className="text-[11px] text-carbon-400 font-mono">Facts directly extracted from interface counters</span>
+            <Badge variant="cyan" size="sm" className="font-mono">
+              OBSERVED METRICS
+            </Badge>
           </div>
+          <p className="text-[11px] text-carbon-400 font-sans">
+            Facts directly extracted from interface counters. These are historical observations, not AI predictions.
+          </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
             {metrics.replies !== null && (
               <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <MessageSquare className="w-4 h-4 text-carbon-400" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block uppercase">Replies</span>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Replies (Observed)</span>
                   <span className="font-bold text-white text-lg">{metrics.replies}</span>
                 </div>
               </div>
@@ -259,7 +264,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
               <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <Repeat2 className="w-4 h-4 text-emerald-400" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block uppercase">Reposts</span>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Reposts (Observed)</span>
                   <span className="font-bold text-white text-lg">{metrics.reposts}</span>
                 </div>
               </div>
@@ -269,7 +274,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
               <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <Heart className="w-4 h-4 text-rose-400" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block uppercase">Likes</span>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Likes (Observed)</span>
                   <span className="font-bold text-white text-lg">{metrics.likes}</span>
                 </div>
               </div>
@@ -279,7 +284,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
               <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-carbon-950/90 border border-carbon-800">
                 <Eye className="w-4 h-4 text-cyan-400" />
                 <div>
-                  <span className="text-[10px] text-carbon-400 block uppercase">Views</span>
+                  <span className="text-[10px] text-carbon-400 block uppercase">Views (Observed)</span>
                   <span className="font-bold text-white text-lg">{metrics.views}</span>
                 </div>
               </div>
@@ -288,7 +293,7 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
         </div>
       )}
 
-      {/* 03 & 04 — GOAL FIT & CORE DIAGNOSTIC SIGNALS */}
+      {/* 03 & 04 — OBJECTIVE FIT & CORE DIAGNOSTIC SIGNALS */}
       <MetricsGrid
         overallScore={report.overallScore}
         targetGoal={targetGoal}
@@ -313,10 +318,10 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       {/* 06 — STRENGTHS & POST AUTOPSY */}
       <PostAutopsy autopsy={report.postAutopsy} strengths={report.strengths} />
 
-      {/* 07 — CONVERSATION DNA SEQUENCE */}
+      {/* 07 — CONVERSATION DNA */}
       <ConversationDNA dna={report.conversationDNA} />
 
-      {/* 08 — RECOMMENDED REPAIR (Before vs After) */}
+      {/* 08 — RECOMMENDED REPAIR */}
       <RepairDiff repair={report.repair} />
 
       {/* Platform Variants (LinkedIn, Instagram, TikTok) */}
@@ -326,13 +331,18 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
       <GoalAdaptiveCard recommendation={report.goalRecommendation} />
 
       {/* 09 — LIMITATIONS & CONFIDENCE */}
-      <div className="p-5 rounded-2xl bg-carbon-950 border border-carbon-800 space-y-3 font-mono text-xs">
+      <div className="p-5 rounded-2xl bg-carbon-950 border border-carbon-800 space-y-4 font-mono text-xs shadow-lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <span className="font-bold text-carbon-300 uppercase tracking-wider flex items-center gap-2">
-            <Info className="w-4 h-4 text-cyan-400" /> 09 — LIMITATIONS &amp; DIAGNOSTIC CONFIDENCE
-          </span>
+          <div className="space-y-0.5">
+            <span className="font-bold text-carbon-200 uppercase tracking-wider flex items-center gap-2">
+              <Info className="w-4 h-4 text-cyan-400" /> 09 — LIMITATIONS &amp; CONFIDENCE
+            </span>
+            <span className="text-[11px] text-carbon-400 font-sans block">
+              What the screenshot cannot establish &amp; confidence ratings
+            </span>
+          </div>
           <div className="flex items-center gap-2">
-            <span className="text-carbon-400">Confidence:</span>
+            <span className="text-carbon-400">Overall Diagnostic Confidence:</span>
             <Badge
               variant={report.confidence?.level === 'HIGH' ? 'emerald' : report.confidence?.level === 'MEDIUM' ? 'amber' : 'red'}
               size="sm"
@@ -342,9 +352,32 @@ export const DiagnosticReport: React.FC<DiagnosticReportProps> = ({
           </div>
         </div>
 
-        <p className="text-carbon-400 text-[11px] font-sans">
+        <p className="text-carbon-300 text-xs font-sans leading-relaxed">
           {report.confidence?.reason || 'Diagnostics based directly on detected visual elements and verified content inventory.'}
         </p>
+
+        {/* Confidence Domains Breakdown */}
+        {report.confidence?.breakdown && report.confidence.breakdown.length > 0 && (
+          <div className="pt-2 border-t border-carbon-800/80 space-y-2">
+            <span className="text-[10px] text-cyan-400 uppercase tracking-wider block font-bold">
+              Confidence By Analysis Domain:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {report.confidence.breakdown.map((item, idx) => (
+                <div key={idx} className="p-2.5 rounded-lg bg-carbon-900/80 border border-carbon-800 flex items-center justify-between gap-2">
+                  <span className="text-carbon-200 font-sans text-xs">{item.domain}</span>
+                  <Badge
+                    variant={item.level === 'HIGH' ? 'emerald' : item.level === 'MEDIUM' ? 'amber' : 'red'}
+                    size="sm"
+                    className="font-mono text-[9px] py-0 px-1.5 uppercase"
+                  >
+                    {item.level}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {report.limitations && report.limitations.length > 0 && (
           <div className="pt-2 border-t border-carbon-800/80 space-y-1">

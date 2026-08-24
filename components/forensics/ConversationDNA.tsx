@@ -54,16 +54,19 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Dna className="w-5 h-5 text-purple-400" />
           <h3 className="text-base font-mono font-bold uppercase tracking-wider text-white">
             07 — CONVERSATION DNA
           </h3>
+          <Badge variant="violet" size="sm">
+            INFERENCE + CONFIDENCE
+          </Badge>
         </div>
-        <Badge variant="violet" size="sm">
-          PSYCHOLOGICAL CASCADE
-        </Badge>
+        <span className="text-xs font-mono text-carbon-400">
+          Inferred cognitive cascade from feed appearance to response
+        </span>
       </div>
 
       {/* Vertical Flow Diagram */}
@@ -75,9 +78,14 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
               01
             </div>
             <div className="min-w-0">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-carbon-400 font-semibold block">
-                Post Delivered to Feed
-              </span>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-carbon-400 font-semibold block">
+                  Post Delivered to Feed
+                </span>
+                <Badge variant="neutral" size="sm" className="text-[9px] py-0 px-1.5">
+                  OBSERVED FACT
+                </Badge>
+              </div>
               <p className="text-xs text-carbon-200 pt-0.5">
                 {deliveredToFeed}
               </p>
@@ -94,9 +102,14 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
               02
             </div>
             <div className="min-w-0">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-purple-400 font-semibold flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" /> Subconscious Audience Reaction
-              </span>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-purple-400 font-semibold flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" /> Subconscious Audience Reaction
+                </span>
+                <Badge variant="violet" size="sm" className="text-[9px] py-0 px-1.5">
+                  INFERENCE · CONFIDENCE: MEDIUM
+                </Badge>
+              </div>
               <p className="text-xs text-purple-100 italic pt-0.5">
                 &ldquo;{audienceReaction}&rdquo;
               </p>
@@ -113,9 +126,14 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
               03
             </div>
             <div className="min-w-0">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-semibold flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5" /> Induced Action / Engagement Type
-              </span>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-semibold flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5" /> Induced Action / Likely Engagement Path
+                </span>
+                <Badge variant="cyan" size="sm" className="text-[9px] py-0 px-1.5">
+                  INFERENCE
+                </Badge>
+              </div>
               <p className="text-xs text-white font-mono font-semibold pt-0.5">
                 {inducedAction}
               </p>
@@ -132,9 +150,14 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
               04
             </div>
             <div className="min-w-0">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-300 font-semibold flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5" /> Conversation Opportunity Estimate
-              </span>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-300 font-semibold flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5" /> Conversation Mechanism &amp; Opportunity
+                </span>
+                <Badge variant="cyan" size="sm" className="text-[9px] py-0 px-1.5">
+                  OBSERVED / INFERRED STATE
+                </Badge>
+              </div>
               <p className="text-xs text-cyan-100 pt-0.5">
                 {conversationOpportunity}
               </p>
@@ -151,6 +174,9 @@ export const ConversationDNA: React.FC<ConversationDNAProps> = ({ dna }) => {
               <div className="flex items-center gap-2 text-xs font-mono text-purple-300 font-bold uppercase tracking-wider">
                 <MessageCircleQuestion className="w-4 h-4 text-purple-400" />
                 Step 5: High-Conversion Replacement Question
+                <Badge variant="emerald" size="sm" className="text-[9px] py-0 px-1.5">
+                  RECOMMENDATION
+                </Badge>
               </div>
               <Button
                 variant="outline"

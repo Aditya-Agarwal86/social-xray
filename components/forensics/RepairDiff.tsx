@@ -58,12 +58,12 @@ export const RepairDiff: React.FC<RepairDiffProps> = ({ repair }) => {
               08 — RECOMMENDED REPAIR
             </h3>
             <Badge variant="cyan" size="sm">
-              ACTIONABLE REPAIR
+              AI-GENERATED SUGGESTION
             </Badge>
           </div>
           <p className="text-[11px] font-mono text-carbon-400 flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-cyan-400/80 shrink-0" />
-            AI-generated suggestion based on detected content
+            Not present in the original post • Evidence-grounded suggestion based on detected content
           </p>
         </div>
 
@@ -113,9 +113,14 @@ export const RepairDiff: React.FC<RepairDiffProps> = ({ repair }) => {
           {/* 2. Recommended High-Conversion Copy */}
           <div className="space-y-2 flex flex-col justify-between relative">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-mono font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10B981]" />
-                RECOMMENDED (GROUNDED SUGGESTION)
+              <div>
+                <div className="text-xs font-mono font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10B981]" />
+                  RECOMMENDED (GROUNDED SUGGESTION)
+                </div>
+                <span className="text-[10px] text-carbon-400 font-mono block">
+                  AI-generated • Not present in original post
+                </span>
               </div>
               <button
                 type="button"
@@ -139,7 +144,7 @@ export const RepairDiff: React.FC<RepairDiffProps> = ({ repair }) => {
         <div className="p-4 rounded-xl bg-carbon-950/90 border border-carbon-800 text-xs text-carbon-300 font-sans space-y-1.5">
           <div className="font-mono text-xs text-cyan-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
             <HelpCircle className="w-4 h-4 text-cyan-400" />
-            WHY THIS REPAIR WORKS (EVIDENCE RATIONALE):
+            WHY THIS REPAIR MAY HELP (EVIDENCE RATIONALE):
           </div>
           <p className="leading-relaxed text-carbon-200">
             {explanation}

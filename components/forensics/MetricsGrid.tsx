@@ -54,15 +54,15 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   audienceValue,
 }) => {
   const signalCards = [
-    { key: 'hook', name: 'Hook Stopping Power', data: hook, icon: Zap },
+    { key: 'hook', name: 'Visual / Text Hook', data: hook, icon: Zap },
     { key: 'clarity', name: 'Clarity & Comprehension', data: clarity, icon: Eye },
-    { key: 'cognitiveLoad', name: 'Cognitive Ease', data: cognitiveLoad, icon: BrainCircuit },
+    { key: 'cognitiveLoad', name: 'Visual Processing Ease', data: cognitiveLoad, icon: BrainCircuit },
     { key: 'emotion', name: 'Emotional Resonance', data: emotion, icon: Flame },
     { key: 'curiosity', name: 'Curiosity Tension', data: curiosity, icon: HelpCircle },
     { key: 'conversation', name: 'Conversation Trigger', data: conversation, icon: MessageSquare },
-    { key: 'shareability', name: 'Relational Shareability', data: shareability, icon: Share2 },
+    { key: 'shareability', name: 'Shareability Compatibility', data: shareability, icon: Share2 },
     { key: 'cta', name: 'Call to Action Quality', data: cta, icon: MousePointerClick },
-    { key: 'audienceValue', name: 'Audience Payoff & Utility', data: audienceValue, icon: Award },
+    { key: 'audienceValue', name: 'Audience Value Payoff', data: audienceValue, icon: Award },
   ];
 
   const overallStyle = getScoreColor(overallScore);
@@ -105,8 +105,11 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
               <span className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-400 flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5" /> 03 — OBJECTIVE FIT EVALUATION
+                <Target className="w-3.5 h-3.5" /> 03 — OBJECTIVE FIT
               </span>
+              <Badge variant="cyan" size="sm" className="font-mono">
+                GOAL-SPECIFIC DIAGNOSIS
+              </Badge>
             </div>
             <h2 className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
               {goalLabel.toUpperCase()}
@@ -118,7 +121,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
 
           <div className="flex items-center gap-4 shrink-0 self-stretch sm:self-auto justify-between sm:justify-start p-4 rounded-2xl bg-carbon-950/90 border border-carbon-700 shadow-inner">
             <div className="text-right font-mono">
-              <div className="text-[11px] text-carbon-400 uppercase">Fit Verdict</div>
+              <div className="text-[11px] text-carbon-400 uppercase">Goal Alignment</div>
               <div className={cn('text-sm font-bold uppercase', overallStyle.text)}>
                 {overallStyle.label}
               </div>
@@ -140,10 +143,15 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
       {/* 2. Signal Cards Grid */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-carbon-200 flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-cyan-400" />
-            04 — Core Diagnostic Signals
-          </h3>
+            <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-carbon-200">
+              04 — CORE DIAGNOSTIC SIGNALS
+            </h3>
+            <Badge variant="neutral" size="sm" className="font-mono">
+              AI INTERPRETATION
+            </Badge>
+          </div>
           <span className="text-xs font-mono text-carbon-400">9 Core Dimensions</span>
         </div>
 
@@ -191,10 +199,15 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
                     />
                   </div>
 
-                  {/* One-Line Explanation */}
-                  <p className="text-[11px] text-carbon-300 font-sans leading-snug pt-1 line-clamp-2">
-                    {data.explanation}
-                  </p>
+                  {/* Evidence-Backed Explanation */}
+                  <div className="pt-1 text-[11px] text-carbon-300 font-sans leading-snug space-y-0.5">
+                    <span className="font-mono text-[10px] text-cyan-400 uppercase tracking-wider block font-semibold">
+                      Evidence:
+                    </span>
+                    <p className="line-clamp-3 text-carbon-200">
+                      {data.explanation || data.problem}
+                    </p>
+                  </div>
                 </div>
               </Card>
             );

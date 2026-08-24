@@ -91,7 +91,7 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
             05 — PRIMARY FRICTION MAP
           </h3>
           <Badge variant="red" size="sm">
-            {frictionPoints.length} FRICTION POINTS
+            EVIDENCE-BACKED FRICTION
           </Badge>
         </div>
         <span className="text-xs font-mono text-carbon-400">
@@ -105,6 +105,12 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
           {frictionPoints.map((point, index) => {
             const isSelected = selectedIndex === index;
             const style = getSeverityStyles(point.severity);
+            const isMissingElement =
+              !point.text ||
+              /^\[.*(?:no\s+text|no\s+caption|missing|not\s+detected).*\]$/i.test(point.text) ||
+              point.text.toLowerCase().includes('no caption or conversation prompt detected') ||
+              point.text.toLowerCase().includes('no text detected') ||
+              point.text.toLowerCase().includes('no caption detected');
 
             return (
               <button
@@ -141,7 +147,7 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
                   </div>
 
                   <p className="text-xs text-carbon-300 font-mono truncate italic">
-                    &ldquo;{point.text}&rdquo;
+                    {isMissingElement ? 'Detected State: No caption detected' : `“${point.text}”`}
                   </p>
                 </div>
               </button>
@@ -151,70 +157,82 @@ export const FrictionMap: React.FC<FrictionMapProps> = ({
 
         {/* Right Side: Detailed Forensic Inspection Dossier */}
         <div className="lg:col-span-7">
-          {selectedPoint && (
-            <Card
-              variant="accent"
-              className={cn(
-                'p-6 space-y-5 bg-carbon-900/95 border-2 transition-all duration-200 shadow-xl relative overflow-hidden',
-                getSeverityStyles(selectedPoint.severity).border
-              )}
-            >
-              <XRayScanOverlay active={true} showCorners={true} />
+          {selectedPoint && (() => {
+            const isMissingElement =
+              !selectedPoint.text ||
+              /^\[.*(?:no\s+text|no\s+caption|missing|not\s+detected).*\]$/i.test(selectedPoint.text) ||
+              selectedPoint.text.toLowerCase().includes('no caption or conversation prompt detected') ||
+              selectedPoint.text.toLowerCase().includes('no text detected') ||
+              selectedPoint.text.toLowerCase().includes('no caption detected');
 
-              {/* Point Dossier Header */}
-              <div className="flex items-center justify-between border-b border-carbon-800 pb-3 relative z-10">
-                <div className="flex items-center gap-2 font-mono">
-                  <span className="p-1.5 rounded-lg bg-carbon-800 border border-carbon-700 text-cyan-400">
-                    <Crosshair className="w-4 h-4" />
+            return (
+              <Card
+                variant="accent"
+                className={cn(
+                  'p-6 space-y-5 bg-carbon-900/95 border-2 transition-all duration-200 shadow-xl relative overflow-hidden',
+                  getSeverityStyles(selectedPoint.severity).border
+                )}
+              >
+                <XRayScanOverlay active={true} showCorners={true} />
+
+                {/* Point Dossier Header */}
+                <div className="flex items-center justify-between border-b border-carbon-800 pb-3 relative z-10">
+                  <div className="flex items-center gap-2 font-mono">
+                    <span className="p-1.5 rounded-lg bg-carbon-800 border border-carbon-700 text-cyan-400">
+                      <Crosshair className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <span className="text-xs font-bold text-white uppercase block">
+                        {selectedPoint.category}
+                      </span>
+                      <span className="text-[11px] text-carbon-400">
+                        FRICTION POINT #{selectedIndex + 1} OF {frictionPoints.length}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Badge variant={getSeverityStyles(selectedPoint.severity).badgeVariant} size="sm">
+                    {getSeverityStyles(selectedPoint.severity).label}
+                  </Badge>
+                </div>
+
+                {/* 1. Problematic Post Fragment OR Missing Engagement Element */}
+                <div className="space-y-1.5 relative z-10">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-rose-400 font-semibold flex items-center gap-1.5">
+                    <Quote className="w-3.5 h-3.5" />
+                    {isMissingElement ? 'MISSING ENGAGEMENT ELEMENT' : 'PROBLEMATIC TEXT FRAGMENT'}
                   </span>
-                  <div>
-                    <span className="text-xs font-bold text-white uppercase block">
-                      {selectedPoint.category}
-                    </span>
-                    <span className="text-[11px] text-carbon-400">
-                      DROP POINT #{selectedIndex + 1} OF {frictionPoints.length}
-                    </span>
+                  <div className="p-3.5 rounded-xl border text-rose-200 font-mono text-xs leading-relaxed italic animate-highlight-pulse">
+                    {isMissingElement
+                      ? 'Detected state: "No caption or conversation prompt detected."'
+                      : `“${selectedPoint.text}”`}
                   </div>
                 </div>
 
-                <Badge variant={getSeverityStyles(selectedPoint.severity).badgeVariant} size="sm">
-                  {getSeverityStyles(selectedPoint.severity).label}
-                </Badge>
-              </div>
+                {/* 2. Psychological Friction Explanation */}
+                <div className="p-4 rounded-xl bg-carbon-950 border border-carbon-800 space-y-1.5 relative z-10">
+                  <div className="flex items-center gap-1.5 text-amber-300 font-mono font-semibold text-xs uppercase tracking-wider">
+                    <Brain className="w-3.5 h-3.5 text-amber-400" />
+                    Evidence-Backed Friction Rationale:
+                  </div>
+                  <p className="text-carbon-200 text-xs font-sans leading-relaxed">
+                    {selectedPoint.explanation}
+                  </p>
+                </div>
 
-              {/* 1. Problematic Post Fragment with Shimmer Animation */}
-              <div className="space-y-1.5 relative z-10">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-rose-400 font-semibold flex items-center gap-1.5">
-                  <Quote className="w-3.5 h-3.5" /> Problematic Text Fragment:
-                </span>
-                <div className="p-3.5 rounded-xl border text-rose-200 font-mono text-xs leading-relaxed italic animate-highlight-pulse">
-                  &ldquo;{selectedPoint.text}&rdquo;
+                {/* 3. Recommended Surgical Repair */}
+                <div className="p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/40 space-y-1.5 relative z-10">
+                  <div className="flex items-center gap-1.5 text-cyan-300 font-mono font-semibold text-xs uppercase tracking-wider">
+                    <Wrench className="w-3.5 h-3.5 text-cyan-400" />
+                    Recommended Engagement Repair:
+                  </div>
+                  <div className="p-3 rounded-lg bg-carbon-950/80 border border-cyan-800/40 text-cyan-100 font-mono text-xs leading-relaxed">
+                    {selectedPoint.repair}
+                  </div>
                 </div>
-              </div>
-
-              {/* 2. Psychological Friction Explanation */}
-              <div className="p-4 rounded-xl bg-carbon-950 border border-carbon-800 space-y-1.5 relative z-10">
-                <div className="flex items-center gap-1.5 text-amber-300 font-mono font-semibold text-xs uppercase tracking-wider">
-                  <Brain className="w-3.5 h-3.5 text-amber-400" />
-                  Why Audience Stops Caring (Psychological Drag):
-                </div>
-                <p className="text-carbon-200 text-xs font-sans leading-relaxed">
-                  {selectedPoint.explanation}
-                </p>
-              </div>
-
-              {/* 3. Recommended Surgical Repair */}
-              <div className="p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/40 space-y-1.5 relative z-10">
-                <div className="flex items-center gap-1.5 text-cyan-300 font-mono font-semibold text-xs uppercase tracking-wider">
-                  <Wrench className="w-3.5 h-3.5 text-cyan-400" />
-                  Recommended Surgical Repair:
-                </div>
-                <div className="p-3 rounded-lg bg-carbon-950/80 border border-cyan-800/40 text-cyan-100 font-mono text-xs leading-relaxed">
-                  {selectedPoint.repair}
-                </div>
-              </div>
-            </Card>
-          )}
+              </Card>
+            );
+          })()}
         </div>
       </div>
     </div>
